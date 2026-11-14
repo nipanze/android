@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +19,7 @@ import '../../../../shared/widgets/post_duration_info_card.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../marketplace/domain/models/marketplace_item.dart';
+import '../../../listings/presentation/widgets/listing_create_widgets.dart';
 import '../../../settings/data/system_settings_repository.dart';
 import '../../data/need_draft_exit_guard.dart';
 import '../../data/need_draft_store.dart';
@@ -40,9 +43,11 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   final _specificationController = TextEditingController();
   final _budgetController = TextEditingController();
   final _customLocationController = TextEditingController();
+  final _nationalityFocusNode = FocusNode();
 
   final Map<String, TextEditingController> _dynamicControllers = {};
   final Map<String, bool> _dynamicBooleans = {};
+  final Map<String, int> _presetTapCounts = {};
   List<NeedCategory> _categories = NeedCategory.defaultCategories;
   List<NeedsListing> _recentRequests = const [];
   String? _recentRequestsLoadError;
@@ -52,6 +57,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   String _urgency = 'Within 30 days';
   String? _location;
   bool _locationTouched = false;
+  bool _durationCustomSelected = false;
+  bool _showAllStarterPresets = false;
+  final int _starterPresetSeed = Random().nextInt(1 << 30);
   bool _submitting = false;
   bool _savingDraft = false;
   bool _allowExit = false;
@@ -106,9 +114,12 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       _titleController.text = draft['title']?.toString() ?? '';
       _specificationController.text = draft['specification']?.toString() ?? '';
       _budgetController.text = draft['budget']?.toString() ?? '';
-      _location = draft['location']?.toString();
-      _customLocationController.text =
-          draft['custom_location']?.toString() ?? '';
+      final savedLocation = draft['location']?.toString();
+      final customLocation = draft['custom_location']?.toString() ?? '';
+      _location = savedLocation == 'Other'
+          ? customLocation
+          : savedLocation ?? customLocation;
+      _customLocationController.text = _location ?? '';
       final urgency = draft['urgency']?.toString();
       if (urgency != null && _urgencies.contains(urgency)) _urgency = urgency;
       final details = draft['details'];
@@ -121,6 +132,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 entry.value == true || entry.value.toString() == 'true';
           } else {
             _dynamicControllers[field.key]?.text = entry.value.toString();
+            if (field.key == 'duration_days') {
+              _durationCustomSelected = !const ['3', '7', '14', '30', '60']
+                  .contains(entry.value.toString());
+            }
           }
         }
       }
@@ -186,6 +201,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     _specificationController.dispose();
     _budgetController.dispose();
     _customLocationController.dispose();
+    _nationalityFocusNode.dispose();
     for (final controller in _dynamicControllers.values) {
       controller.dispose();
     }
@@ -226,6 +242,51 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     return Text(label);
   }
 
+  Widget? _clearSuffix(TextEditingController controller, {Widget? trailing}) {
+    if (controller.text.isEmpty && trailing == null) return null;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (trailing != null) trailing,
+        if (controller.text.isNotEmpty)
+          IconButton(
+            tooltip: AppLocalizations.of(context)!.clearInput,
+            visualDensity: VisualDensity.compact,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            padding: EdgeInsets.zero,
+            icon: const Icon(Icons.close_rounded, size: 18),
+            onPressed: controller.clear,
+          ),
+      ],
+    );
+  }
+
+  bool get _specificationIsOptional => const {
+        'machinery_equipment',
+        'specialized_products',
+        'construction_building',
+        'professional_services',
+      }.contains(_categorySlug);
+
+  bool get _titleHasUnfilledPrompt =>
+      RegExp(r'\[[^\]]+\]').hasMatch(_titleController.text.trim());
+
+  double _detailsFieldBottomPadding(NeedFormField field) {
+    if (_categorySlug == 'specialized_products') {
+      return field.key == 'delivery_location' ? 0 : 8;
+    }
+    if (_categorySlug == 'professional_services') {
+      return field.key == 'deliverable' ? 0 : 8;
+    }
+    if (_categorySlug == 'machinery_equipment' ||
+        _categorySlug == 'transport_logistics' ||
+        (_categorySlug == 'construction_building' &&
+            field.key == 'project_scope')) {
+      return 0;
+    }
+    return 12;
+  }
+
   bool get _isReadyToPublish {
     final title = _titleController.text.trim();
     final specification = _specificationController.text.trim();
@@ -233,7 +294,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     final location = _effectiveLocation.trim();
 
     if (title.length < 4 ||
-        specification.length < 12 ||
+        _titleHasUnfilledPrompt ||
+        (!_specificationIsOptional && specification.length < 12) ||
         budget == null ||
         budget < 0 ||
         location.isEmpty) {
@@ -275,8 +337,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     if (_categorySlug == 'travel_international') {
       return _dynamicControllers['departure_city']?.text.trim() ?? '';
     }
-    if (_location == 'Other') return _customLocationController.text;
-    return _location ?? '';
+    return _customLocationController.text.trim();
   }
 
   int _budgetValue() {
@@ -286,6 +347,19 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   void _selectCategory(String slug) {
     if (slug == _categorySlug) return;
     setState(() {
+      _titleController.clear();
+      _specificationController.clear();
+      _budgetController.clear();
+      _customLocationController.clear();
+      _location = null;
+      _locationTouched = false;
+      _urgency = 'Within 30 days';
+      _durationCustomSelected = false;
+      _showAllStarterPresets = false;
+      for (final controller in _dynamicControllers.values) {
+        controller.clear();
+      }
+      _dynamicBooleans.updateAll((_, __) => false);
       _categorySlug = slug;
       _initCategoryControllers();
     });
@@ -389,96 +463,85 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     final l10n = AppLocalizations.of(context)!;
     final selectedUrgency = await showModalBottomSheet<String>(
       context: context,
-      isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.48,
-        minChildSize: 0.35,
-        maxChildSize: 0.8,
-        builder: (context, scrollController) {
-          final theme = Theme.of(context);
-          return Material(
-            color: theme.colorScheme.surface,
-            clipBehavior: Clip.antiAlias,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(24),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                Container(
-                  width: 38,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return Material(
+          color: theme.colorScheme.surface,
+          clipBehavior: Clip.antiAlias,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 38,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 12, 10),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'TimeFrame',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 12, 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Response urgency',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      IconButton(
-                        tooltip: MaterialLocalizations.of(context)
-                            .closeButtonTooltip,
-                        onPressed: () => Navigator.pop(sheetContext),
-                        icon: const Icon(Icons.close_rounded),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1),
-                Expanded(
-                  child: ListView.separated(
-                    controller: scrollController,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: _urgencies.length,
-                    separatorBuilder: (_, __) => const Divider(
-                      height: 1,
-                      indent: 64,
                     ),
-                    itemBuilder: (context, index) {
-                      final urgency = _urgencies[index];
-                      final isSelected = urgency == _urgency;
-                      return ListTile(
-                        leading: Icon(
-                          urgency == 'Urgent'
-                              ? Icons.priority_high_rounded
-                              : Icons.schedule_rounded,
-                          color: urgency == 'Urgent'
-                              ? theme.colorScheme.error
-                              : theme.colorScheme.primary,
-                        ),
-                        title: Text(
-                          _urgencyLabel(l10n, urgency),
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        trailing: isSelected
-                            ? Icon(
-                                Icons.check_circle_rounded,
-                                color: theme.colorScheme.primary,
-                              )
-                            : const Icon(Icons.chevron_right_rounded),
-                        onTap: () => Navigator.pop(sheetContext, urgency),
-                      );
-                    },
-                  ),
+                    IconButton(
+                      tooltip: MaterialLocalizations.of(sheetContext)
+                          .closeButtonTooltip,
+                      onPressed: () => Navigator.pop(sheetContext),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              for (var index = 0; index < _urgencies.length; index++) ...[
+                if (index > 0)
+                  const Divider(height: 1, indent: 64, endIndent: 16),
+                Builder(
+                  builder: (context) {
+                    final urgency = _urgencies[index];
+                    final isSelected = urgency == _urgency;
+                    return ListTile(
+                      leading: Icon(
+                        urgency == 'Urgent'
+                            ? Icons.priority_high_rounded
+                            : Icons.schedule_rounded,
+                        color: urgency == 'Urgent'
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.primary,
+                      ),
+                      title: Text(
+                        _urgencyLabel(l10n, urgency),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      trailing: isSelected
+                          ? Icon(
+                              Icons.check_circle_rounded,
+                              color: theme.colorScheme.primary,
+                            )
+                          : const Icon(Icons.chevron_right_rounded),
+                      onTap: () => Navigator.pop(sheetContext, urgency),
+                    );
+                  },
                 ),
               ],
-            ),
-          );
-        },
-      ),
+            ],
+          ),
+        );
+      },
     );
     if (selectedUrgency != null && mounted) {
       setState(() => _urgency = selectedUrgency);
@@ -487,8 +550,19 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
 
   void _applyPreset(NeedFormPreset preset) {
     setState(() {
-      _titleController.text = preset.title;
+      final presetKey = '$_categorySlug:${preset.label}';
+      final tapCount = _presetTapCounts[presetKey] ?? 0;
+      _presetTapCounts[presetKey] = tapCount + 1;
+      _titleController.text = _presetTitleVariant(preset.title, tapCount);
       _specificationController.text = preset.specification;
+      _durationCustomSelected = false;
+      for (final field in NeedFormSchema.fieldsForCategory(_categorySlug)) {
+        if (field.type == NeedFieldType.boolean) {
+          _dynamicBooleans[field.key] = false;
+        } else {
+          _dynamicControllers[field.key]?.clear();
+        }
+      }
       if (preset.budget != null) {
         _budgetController.text = preset.budget.toString();
       }
@@ -505,6 +579,60 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         }
       }
     });
+  }
+
+  String _presetTitleVariant(String title, int tapCount) {
+    late final String firstAlternative;
+    late final String secondAlternative;
+    if (title.startsWith('I need to ')) {
+      final request = title.substring('I need to '.length);
+      firstAlternative = 'Looking to $request';
+      secondAlternative = 'Need to $request';
+    } else if (title.startsWith('I need ')) {
+      final request = title.substring('I need '.length);
+      firstAlternative = 'Looking for $request';
+      secondAlternative = 'Need $request';
+    } else if (title.startsWith('I want to ')) {
+      final request = title.substring('I want to '.length);
+      firstAlternative = 'Looking to $request';
+      secondAlternative = 'Need to $request';
+    } else if (title.startsWith('I want ')) {
+      final request = title.substring('I want '.length);
+      firstAlternative = 'Looking for $request';
+      secondAlternative = 'Need $request';
+    } else if (title.startsWith('Looking for ')) {
+      final request = title.substring('Looking for '.length);
+      firstAlternative = 'I need $request';
+      secondAlternative = 'I want $request';
+    } else if (title.startsWith('Looking to ')) {
+      final request = title.substring('Looking to '.length);
+      firstAlternative = 'I want to $request';
+      secondAlternative = 'Need to $request';
+    } else if (title.startsWith('Need to ')) {
+      final request = title.substring('Need to '.length);
+      firstAlternative = 'I need to $request';
+      secondAlternative = 'Looking to $request';
+    } else if (title.startsWith('Need ')) {
+      final request = title.substring('Need '.length);
+      firstAlternative = 'I need $request';
+      secondAlternative = 'Looking for $request';
+    } else if (title.startsWith('Planning to ')) {
+      final request = title.substring('Planning to '.length);
+      firstAlternative = 'I want to $request';
+      secondAlternative = 'Looking to $request';
+    } else if (title.startsWith('Planning a ')) {
+      final request = title.substring('Planning a '.length);
+      firstAlternative = 'I want to plan a $request';
+      secondAlternative = 'Looking to plan a $request';
+    } else if (title.startsWith('Planning ')) {
+      final request = title.substring('Planning '.length);
+      firstAlternative = 'I want to plan $request';
+      secondAlternative = 'Looking to plan $request';
+    } else {
+      return title;
+    }
+
+    return [title, firstAlternative, secondAlternative][tapCount % 3];
   }
 
   List<NeedsListing> get _recentRequestsForCategory => _recentRequests
@@ -549,16 +677,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       _urgency = _urgencies.contains(request.urgency)
           ? request.urgency
           : _urgencies.last;
-      if (request.location == 'Other' ||
-          _countryInfo(context.read<AuthBloc>().state)
-              .regions
-              .contains(request.location)) {
-        _location = request.location;
-        _customLocationController.clear();
-      } else {
-        _location = 'Other';
-        _customLocationController.text = request.location;
-      }
+      _location = request.location;
+      _customLocationController.text = request.location;
+      _locationTouched = true;
       for (final entry in request.details.entries) {
         final field = _fieldByKey(entry.key);
         if (field == null) continue;
@@ -612,16 +733,43 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   Widget _buildStarterPresets() {
     final presets = NeedFormSchema.presetsForCategory(_categorySlug);
     final recentRequests = _recentRequestsForCategory;
+    final l10n = AppLocalizations.of(context)!;
+    final recentSuggestions =
+        recentRequests.take(2).map((request) => 'Repeat: ${request.title}');
+    final presetOffset =
+        presets.isEmpty ? 0 : _starterPresetSeed % presets.length;
+    final rotatedPresets = [
+      ...presets.skip(presetOffset),
+      ...presets.take(presetOffset),
+    ];
+    final allSuggestions = [
+      ...recentSuggestions,
+      ...rotatedPresets.map((preset) => preset.label),
+    ];
+    const collapsedSuggestionCount = 5;
+    final hasMore = allSuggestions.length > collapsedSuggestionCount;
+    final suggestions = _showAllStarterPresets
+        ? [
+            ...allSuggestions,
+            if (hasMore) l10n.showLess,
+          ]
+        : [
+            ...allSuggestions.take(collapsedSuggestionCount),
+            if (hasMore) l10n.showMore,
+          ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         FormSuggestionStrip(
           label: 'Start with',
-          suggestions: [
-            ...recentRequests.map((request) => 'Repeat: ${request.title}'),
-            ...presets.map((preset) => preset.label),
-          ],
+          suggestions: suggestions,
           onSelected: (value) {
+            if (value == l10n.showMore || value == l10n.showLess) {
+              setState(() {
+                _showAllStarterPresets = !_showAllStarterPresets;
+              });
+              return;
+            }
             final recent = recentRequests
                 .where((request) => 'Repeat: ${request.title}' == value)
                 .firstOrNull;
@@ -638,9 +786,61 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     );
   }
 
+  Widget _sectionCard({
+    required String title,
+    required bool isComplete,
+    required Widget child,
+  }) {
+    return ListingFormPanel(
+      title: title,
+      isComplete: isComplete,
+      children: [child],
+    );
+  }
+
+  InputDecoration _detailsInputDecoration({
+    Widget? label,
+    String? hintText,
+    String? helperText,
+    Widget? suffixIcon,
+    bool alignLabelWithHint = false,
+  }) {
+    final theme = Theme.of(context);
+    final radius = BorderRadius.circular(12);
+    final fill = theme.brightness == Brightness.dark
+        ? AppColors.bg3Dark
+        : AppColors.bg3Light;
+    final border = OutlineInputBorder(
+      borderRadius: radius,
+      borderSide: BorderSide.none,
+    );
+    return InputDecoration(
+      label: label,
+      hintText: hintText,
+      helperText: helperText,
+      helperMaxLines: 2,
+      suffixIcon: suffixIcon,
+      alignLabelWithHint: alignLabelWithHint,
+      filled: true,
+      fillColor: fill,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      border: border,
+      enabledBorder: border,
+      focusedBorder: OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+      ),
+      hintStyle: theme.inputDecorationTheme.hintStyle
+          ?.copyWith(fontWeight: FontWeight.w400),
+      helperStyle: theme.inputDecorationTheme.helperStyle
+          ?.copyWith(fontWeight: FontWeight.w400),
+    );
+  }
+
   Widget _buildOptionPills(NeedFormField field) {
     return FormSuggestionStrip(
-      label: 'Try',
+      label: 'Options',
+      topPadding: 0,
       suggestions: _optionsForField(field),
       onSelected: (value) => _setFieldValue(field, value),
     );
@@ -662,7 +862,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           : '',
     );
     return FormSuggestionStrip(
-      label: 'Try',
+      label: 'Budget shortcuts',
       suggestions: [
         ...recentAmounts,
         'Lower 25%',
@@ -717,16 +917,6 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   List<String> _quickValuesForField(NeedFormField field) {
     final category = _categorySlug;
     return switch (field.key) {
-      'destination_country' => const [
-          'Saudi Arabia',
-          'UAE',
-          'Qatar',
-          'Turkey',
-          'India',
-          'China',
-          'United Kingdom',
-          'USA',
-        ],
       'destination_city' => const [
           'Makkah',
           'Madinah',
@@ -752,14 +942,6 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           'Family visit',
           'Medical',
         ],
-      'service_needed' => const [
-          'Hajj package',
-          'Umrah package',
-          'Visa assistance',
-          'Flight ticket',
-          'Hotel booking',
-          'Full travel package',
-        ],
       'visa_type' => const [
           'Hajj visa',
           'Umrah visa',
@@ -776,7 +958,6 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           'Flexible',
         ],
       'duration_days' => const ['3', '7', '14', '30', '60'],
-      'travellers' => const ['1', '2', '3', '4', '5'],
       'duration' => const ['2 weeks', '8 weeks', '3 months', '6 months'],
       'schedule' => const ['Full-time', 'Part-time', 'Weekends', 'Flexible'],
       'start_date' => const [
@@ -836,18 +1017,17 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         CountryLocations.localitiesFor(
           _countryInfo(context.read<AuthBloc>().state),
         ),
-      'equipment_type' => const [
-          'Excavator',
-          'Generator',
-          'Truck',
-          'Concrete mixer',
-        ],
       'service_type' => const [
           'Accounting',
           'Legal support',
           'Tax filing',
           'Business registration',
-          'Driving School & Driver Training',
+          'Business consulting',
+          'HR services',
+          'Engineering consulting',
+          'Architecture',
+          'Business administration',
+          'Project management',
         ],
       'project_type' => const ['Roofing', 'Plumbing', 'Electrical', 'Painting'],
       'agri_item' => const [
@@ -899,14 +1079,69 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         'Somali': l10n.nationalitySomali,
       };
 
+  bool _isLocationField(NeedFormField field) {
+    final key = field.key.toLowerCase();
+    return key.contains('location') || key.contains('city');
+  }
+
   Widget _buildFieldQuickValues(NeedFormField field) {
-    final values = _suggestionsForField(field);
+    if (_categorySlug == 'travel_international' && field.key == 'nationality') {
+      final country = _countryInfo(context.read<AuthBloc>().state);
+      final countryNationality =
+          CountryLocations.nationalitiesFor(country).first;
+      final localizedNationalities =
+          _localizedNationalities(AppLocalizations.of(context)!);
+      final localizedCountryNationality =
+          localizedNationalities[countryNationality] ?? countryNationality;
+
+      return FormSuggestionStrip(
+        label: field.label,
+        suggestions: [localizedCountryNationality, 'Custom'],
+        selectedValue:
+            _dynamicControllers[field.key]?.text.trim() == countryNationality
+                ? localizedCountryNationality
+                : null,
+        onSelected: (value) {
+          if (value == 'Custom') {
+            final controller = _dynamicControllers[field.key]!;
+            if (controller.text.trim() == countryNationality) {
+              controller.clear();
+            }
+            _nationalityFocusNode.requestFocus();
+          } else {
+            _setFieldValue(field, countryNationality);
+          }
+        },
+      );
+    }
+    if (_categorySlug == 'travel_international' &&
+        const {
+          'destination_country',
+          'travel_date',
+          'return_date',
+          'travellers',
+        }.contains(field.key)) {
+      return const SizedBox.shrink();
+    }
+    final presets = NeedFormSchema.presetsForCategory(_categorySlug);
+    final presetLabels =
+        presets.map((preset) => preset.label.trim().toLowerCase()).toSet();
+    final presetValues = presets
+        .map((preset) => preset.details[field.key]?.trim().toLowerCase())
+        .whereType<String>()
+        .where((value) => value.isNotEmpty)
+        .toSet();
+    final values = _suggestionsForField(field).where((value) {
+      final normalized = value.trim().toLowerCase();
+      return !presetLabels.contains(normalized) &&
+          !presetValues.contains(normalized);
+    }).toList();
     if (values.isEmpty) return const SizedBox.shrink();
     final localizedNationalities = field.key == 'nationality'
         ? _localizedNationalities(AppLocalizations.of(context)!)
         : const <String, String>{};
     return FormSuggestionStrip(
-      label: 'Try',
+      label: field.label,
       suggestions: values
           .map((value) => localizedNationalities[value] ?? value)
           .toList(),
@@ -946,28 +1181,41 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     );
   }
 
-  Widget _buildTextInputWithHelpers(NeedFormField field) {
+  Widget _buildTextInputWithHelpers(
+    NeedFormField field, {
+    double bottomPadding = 12,
+  }) {
+    final controller = _dynamicControllers[field.key]!;
+    final isDatePicker = field.type == NeedFieldType.date;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: bottomPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextFormField(
-            controller: _dynamicControllers[field.key],
+            controller: controller,
+            focusNode:
+                field.key == 'nationality' ? _nationalityFocusNode : null,
+            readOnly: isDatePicker,
+            onTap: isDatePicker ? () => _pickDateForField(field) : null,
             keyboardType: field.type == NeedFieldType.number
                 ? TextInputType.number
                 : TextInputType.text,
             inputFormatters: field.type == NeedFieldType.number
                 ? [FilteringTextInputFormatter.digitsOnly]
                 : null,
-            decoration: InputDecoration(
+            decoration: _detailsInputDecoration(
               label: _fieldLabel(field.label, field.guidance),
               hintText: field.hint,
               helperText: field.helperText,
-              suffixIcon: field.type == NeedFieldType.number
-                  ? _buildStepperSuffix(field)
-                  : null,
-              border: const OutlineInputBorder(),
+              suffixIcon: _clearSuffix(
+                controller,
+                trailing: isDatePicker
+                    ? const Icon(Icons.calendar_today_outlined, size: 18)
+                    : field.type == NeedFieldType.number
+                        ? _buildStepperSuffix(field)
+                        : null,
+              ),
             ),
             validator: (val) {
               if (field.isRequired && (val == null || val.trim().isEmpty)) {
@@ -976,7 +1224,151 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
               return null;
             },
           ),
-          _buildFieldQuickValues(field),
+          if (!_isLocationField(field)) _buildFieldQuickValues(field),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickDateForField(NeedFormField field) async {
+    final controller = _dynamicControllers[field.key]!;
+    final locale = Localizations.localeOf(context).toString();
+    DateTime? initialDate;
+    try {
+      initialDate = DateFormat.yMMMd(locale).parseStrict(controller.text);
+    } catch (_) {
+      initialDate = DateTime.tryParse(controller.text);
+    }
+    final today = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate ?? today,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(today.year + 15),
+    );
+    if (picked == null || !mounted) return;
+    controller.text = DateFormat.yMMMd(locale).format(picked);
+  }
+
+  Widget _buildNeedDuration(NeedFormField field) {
+    const durations = ['3', '7', '14', '30', '60'];
+    final controller = _dynamicControllers[field.key]!;
+    final selected =
+        durations.contains(controller.text) ? controller.text : null;
+    return Padding(
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FormSuggestionStrip(
+            label: 'How long do you need it?',
+            topPadding: 0,
+            suggestions: [
+              ...durations.map((value) => '$value days'),
+              'Custom',
+            ],
+            selectedValue: _durationCustomSelected
+                ? 'Custom'
+                : selected == null
+                    ? null
+                    : '$selected days',
+            onSelected: (value) {
+              setState(() {
+                if (value == 'Custom') {
+                  if (!_durationCustomSelected) controller.clear();
+                  _durationCustomSelected = true;
+                } else {
+                  controller.text = value.split(' ').first;
+                  _durationCustomSelected = false;
+                }
+              });
+            },
+          ),
+          Visibility(
+            visible: _durationCustomSelected,
+            maintainState: true,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: TextFormField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: InputDecoration(
+                  hintText: 'Number of days',
+                  suffixText: 'days',
+                  suffixIcon: _clearSuffix(controller),
+                  filled: true,
+                  fillColor:
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+                validator: (value) =>
+                    field.isRequired && (value == null || value.trim().isEmpty)
+                        ? 'Please enter the number of days'
+                        : null,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBooleanNeedField(NeedFormField field) {
+    final theme = Theme.of(context);
+    final isOperator = field.key == 'operator_needed';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isOperator ? 'I need a machine operator' : field.label,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (isOperator || field.helperText != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    isOperator
+                        ? 'Turn on if the machine needs a driver or operator.'
+                        : field.helperText!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Switch.adaptive(
+            value: _dynamicBooleans[field.key] ?? false,
+            onChanged: (value) => setState(() {
+              _dynamicBooleans[field.key] = value;
+            }),
+          ),
         ],
       ),
     );
@@ -987,6 +1379,27 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         index + 1 < fields.length &&
         fields[index].key == 'from_location' &&
         fields[index + 1].key == 'to_location';
+  }
+
+  bool _isTravelDatePairAt(List<NeedFormField> fields, int index) {
+    return _categorySlug == 'travel_international' &&
+        index + 1 < fields.length &&
+        fields[index].key == 'travel_date' &&
+        fields[index + 1].key == 'return_date';
+  }
+
+  bool _isTravelDatePairStart(
+    List<NeedFormField> fields,
+    NeedFormField field,
+  ) =>
+      _isTravelDatePairAt(fields, fields.indexOf(field));
+
+  bool _isTravelDatePairEnd(
+    List<NeedFormField> fields,
+    NeedFormField field,
+  ) {
+    final index = fields.indexOf(field);
+    return index > 0 && _isTravelDatePairAt(fields, index - 1);
   }
 
   bool _isTransportLocationPairStart(
@@ -1112,11 +1525,11 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
               _previewRow(
                 _categorySlug == 'travel_international'
                     ? 'Departure city'
-                    : _countryInfo(authState).regionsLabel,
+                    : 'Location',
                 _effectiveLocation.trim(),
               ),
               _previewRow(
-                'TimeFrame',
+                'Response urgency',
                 _urgencyLabel(l10n, _urgency),
               ),
               _previewRow(
@@ -1247,8 +1660,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           'category_slug': _categorySlug,
           'details': _collectDetails(),
           'budget': _budgetController.text.trim(),
-          'location': _location,
-          'custom_location': _customLocationController.text.trim(),
+          'location': _effectiveLocation,
+          'custom_location': '',
           'urgency': _urgency,
         },
         id: _draftId,
@@ -1294,12 +1707,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       }
     }
 
-    final country = _countryInfo(authState);
     final currency = _currency(authState);
-    if (_location == null && country.regions.isNotEmpty) {
-      _location = country.regions.first;
-    }
-    final selectedLocation = _location ?? country.regions.first;
     final formatter = NumberFormat.decimalPattern(
       intlLocaleName(Localizations.localeOf(context)),
     );
@@ -1314,7 +1722,16 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     final isTravelCategory = _categorySlug == 'travel_international';
     final categoryDescription =
         selectedCategory.descriptionForCountry(countryCode)?.trim();
-    final dynamicFields = NeedFormSchema.fieldsForCategory(_categorySlug);
+    final categoryFields = NeedFormSchema.fieldsForCategory(_categorySlug);
+    final durationField = categoryFields
+        .where((field) => field.key == 'duration_days')
+        .firstOrNull;
+    final dynamicFields = categoryFields
+        .where((field) =>
+            field.key != 'duration_days' &&
+            !(_categorySlug == 'machinery_equipment' &&
+                field.type == NeedFieldType.boolean))
+        .toList();
 
     return PopScope<Object?>(
       canPop: !_hasDraftContent || _allowExit,
@@ -1331,7 +1748,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
             child: Form(
               key: _formKey,
               child: Column(
@@ -1345,348 +1762,410 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     ),
                     const SizedBox(height: 8),
                   ],
-                  InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: _openCategoryDrawer,
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        label: _fieldLabel(
-                          l10n.needsCategoryLabel,
-                          categoryDescription != null &&
-                                  categoryDescription.isNotEmpty
-                              ? categoryDescription
-                              : guidance.specificationHelper,
-                        ),
-                        border: const OutlineInputBorder(),
-                        suffixIcon: const Icon(Icons.expand_more_rounded),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(selectedCategory.icon,
-                              style: const TextStyle(fontSize: 18)),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              _categoryLocalizedName(l10n, _categorySlug),
-                              style: theme.textTheme.bodyLarge,
+                  _sectionCard(
+                    title: 'The basics',
+                    isComplete: _titleController.text.trim().length >= 4 &&
+                        !_titleHasUnfilledPrompt,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: _openCategoryDrawer,
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              label: _fieldLabel(
+                                l10n.needsCategoryLabel,
+                                categoryDescription != null &&
+                                        categoryDescription.isNotEmpty
+                                    ? categoryDescription
+                                    : guidance.specificationHelper,
+                              ),
+                              border: const OutlineInputBorder(),
+                              suffixIcon: const Icon(Icons.expand_more_rounded),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(selectedCategory.icon,
+                                    style: const TextStyle(fontSize: 18)),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    _categoryLocalizedName(l10n, _categorySlug),
+                                    style: theme.textTheme.bodyLarge,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _titleController,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      label: _fieldLabel(
-                        l10n.needsTitleLabel,
-                        guidance.titleHint,
-                      ),
-                      hintText: guidance.titleHint,
-                      border: const OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      final text = value?.trim() ?? '';
-                      if (text.isEmpty) return l10n.validationTitleRequired;
-                      if (text.length < 4) return l10n.validationTitleMinLength;
-                      return null;
-                    },
-                  ),
-                  FormSuggestionStrip(
-                    label: 'Recent',
-                    suggestions: _recentValues((request) => request.title),
-                    onSelected: (value) =>
-                        setState(() => _titleController.text = value),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildStarterPresets(),
-                  const SizedBox(height: 14),
-                  TextFormField(
-                    controller: _specificationController,
-                    minLines: 3,
-                    maxLines: 6,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      label: _fieldLabel(
-                        _categorySlug == 'education_training'
-                            ? 'Course / Subject / Skill'
-                            : l10n.needsSpecificationLabel,
-                        guidance.specificationHelper,
-                      ),
-                      hintText: guidance.specificationHint,
-                      helperText: guidance.specificationHelper,
-                      alignLabelWithHint: true,
-                      border: const OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      final text = value?.trim() ?? '';
-                      if (text.isEmpty) {
-                        return l10n.needsSpecificationRequired;
-                      }
-                      if (text.length < 12) {
-                        return l10n.needsSpecificationMinLength;
-                      }
-                      return null;
-                    },
-                  ),
-                  FormSuggestionStrip(
-                    label: 'Previous text',
-                    suggestions:
-                        _recentValues((request) => request.specification),
-                    onSelected: (value) =>
-                        setState(() => _specificationController.text = value),
-                  ),
-                  if (dynamicFields.isNotEmpty) ...[
-                    const SizedBox(height: 18),
-                    Text(
-                      'Category Specifics',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    for (final field in dynamicFields) ...[
-                      if (_isTransportLocationPairStart(dynamicFields, field))
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: _buildTextInputWithHelpers(field),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _titleController,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: InputDecoration(
+                            label: _fieldLabel(
+                              l10n.needsTitleLabel,
+                              guidance.titleHint,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildTextInputWithHelpers(
-                                dynamicFields[dynamicFields.indexOf(field) + 1],
-                              ),
-                            ),
-                          ],
-                        )
-                      else if (_isTransportLocationPairEnd(
-                          dynamicFields, field))
-                        const SizedBox.shrink()
-                      else if (field.type == NeedFieldType.boolean)
-                        SwitchListTile.adaptive(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(field.label),
-                          subtitle: field.helperText == null
-                              ? null
-                              : Text(field.helperText!),
-                          value: _dynamicBooleans[field.key] ?? false,
-                          onChanged: (val) {
-                            setState(() {
-                              _dynamicBooleans[field.key] = val;
-                            });
+                            hintText: guidance.titleHint,
+                            helperText: _titleHasUnfilledPrompt
+                                ? l10n.needsTitleReplacePrompt
+                                : null,
+                            helperStyle: _titleHasUnfilledPrompt
+                                ? theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.error,
+                                  )
+                                : null,
+                            suffixIcon: _clearSuffix(_titleController),
+                            border: const OutlineInputBorder(),
+                          ),
+                          validator: (value) {
+                            final text = value?.trim() ?? '';
+                            if (text.isEmpty)
+                              return l10n.validationTitleRequired;
+                            if (text.length < 4)
+                              return l10n.validationTitleMinLength;
+                            if (_titleHasUnfilledPrompt) {
+                              return l10n.needsTitleReplacePrompt;
+                            }
+                            return null;
                           },
-                        )
-                      else if (field.options != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildOptionPills(field),
-                              const SizedBox(height: 8),
-                              DropdownButtonFormField<String>(
-                                key: ValueKey(
-                                  '${field.key}-${_dynamicControllers[field.key]?.text ?? ''}',
-                                ),
-                                initialValue: _dynamicControllers[field.key]
-                                            ?.text
-                                            .isEmpty ??
-                                        true
-                                    ? null
-                                    : _dynamicControllers[field.key]?.text,
-                                decoration: InputDecoration(
-                                  label:
-                                      _fieldLabel(field.label, field.guidance),
-                                  hintText: field.hint,
-                                  helperText: field.helperText,
-                                  border: const OutlineInputBorder(),
-                                ),
-                                items: _optionsForField(field)
-                                    .map(
-                                      (option) => DropdownMenuItem(
-                                        value: option,
-                                        child: Text(option),
+                        ),
+                        FormSuggestionStrip(
+                          label: 'Recent',
+                          suggestions:
+                              _recentValues((request) => request.title),
+                          onSelected: (value) =>
+                              setState(() => _titleController.text = value),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildStarterPresets(),
+                      ],
+                    ),
+                  ),
+                  if (durationField != null) ...[
+                    const SizedBox(height: 10),
+                    _sectionCard(
+                      title: 'The numbers',
+                      isComplete: _dynamicControllers[durationField.key]
+                              ?.text
+                              .trim()
+                              .isNotEmpty ==
+                          true,
+                      child: _buildNeedDuration(durationField),
+                    ),
+                  ],
+                  const SizedBox(height: 10),
+                  _sectionCard(
+                    title: 'Details',
+                    isComplete: _specificationIsOptional ||
+                        _specificationController.text.trim().length >= 12,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_categorySlug == 'machinery_equipment') ...[
+                          for (final field in categoryFields)
+                            if (field.type == NeedFieldType.boolean)
+                              _buildBooleanNeedField(field),
+                        ],
+                        if (dynamicFields.isNotEmpty) ...[
+                          if (_categorySlug == 'machinery_equipment')
+                            const SizedBox(height: 12),
+                          for (final field in dynamicFields) ...[
+                            if (_isTravelDatePairStart(dynamicFields, field))
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: _buildTextInputWithHelpers(
+                                      field,
+                                      bottomPadding: 0,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildTextInputWithHelpers(
+                                      dynamicFields[
+                                          dynamicFields.indexOf(field) + 1],
+                                      bottomPadding: 0,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else if (_isTravelDatePairEnd(dynamicFields, field))
+                              const SizedBox.shrink()
+                            else if (_isTransportLocationPairStart(
+                                dynamicFields, field))
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: _buildTextInputWithHelpers(field),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildTextInputWithHelpers(
+                                      dynamicFields[
+                                          dynamicFields.indexOf(field) + 1],
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else if (_isTransportLocationPairEnd(
+                                dynamicFields, field))
+                              const SizedBox.shrink()
+                            else if (field.type == NeedFieldType.boolean)
+                              _buildBooleanNeedField(field)
+                            else if (field.options != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildOptionPills(field),
+                                    const SizedBox(height: 8),
+                                    DropdownButtonFormField<String>(
+                                      key: ValueKey(
+                                        '${field.key}-${_dynamicControllers[field.key]?.text ?? ''}',
                                       ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) {
-                                  _dynamicControllers[field.key]?.text =
-                                      value ?? '';
-                                },
-                                validator: (value) {
-                                  if (field.isRequired &&
-                                      (value == null || value.isEmpty)) {
-                                    return 'Please fill in this requirement';
-                                  }
-                                  return null;
-                                },
+                                      initialValue:
+                                          _dynamicControllers[field.key]
+                                                      ?.text
+                                                      .isEmpty ??
+                                                  true
+                                              ? null
+                                              : _dynamicControllers[field.key]
+                                                  ?.text,
+                                      decoration: _detailsInputDecoration(
+                                        label: _fieldLabel(
+                                            field.label, field.guidance),
+                                        hintText: field.hint,
+                                        helperText: field.helperText,
+                                      ),
+                                      items: _optionsForField(field)
+                                          .map(
+                                            (option) => DropdownMenuItem(
+                                              value: option,
+                                              child: Text(option),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: (value) {
+                                        _dynamicControllers[field.key]?.text =
+                                            value ?? '';
+                                      },
+                                      validator: (value) {
+                                        if (field.isRequired &&
+                                            (value == null || value.isEmpty)) {
+                                          return 'Please fill in this requirement';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else if (field.key == 'duration_days')
+                              _buildNeedDuration(field)
+                            else
+                              _buildTextInputWithHelpers(
+                                field,
+                                bottomPadding:
+                                    _detailsFieldBottomPadding(field),
                               ),
-                            ],
-                          ),
-                        )
-                      else
-                        _buildTextInputWithHelpers(field),
-                    ],
-                  ],
-                  const SizedBox(height: 14),
-                  TextFormField(
-                    controller: _budgetController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: InputDecoration(
-                      label: _fieldLabel(
-                        _categorySlug == 'education_training'
-                            ? 'Maximum Budget ($currency)'
-                            : l10n.needsBudgetLabel(currency),
-                        l10n.needsBudgetHelper,
-                      ),
-                      hintText: l10n.needsBudgetHint,
-                      helperText: l10n.needsBudgetHelper,
-                      suffixIcon: _buildBudgetStepperSuffix(),
-                      border: const OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      final text = value?.trim() ?? '';
-                      if (text.isEmpty) return l10n.validationAmountRequired;
-                      final amount = int.tryParse(text.replaceAll(',', ''));
-                      if (amount == null || amount < 0) {
-                        return l10n.validationValidNumber;
-                      }
-                      return null;
-                    },
-                  ),
-                  FormSuggestionStrip(
-                    label: 'Recent budget',
-                    suggestions: _recentValues(
-                      (request) =>
-                          request.currency == currency && request.budget > 0
-                              ? '$currency ${formatter.format(request.budget)}'
-                              : '',
-                    ),
-                    onSelected: (value) => setState(() {
-                      _budgetController.text =
-                          value.replaceAll(RegExp(r'[^0-9]'), '');
-                    }),
-                  ),
-                  const SizedBox(height: 4),
-                  _buildBudgetShortcuts(currency),
-                  const SizedBox(height: 14),
-                  if (!isTravelCategory) ...[
-                    DropdownButtonFormField<String>(
-                      key: ValueKey('location-$selectedLocation'),
-                      initialValue: selectedLocation,
-                      decoration: InputDecoration(
-                        label: _fieldLabel(
-                          country.regionsLabel,
-                          'Choose the area where you need the service or delivery.',
-                        ),
-                        border: const OutlineInputBorder(),
-                      ),
-                      items: country.regions
-                          .map(
-                            (region) => DropdownMenuItem(
-                              value: region,
-                              child: Text(region),
+                          ],
+                        ],
+                        if (_categorySlug == 'machinery_equipment' ||
+                            _categorySlug == 'transport_logistics' ||
+                            _categorySlug == 'specialized_products' ||
+                            _categorySlug == 'construction_building' ||
+                            _categorySlug == 'professional_services') ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Specification (optional)',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
                             ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _location = value ?? country.regions.first;
-                          _locationTouched = true;
-                          if (_location != 'Other') {
-                            _customLocationController.clear();
-                          }
-                        });
-                      },
-                      validator: (value) => value == null || value.isEmpty
-                          ? l10n.needsLocationRequired
-                          : null,
-                    ),
-                    FormSuggestionStrip(
-                      label: 'Recent',
-                      suggestions: _recentValuesAcrossCategories(
-                              (request) => request.location)
-                          .where(country.regions.contains)
-                          .toList(),
-                      onSelected: (value) => setState(() {
-                        _location = value;
-                        _locationTouched = true;
-                        _customLocationController.clear();
-                      }),
-                    ),
-                    if (selectedLocation == 'Other') ...[
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: _customLocationController,
-                        textCapitalization: TextCapitalization.words,
-                        decoration: InputDecoration(
-                          label: _fieldLabel(
-                            l10n.needsCustomLocationLabel,
-                            l10n.needsCustomLocationHint,
                           ),
-                          hintText: l10n.needsCustomLocationHint,
-                          border: const OutlineInputBorder(),
+                          const SizedBox(height: 4),
+                        ],
+                        TextFormField(
+                          controller: _specificationController,
+                          minLines: 3,
+                          maxLines: 6,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: _detailsInputDecoration(
+                            label: _categorySlug == 'machinery_equipment' ||
+                                    _categorySlug == 'transport_logistics' ||
+                                    _categorySlug == 'specialized_products' ||
+                                    _categorySlug == 'construction_building' ||
+                                    _categorySlug == 'professional_services'
+                                ? null
+                                : _fieldLabel(
+                                    _categorySlug == 'education_training'
+                                        ? 'Course / Subject / Skill'
+                                        : l10n.needsSpecificationLabel,
+                                    guidance.specificationHelper,
+                                  ),
+                            hintText: _categorySlug == 'machinery_equipment'
+                                ? 'Capacity, condition, attachments, or other requirements'
+                                : _categorySlug == 'transport_logistics'
+                                    ? 'Cargo, weight, pickup and drop-off details, or preferred dates'
+                                    : guidance.specificationHint,
+                            helperText: _categorySlug ==
+                                        'machinery_equipment' ||
+                                    _categorySlug == 'transport_logistics'
+                                ? 'The more detail you add, the better the offers.'
+                                : guidance.specificationHelper,
+                            suffixIcon: _clearSuffix(_specificationController),
+                            alignLabelWithHint: true,
+                          ),
+                          validator: (value) {
+                            final text = value?.trim() ?? '';
+                            if (_specificationIsOptional) {
+                              return null;
+                            }
+                            if (text.isEmpty) {
+                              return l10n.needsSpecificationRequired;
+                            }
+                            if (text.length < 12) {
+                              return l10n.needsSpecificationMinLength;
+                            }
+                            return null;
+                          },
                         ),
-                        validator: (value) {
-                          if (selectedLocation != 'Other') return null;
-                          if ((value ?? '').trim().isEmpty) {
-                            return l10n.needsLocationRequired;
-                          }
-                          return null;
-                        },
-                      ),
-                      FormSuggestionStrip(
-                        label: 'Recent',
-                        suggestions: _recentValuesAcrossCategories(
-                          (request) => request.location,
-                        )
-                            .where((value) => !country.regions.contains(value))
-                            .toList(),
-                        onSelected: (value) => setState(
-                          () => _customLocationController.text = value,
-                        ),
-                      ),
-                    ],
-                  ],
-                  const SizedBox(height: 14),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: _openUrgencyDrawer,
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        label: _fieldLabel(
-                          'TimeFrame',
-                          'Choose when you need providers to respond or complete the work.',
-                        ),
-                        border: const OutlineInputBorder(),
-                        suffixIcon: const Icon(Icons.expand_more_rounded),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              _urgencyLabel(l10n, _urgency),
-                              style: theme.textTheme.bodyLarge,
+                        if (_categorySlug != 'machinery_equipment' &&
+                            _categorySlug != 'transport_logistics' &&
+                            _categorySlug != 'construction_building' &&
+                            _categorySlug != 'professional_services')
+                          FormSuggestionStrip(
+                            label: 'Previous text',
+                            suggestions: _recentValues(
+                                (request) => request.specification),
+                            onSelected: (value) => setState(
+                                () => _specificationController.text = value),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _sectionCard(
+                    title: 'Budget and location',
+                    isComplete: _budgetValue() > 0 &&
+                        (isTravelCategory || _effectiveLocation.isNotEmpty),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: _budgetController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          decoration: InputDecoration(
+                            label: _fieldLabel(
+                              _categorySlug == 'education_training'
+                                  ? 'Maximum Budget ($currency)'
+                                  : l10n.needsBudgetLabel(currency),
+                              l10n.needsBudgetHelper,
                             ),
+                            hintText: l10n.needsBudgetHint,
+                            helperText: l10n.needsBudgetHelper,
+                            suffixIcon: _clearSuffix(
+                              _budgetController,
+                              trailing: _buildBudgetStepperSuffix(),
+                            ),
+                            border: const OutlineInputBorder(),
+                          ),
+                          validator: (value) {
+                            final text = value?.trim() ?? '';
+                            if (text.isEmpty)
+                              return l10n.validationAmountRequired;
+                            final amount =
+                                int.tryParse(text.replaceAll(',', ''));
+                            if (amount == null || amount < 0) {
+                              return l10n.validationValidNumber;
+                            }
+                            return null;
+                          },
+                        ),
+                        FormSuggestionStrip(
+                          label: 'Recent budget',
+                          suggestions: _recentValues(
+                            (request) => request.currency == currency &&
+                                    request.budget > 0
+                                ? '$currency ${formatter.format(request.budget)}'
+                                : '',
+                          ),
+                          onSelected: (value) => setState(() {
+                            _budgetController.text =
+                                value.replaceAll(RegExp(r'[^0-9]'), '');
+                          }),
+                        ),
+                        const SizedBox(height: 4),
+                        _buildBudgetShortcuts(currency),
+                        const SizedBox(height: 14),
+                        if (!isTravelCategory) ...[
+                          TextFormField(
+                            controller: _customLocationController,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: InputDecoration(
+                              labelText: 'Location',
+                              hintText: 'e.g. [town or neighborhood]',
+                              helperText:
+                                  'Enter a town, neighborhood, or specific area.',
+                              suffixIcon: _clearSuffix(
+                                _customLocationController,
+                              ),
+                              border: const OutlineInputBorder(),
+                            ),
+                            onChanged: (value) => setState(() {
+                              _location = value;
+                              _locationTouched = true;
+                            }),
+                            validator: (value) => (value ?? '').trim().isEmpty
+                                ? l10n.needsLocationRequired
+                                : null,
                           ),
                         ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    l10n.needsBudgetPreview(
-                      currency,
-                      formatter.format(_budgetValue()),
-                    ),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                        const SizedBox(height: 14),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: _openUrgencyDrawer,
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              label: _fieldLabel(
+                                'Response urgency',
+                                'How soon should providers contact you?',
+                              ),
+                              border: const OutlineInputBorder(),
+                              suffixIcon: const Icon(Icons.expand_more_rounded),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    _urgencyLabel(l10n, _urgency),
+                                    style: theme.textTheme.bodyLarge,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        Text(
+                          l10n.needsBudgetPreview(
+                            currency,
+                            formatter.format(_budgetValue()),
+                          ),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

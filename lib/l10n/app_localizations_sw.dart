@@ -2543,6 +2543,13 @@ class AppLocalizationsSw extends AppLocalizations {
   String get needsTitleHint => 'mf. Seti ya sola kwa duka langu';
 
   @override
+  String get needsTitleReplacePrompt =>
+      'Badilisha maandishi yaliyo kwenye mabano ya mraba kwa maelezo yako.';
+
+  @override
+  String get clearInput => 'Futa';
+
+  @override
   String get needsCategoryLabel => 'Aina';
 
   @override
@@ -4044,4 +4051,33 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get companyLeaveDiscard => 'Tupa mabadiliko';
+
+  @override
+  String get unsavedRequestTitle => 'Uondoke kwenye ombi hili?';
+
+  @override
+  String get unsavedRequestMessage =>
+      'Una mabadiliko ambayo hayajahifadhiwa. Hifadhi rasimu kabla ya kuondoka, au uyatupe.';
+
+  @override
+  String get unsavedRequestStay => 'Baki';
+
+  @override
+  String get unsavedRequestDiscard => 'Tupa';
+
+  @override
+  String get unsavedRequestSaveDraft => 'Hifadhi rasimu';
+
+  @override
+  String get unsavedRequestSaveTitle => 'Hifadhi ombi hili kama rasimu?';
+
+  @override
+  String get unsavedRequestResumeMessage =>
+      'Unaweza kuendelea nalo baadaye kwenye Rasimu zako.';
+
+  @override
+  String get showMore => 'Zaidi';
+
+  @override
+  String get showLess => 'Punguza';
 }

@@ -1216,6 +1216,8 @@
   "needsRequestTitle": "Ubusabe bw'ibikenewe",
   "createNeedsRequestTitle": "Tanga ubusabe bw'Ibikenewe",
   "needsTitleLabel": "Umutwe w'icyo ukeneye",
+  "needsTitleReplacePrompt": "Simbuza amagambo ari mu dukubo n’amakuru yawe.",
+  "clearInput": "Siba",
   "needsTitleHint": "urug. ibikoresho bya sola ku iduka ryanjye",
   "needsCategoryLabel": "Icyiciro",
   "needsSpecificationLabel": "Ibisobanuro",
@@ -1744,5 +1746,14 @@
   "companyLeaveSelectionsMessage": "Serivisi n’imirimo wahisemo ntibirabikwa.",
   "companyLeaveDetailsMessage": "Amakuru y’ikigo n’ibyo wahisemo ntibirabikwa.",
   "companyLeaveKeepEditing": "Komeza guhindura",
-  "companyLeaveDiscard": "Hagarika ibyahinduwe"
+  "companyLeaveDiscard": "Hagarika ibyahinduwe",
+  "unsavedRequestTitle": "Uve muri iki cyifuzo?",
+  "unsavedRequestMessage": "Ufite ibyo wahinduye bitabitswe. Bika nk'inyandiko y'agateganyo mbere yo kugenda, cyangwa ubireke.",
+  "unsavedRequestStay": "Guma hano",
+  "unsavedRequestDiscard": "Reka ibyo wahinduye",
+  "unsavedRequestSaveDraft": "Bika inyandiko y'agateganyo",
+  "unsavedRequestSaveTitle": "Ubike iki cyifuzo nk'inyandiko y'agateganyo?",
+  "unsavedRequestResumeMessage": "Ushobora kugikomeza nyuma mu nyandiko z'agateganyo zawe.",
+  "showMore": "Ibindi",
+  "showLess": "Bike"
 }

@@ -2541,6 +2541,13 @@ class AppLocalizationsRw extends AppLocalizations {
   String get needsTitleHint => 'urug. ibikoresho bya sola ku iduka ryanjye';
 
   @override
+  String get needsTitleReplacePrompt =>
+      'Simbuza amagambo ari mu dukubo n’amakuru yawe.';
+
+  @override
+  String get clearInput => 'Siba';
+
+  @override
   String get needsCategoryLabel => 'Icyiciro';
 
   @override
@@ -4051,4 +4058,34 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get companyLeaveDiscard => 'Hagarika ibyahinduwe';
+
+  @override
+  String get unsavedRequestTitle => 'Uve muri iki cyifuzo?';
+
+  @override
+  String get unsavedRequestMessage =>
+      'Ufite ibyo wahinduye bitabitswe. Bika nk\'inyandiko y\'agateganyo mbere yo kugenda, cyangwa ubireke.';
+
+  @override
+  String get unsavedRequestStay => 'Guma hano';
+
+  @override
+  String get unsavedRequestDiscard => 'Reka ibyo wahinduye';
+
+  @override
+  String get unsavedRequestSaveDraft => 'Bika inyandiko y\'agateganyo';
+
+  @override
+  String get unsavedRequestSaveTitle =>
+      'Ubike iki cyifuzo nk\'inyandiko y\'agateganyo?';
+
+  @override
+  String get unsavedRequestResumeMessage =>
+      'Ushobora kugikomeza nyuma mu nyandiko z\'agateganyo zawe.';
+
+  @override
+  String get showMore => 'Ibindi';
+
+  @override
+  String get showLess => 'Bike';
 }

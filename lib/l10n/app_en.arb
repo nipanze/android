@@ -1261,6 +1261,8 @@
   "createNeedsRequestTitle": "Post a Needs request",
   "needsTitleLabel": "Need title",
   "needsTitleHint": "e.g. Solar kit for my shop",
+  "needsTitleReplacePrompt": "Replace the bracketed text with your details.",
+  "clearInput": "Clear",
   "needsCategoryLabel": "Category",
   "needsSpecificationLabel": "Specification",
   "needsSpecificationHint": "Describe what you need, quantity, quality, and any delivery expectations.",
@@ -1840,5 +1842,14 @@
   "companyLeaveSelectionsMessage": "Your selected services and roles have not been saved.",
   "companyLeaveDetailsMessage": "Your company details and selections have not been saved.",
   "companyLeaveKeepEditing": "Keep editing",
-  "companyLeaveDiscard": "Discard changes"
+  "companyLeaveDiscard": "Discard changes",
+  "unsavedRequestTitle": "Leave this request?",
+  "unsavedRequestMessage": "You have unsaved changes. Save a draft before leaving, or discard them.",
+  "unsavedRequestStay": "Stay",
+  "unsavedRequestDiscard": "Discard",
+  "unsavedRequestSaveDraft": "Save Draft",
+  "unsavedRequestSaveTitle": "Save this request as a draft?",
+  "unsavedRequestResumeMessage": "You can resume it later from Your drafts.",
+  "showMore": "More",
+  "showLess": "Less"
 }

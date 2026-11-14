@@ -2528,6 +2528,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get needsTitleHint => 'e.g. Solar kit for my shop';
 
   @override
+  String get needsTitleReplacePrompt =>
+      'Replace the bracketed text with your details.';
+
+  @override
+  String get clearInput => 'Clear';
+
+  @override
   String get needsCategoryLabel => 'Category';
 
   @override
@@ -4029,4 +4036,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get companyLeaveDiscard => 'Discard changes';
+
+  @override
+  String get unsavedRequestTitle => 'Leave this request?';
+
+  @override
+  String get unsavedRequestMessage =>
+      'You have unsaved changes. Save a draft before leaving, or discard them.';
+
+  @override
+  String get unsavedRequestStay => 'Stay';
+
+  @override
+  String get unsavedRequestDiscard => 'Discard';
+
+  @override
+  String get unsavedRequestSaveDraft => 'Save Draft';
+
+  @override
+  String get unsavedRequestSaveTitle => 'Save this request as a draft?';
+
+  @override
+  String get unsavedRequestResumeMessage =>
+      'You can resume it later from Your drafts.';
+
+  @override
+  String get showMore => 'More';
+
+  @override
+  String get showLess => 'Less';
 }

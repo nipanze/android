@@ -1223,6 +1223,8 @@
   "needsRequestTitle": "Demande de besoin",
   "createNeedsRequestTitle": "Publier une demande de besoin",
   "needsTitleLabel": "Titre du besoin",
+  "needsTitleReplacePrompt": "Remplacez le texte entre crochets par vos informations.",
+  "clearInput": "Effacer",
   "needsTitleHint": "ex. Kit solaire pour ma boutique",
   "needsCategoryLabel": "Catégorie",
   "needsSpecificationLabel": "Spécification",
@@ -1751,5 +1753,14 @@
   "companyLeaveSelectionsMessage": "Les services et rôles sélectionnés ne sont pas enregistrés.",
   "companyLeaveDetailsMessage": "Les détails de l’entreprise et vos sélections ne sont pas enregistrés.",
   "companyLeaveKeepEditing": "Continuer la modification",
-  "companyLeaveDiscard": "Abandonner les modifications"
+  "companyLeaveDiscard": "Abandonner les modifications",
+  "unsavedRequestTitle": "Quitter cette demande ?",
+  "unsavedRequestMessage": "Vous avez des modifications non enregistrées. Enregistrez un brouillon avant de partir ou abandonnez-les.",
+  "unsavedRequestStay": "Rester",
+  "unsavedRequestDiscard": "Abandonner",
+  "unsavedRequestSaveDraft": "Enregistrer le brouillon",
+  "unsavedRequestSaveTitle": "Enregistrer cette demande comme brouillon ?",
+  "unsavedRequestResumeMessage": "Vous pourrez la reprendre plus tard dans Vos brouillons.",
+  "showMore": "Plus",
+  "showLess": "Moins"
 }

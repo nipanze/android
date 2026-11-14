@@ -131,7 +131,7 @@ class _PositionsView extends StatefulWidget {
 }
 
 class _PositionsViewState extends State<_PositionsView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tc;
   bool _loanProductsEnabled = false;
 

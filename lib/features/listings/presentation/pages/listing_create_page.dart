@@ -366,14 +366,24 @@ class _ListingCreatePageState extends State<ListingCreatePage>
       _preferredBankController.text.trim().isNotEmpty;
 
   void _scheduleDraftSave() {
-    if (!mounted || _draftLoading || _submitting || !_hasDraftContent) return;
+    // A new request becomes a draft only after the user explicitly saves it.
+    // Existing drafts continue to autosave edits.
+    if (!mounted ||
+        _draftId == null ||
+        _draftLoading ||
+        _submitting ||
+        !_hasDraftContent) {
+      return;
+    }
     _draftRevision++;
     _draftSaveTimer?.cancel();
     _draftSaveTimer = Timer(const Duration(milliseconds: 250), _autoSaveDraft);
   }
 
   Future<void> _autoSaveDraft() async {
-    if (!mounted || _draftLoading || !_hasDraftContent) return;
+    if (!mounted || _draftId == null || _draftLoading || !_hasDraftContent) {
+      return;
+    }
     if (_savingDraft) {
       _draftSaveTimer =
           Timer(const Duration(milliseconds: 250), _autoSaveDraft);
@@ -532,7 +542,7 @@ class _ListingCreatePageState extends State<ListingCreatePage>
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
       _draftSaveTimer?.cancel();
-      unawaited(_saveLoanDraft());
+      if (_draftId != null) unawaited(_saveLoanDraft());
     }
   }
 
@@ -1069,14 +1079,12 @@ class _ListingCreatePageState extends State<ListingCreatePage>
     }
     // ── Normal multi-step form ─────────────────────────────────────────────
 
-    return Theme(
-      data: AppTheme.lightTheme,
-      child: PopScope<Object?>(
-        canPop: _allowExit,
-        onPopInvokedWithResult: (didPop, _) {
-          if (!didPop) _confirmLoanExit();
-        },
-        child: Scaffold(
+    return PopScope<Object?>(
+      canPop: _allowExit,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmLoanExit();
+      },
+      child: Scaffold(
           body: SafeArea(
             child: Column(
               children: [
@@ -1107,7 +1115,6 @@ class _ListingCreatePageState extends State<ListingCreatePage>
             ),
           ),
           bottomNavigationBar: _buildBottomBar(),
-        ),
       ),
     );
   }
@@ -1290,6 +1297,18 @@ class _ListingCreatePageState extends State<ListingCreatePage>
       category['name']?.toString() ??
       '';
 
+  BoxDecoration _loanInputBoxDecoration({bool hasError = false}) {
+    final colors = Theme.of(context).colorScheme;
+    const radius = BorderRadius.all(Radius.circular(12));
+    return BoxDecoration(
+      color: colors.surfaceContainerHighest,
+      borderRadius: radius,
+      border: hasError
+          ? Border.all(color: colors.error, width: 1.5)
+          : null,
+    );
+  }
+
   Widget _catalogPurposeField() => FormField<String>(
         key: ValueKey('loan-purpose-${_loanProductPurpose ?? 'empty'}'),
         initialValue: _loanProductPurpose,
@@ -1310,16 +1329,16 @@ class _ListingCreatePageState extends State<ListingCreatePage>
               Text(
                 'Purpose',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.text2Light,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w500,
                     ),
               ),
               const SizedBox(height: 6),
               Material(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(12),
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(12),
                   onTap: () async {
                     final selection = await _openLoanPurposePicker();
                     if (selection == null || !field.mounted) return;
@@ -1330,14 +1349,8 @@ class _ListingCreatePageState extends State<ListingCreatePage>
                     constraints: const BoxConstraints(minHeight: 50),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: field.hasError
-                            ? Theme.of(context).colorScheme.error
-                            : AppColors.borderLight,
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(6),
+                    decoration: _loanInputBoxDecoration(
+                      hasError: field.hasError,
                     ),
                     child: Row(
                       children: [
@@ -1523,7 +1536,7 @@ class _ListingCreatePageState extends State<ListingCreatePage>
                   decoration: InputDecoration(
                     labelText: l10n?.requestTitleLabel ?? 'Request title',
                     hintText: l10n?.requestTitleHint ??
-                        'e.g. Delivery van for Kampala route',
+                        'e.g. Delivery van for [route]',
                   ),
                   validator: (value) {
                     if (_selectedPurpose != 'Other') return null;
@@ -1600,14 +1613,7 @@ class _ListingCreatePageState extends State<ListingCreatePage>
                         const SizedBox(height: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            color: AppColors.bg3Light,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: AppColors.borderLight,
-                              width: 1,
-                            ),
-                          ),
+                          decoration: _loanInputBoxDecoration(),
                           child: Row(
                             children: [
                               Text(currency),
@@ -1683,14 +1689,7 @@ class _ListingCreatePageState extends State<ListingCreatePage>
                         const SizedBox(height: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            color: AppColors.bg3Light,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: AppColors.borderLight,
-                              width: 1,
-                            ),
-                          ),
+                          decoration: _loanInputBoxDecoration(),
                           child: Row(
                             children: [
                               Expanded(
@@ -1822,7 +1821,7 @@ class _ListingCreatePageState extends State<ListingCreatePage>
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   labelText: 'Location',
-                  hintText: 'e.g. Kampala, Central',
+                  hintText: 'e.g. [town or neighborhood]',
                 ),
                 onChanged: (value) => setState(() => _district = value),
                 validator: (value) => value == null || value.trim().isEmpty
@@ -3121,17 +3120,21 @@ class _LoanPurposePickerSheetState extends State<_LoanPurposePickerSheet> {
                         icon: const Icon(Icons.close),
                       ),
                 filled: true,
-                fillColor: AppColors.bg3Light,
+                fillColor: theme.colorScheme.surfaceContainerHighest,
                 isDense: true,
                 contentPadding:
                     const EdgeInsets.symmetric(vertical: 13, horizontal: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.borderLight),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outlineVariant,
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.borderLight),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outlineVariant,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -3199,7 +3202,8 @@ class _LoanPurposePickerSheetState extends State<_LoanPurposePickerSheet> {
                           separatorBuilder: (_, __) => Divider(
                             height: 1,
                             thickness: 1,
-                            color: AppColors.borderLight.withValues(alpha: .72),
+                            color: theme.colorScheme.outlineVariant
+                                .withValues(alpha: .72),
                           ),
                           itemBuilder: (context, index) {
                             final row = _visibleCategories[index];
@@ -3279,7 +3283,8 @@ class _LoanPurposePickerSheetState extends State<_LoanPurposePickerSheet> {
                           separatorBuilder: (_, __) => Divider(
                             height: 1,
                             thickness: 1,
-                            color: AppColors.borderLight.withValues(alpha: .72),
+                            color: theme.colorScheme.outlineVariant
+                                .withValues(alpha: .72),
                           ),
                           itemBuilder: (context, index) {
                             final row = _visiblePurposes[index];

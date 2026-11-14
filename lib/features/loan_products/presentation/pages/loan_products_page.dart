@@ -687,19 +687,25 @@ class _LoanProductFormPageState extends State<LoanProductFormPage> {
     }
     setState(() => _saving = true);
     try {
-      _productId = await _repository.saveDraft(
-        productId: _productId,
-        payload: _payload(step: nextStep),
-      );
+      // Moving between steps in a new product form is not an explicit draft
+      // save. Existing saved products can keep their progress up to date.
+      if (_productId != null) {
+        _productId = await _repository.saveDraft(
+          productId: _productId,
+          payload: _payload(step: nextStep),
+        );
+      }
       if (!mounted) return;
       if (_step == 0) await _loadPurposes();
       setState(() {
         _step = nextStep;
         _saving = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(loanProductText(context, 'draft_saved'))),
-      );
+      if (_productId != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loanProductText(context, 'draft_saved'))),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);

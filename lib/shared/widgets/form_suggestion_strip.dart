@@ -7,12 +7,14 @@ class FormSuggestionStrip extends StatelessWidget {
     required this.onSelected,
     this.label = 'Suggestions',
     this.selectedValue,
+    this.topPadding = 10,
   });
 
   final List<String> suggestions;
   final ValueChanged<String> onSelected;
   final String label;
   final String? selectedValue;
+  final double topPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class FormSuggestionStrip extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
+      padding: EdgeInsets.only(top: topPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

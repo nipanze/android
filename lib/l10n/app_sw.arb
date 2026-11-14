@@ -1216,6 +1216,8 @@
   "needsRequestTitle": "Ombi la mahitaji",
   "createNeedsRequestTitle": "Tuma ombi la Mahitaji",
   "needsTitleLabel": "Kichwa cha hitaji",
+  "needsTitleReplacePrompt": "Badilisha maandishi yaliyo kwenye mabano ya mraba kwa maelezo yako.",
+  "clearInput": "Futa",
   "needsTitleHint": "mf. Seti ya sola kwa duka langu",
   "needsCategoryLabel": "Aina",
   "needsSpecificationLabel": "Maelezo",
@@ -1744,5 +1746,14 @@
   "companyLeaveSelectionsMessage": "Huduma na majukumu uliyochagua bado hayajahifadhiwa.",
   "companyLeaveDetailsMessage": "Maelezo ya kampuni na chaguo zako bado hayajahifadhiwa.",
   "companyLeaveKeepEditing": "Endelea kuhariri",
-  "companyLeaveDiscard": "Tupa mabadiliko"
+  "companyLeaveDiscard": "Tupa mabadiliko",
+  "unsavedRequestTitle": "Uondoke kwenye ombi hili?",
+  "unsavedRequestMessage": "Una mabadiliko ambayo hayajahifadhiwa. Hifadhi rasimu kabla ya kuondoka, au uyatupe.",
+  "unsavedRequestStay": "Baki",
+  "unsavedRequestDiscard": "Tupa",
+  "unsavedRequestSaveDraft": "Hifadhi rasimu",
+  "unsavedRequestSaveTitle": "Hifadhi ombi hili kama rasimu?",
+  "unsavedRequestResumeMessage": "Unaweza kuendelea nalo baadaye kwenye Rasimu zako.",
+  "showMore": "Zaidi",
+  "showLess": "Punguza"
 }

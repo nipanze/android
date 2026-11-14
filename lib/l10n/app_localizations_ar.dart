@@ -2515,6 +2515,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get needsTitleHint => 'مثال: مجموعة طاقة شمسية لمتجري';
 
   @override
+  String get needsTitleReplacePrompt =>
+      'استبدل النص بين الأقواس المربعة بتفاصيلك.';
+
+  @override
+  String get clearInput => 'مسح';
+
+  @override
   String get needsCategoryLabel => 'الفئة';
 
   @override
@@ -4030,4 +4037,33 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get companyLeaveDiscard => 'تجاهل التغييرات';
+
+  @override
+  String get unsavedRequestTitle => 'هل تريد مغادرة هذا الطلب؟';
+
+  @override
+  String get unsavedRequestMessage =>
+      'لديك تغييرات غير محفوظة. احفظها كمسودة قبل المغادرة أو تجاهلها.';
+
+  @override
+  String get unsavedRequestStay => 'البقاء';
+
+  @override
+  String get unsavedRequestDiscard => 'تجاهل';
+
+  @override
+  String get unsavedRequestSaveDraft => 'حفظ كمسودة';
+
+  @override
+  String get unsavedRequestSaveTitle => 'هل تريد حفظ هذا الطلب كمسودة؟';
+
+  @override
+  String get unsavedRequestResumeMessage =>
+      'يمكنك متابعة الطلب لاحقاً من مسوداتك.';
+
+  @override
+  String get showMore => 'المزيد';
+
+  @override
+  String get showLess => 'أقل';
 }

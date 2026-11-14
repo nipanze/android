@@ -2566,6 +2566,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get needsTitleHint => 'ex. Kit solaire pour ma boutique';
 
   @override
+  String get needsTitleReplacePrompt =>
+      'Remplacez le texte entre crochets par vos informations.';
+
+  @override
+  String get clearInput => 'Effacer';
+
+  @override
   String get needsCategoryLabel => 'Catégorie';
 
   @override
@@ -4084,4 +4091,34 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get companyLeaveDiscard => 'Abandonner les modifications';
+
+  @override
+  String get unsavedRequestTitle => 'Quitter cette demande ?';
+
+  @override
+  String get unsavedRequestMessage =>
+      'Vous avez des modifications non enregistrées. Enregistrez un brouillon avant de partir ou abandonnez-les.';
+
+  @override
+  String get unsavedRequestStay => 'Rester';
+
+  @override
+  String get unsavedRequestDiscard => 'Abandonner';
+
+  @override
+  String get unsavedRequestSaveDraft => 'Enregistrer le brouillon';
+
+  @override
+  String get unsavedRequestSaveTitle =>
+      'Enregistrer cette demande comme brouillon ?';
+
+  @override
+  String get unsavedRequestResumeMessage =>
+      'Vous pourrez la reprendre plus tard dans Vos brouillons.';
+
+  @override
+  String get showMore => 'Plus';
+
+  @override
+  String get showLess => 'Moins';
 }

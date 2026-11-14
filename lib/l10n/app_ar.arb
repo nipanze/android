@@ -1216,6 +1216,8 @@
   "needsRequestTitle": "طلب احتياجات",
   "createNeedsRequestTitle": "نشر طلب احتياجات",
   "needsTitleLabel": "عنوان الاحتياج",
+  "needsTitleReplacePrompt": "استبدل النص بين الأقواس المربعة بتفاصيلك.",
+  "clearInput": "مسح",
   "needsTitleHint": "مثال: مجموعة طاقة شمسية لمتجري",
   "needsCategoryLabel": "الفئة",
   "needsSpecificationLabel": "المواصفات",
@@ -1744,5 +1746,14 @@
   "companyLeaveSelectionsMessage": "لم يتم حفظ الخدمات والأدوار التي اخترتها.",
   "companyLeaveDetailsMessage": "لم يتم حفظ تفاصيل الشركة واختياراتك.",
   "companyLeaveKeepEditing": "متابعة التعديل",
-  "companyLeaveDiscard": "تجاهل التغييرات"
+  "companyLeaveDiscard": "تجاهل التغييرات",
+  "unsavedRequestTitle": "هل تريد مغادرة هذا الطلب؟",
+  "unsavedRequestMessage": "لديك تغييرات غير محفوظة. احفظها كمسودة قبل المغادرة أو تجاهلها.",
+  "unsavedRequestStay": "البقاء",
+  "unsavedRequestDiscard": "تجاهل",
+  "unsavedRequestSaveDraft": "حفظ كمسودة",
+  "unsavedRequestSaveTitle": "هل تريد حفظ هذا الطلب كمسودة؟",
+  "unsavedRequestResumeMessage": "يمكنك متابعة الطلب لاحقاً من مسوداتك.",
+  "showMore": "المزيد",
+  "showLess": "أقل"
 }

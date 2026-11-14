@@ -216,28 +216,11 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
       return;
     }
     setState(() => _modalOpen = true);
-    final choice = await showDialog<String>(
+    final l10n = AppLocalizations.of(context)!;
+    final choice = await NeedDraftExitGuard.showPrompt(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Save this request as a draft?'),
-        content: const Text(
-          'You can resume it later from Your drafts.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, 'stay'),
-            child: const Text('Keep editing'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, 'discard'),
-            child: const Text('Discard'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, 'save'),
-            child: const Text('Save draft'),
-          ),
-        ],
-      ),
+      title: l10n.unsavedRequestSaveTitle,
+      message: l10n.unsavedRequestResumeMessage,
     );
     if (mounted) setState(() => _modalOpen = false);
     if (!mounted || choice == null || choice == 'stay') return;

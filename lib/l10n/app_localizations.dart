@@ -4624,6 +4624,18 @@ abstract class AppLocalizations {
   /// **'e.g. Solar kit for my shop'**
   String get needsTitleHint;
 
+  /// No description provided for @needsTitleReplacePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace the bracketed text with your details.'**
+  String get needsTitleReplacePrompt;
+
+  /// No description provided for @clearInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearInput;
+
   /// No description provided for @needsCategoryLabel.
   ///
   /// In en, this message translates to:
@@ -7209,6 +7221,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Discard changes'**
   String get companyLeaveDiscard;
+
+  /// No description provided for @unsavedRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this request?'**
+  String get unsavedRequestTitle;
+
+  /// No description provided for @unsavedRequestMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes. Save a draft before leaving, or discard them.'**
+  String get unsavedRequestMessage;
+
+  /// No description provided for @unsavedRequestStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get unsavedRequestStay;
+
+  /// No description provided for @unsavedRequestDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get unsavedRequestDiscard;
+
+  /// No description provided for @unsavedRequestSaveDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Draft'**
+  String get unsavedRequestSaveDraft;
+
+  /// No description provided for @unsavedRequestSaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this request as a draft?'**
+  String get unsavedRequestSaveTitle;
+
+  /// No description provided for @unsavedRequestResumeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You can resume it later from Your drafts.'**
+  String get unsavedRequestResumeMessage;
+
+  /// No description provided for @showMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get showMore;
+
+  /// No description provided for @showLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Less'**
+  String get showLess;
 }
 
 class _AppLocalizationsDelegate
