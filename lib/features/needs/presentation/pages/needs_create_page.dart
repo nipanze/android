@@ -43,7 +43,21 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   final _specificationController = TextEditingController();
   final _budgetController = TextEditingController();
   final _customLocationController = TextEditingController();
-  final _nationalityFocusNode = FocusNode();
+  final Map<String, FocusNode> _compactChoiceFocusNodes = {
+    'nationality': FocusNode(),
+    'purpose': FocusNode(),
+    'visa_type': FocusNode(),
+    'agri_item': FocusNode(),
+    'volume_or_acres': FocusNode(),
+    'system_type': FocusNode(),
+    'subject_or_skill': FocusNode(),
+    'training_level': FocusNode(),
+    'preferred_format': FocusNode(),
+    'max_travel_distance': FocusNode(),
+    'start_date': FocusNode(),
+    'duration': FocusNode(),
+    'schedule': FocusNode(),
+  };
 
   final Map<String, TextEditingController> _dynamicControllers = {};
   final Map<String, bool> _dynamicBooleans = {};
@@ -58,7 +72,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   String? _location;
   bool _locationTouched = false;
   bool _durationCustomSelected = false;
-  bool _showAllStarterPresets = false;
+  final Set<String> _customChoiceFields = {};
   final int _starterPresetSeed = Random().nextInt(1 << 30);
   bool _submitting = false;
   bool _savingDraft = false;
@@ -201,7 +215,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     _specificationController.dispose();
     _budgetController.dispose();
     _customLocationController.dispose();
-    _nationalityFocusNode.dispose();
+    for (final focusNode in _compactChoiceFocusNodes.values) {
+      focusNode.dispose();
+    }
     for (final controller in _dynamicControllers.values) {
       controller.dispose();
     }
@@ -263,9 +279,15 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
 
   bool get _specificationIsOptional => const {
         'machinery_equipment',
+        'travel_international',
+        'agriculture_agribusiness',
         'specialized_products',
         'construction_building',
         'professional_services',
+        'energy_utilities',
+        'technology_digital',
+        'marketing_promotion',
+        'education_training',
       }.contains(_categorySlug);
 
   bool get _titleHasUnfilledPrompt =>
@@ -355,7 +377,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       _locationTouched = false;
       _urgency = 'Within 30 days';
       _durationCustomSelected = false;
-      _showAllStarterPresets = false;
+      _customChoiceFields.clear();
       for (final controller in _dynamicControllers.values) {
         controller.clear();
       }
@@ -556,6 +578,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       _titleController.text = _presetTitleVariant(preset.title, tapCount);
       _specificationController.text = preset.specification;
       _durationCustomSelected = false;
+      _customChoiceFields.clear();
       for (final field in NeedFormSchema.fieldsForCategory(_categorySlug)) {
         if (field.type == NeedFieldType.boolean) {
           _dynamicBooleans[field.key] = false;
@@ -584,55 +607,87 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   String _presetTitleVariant(String title, int tapCount) {
     late final String firstAlternative;
     late final String secondAlternative;
-    if (title.startsWith('I need to ')) {
+    late final String thirdAlternative;
+    if (title.startsWith('Our school needs ')) {
+      final request = title.substring('Our school needs '.length);
+      firstAlternative = 'Our school wants $request';
+      secondAlternative = 'We are looking for $request';
+      thirdAlternative = 'Our school is looking for $request';
+    } else if (title.startsWith('Our institution needs ')) {
+      final request = title.substring('Our institution needs '.length);
+      firstAlternative = 'Our institution wants $request';
+      secondAlternative = 'We are looking for $request';
+      thirdAlternative = 'Our institution is looking for $request';
+    } else if (title.startsWith('I need to ')) {
       final request = title.substring('I need to '.length);
-      firstAlternative = 'Looking to $request';
-      secondAlternative = 'Need to $request';
+      firstAlternative = 'I want to $request';
+      secondAlternative = 'Looking to $request';
+      thirdAlternative = 'Need to $request';
     } else if (title.startsWith('I need ')) {
       final request = title.substring('I need '.length);
-      firstAlternative = 'Looking for $request';
-      secondAlternative = 'Need $request';
+      firstAlternative = 'I want $request';
+      secondAlternative = 'Looking for $request';
+      thirdAlternative = 'Need $request';
     } else if (title.startsWith('I want to ')) {
       final request = title.substring('I want to '.length);
-      firstAlternative = 'Looking to $request';
-      secondAlternative = 'Need to $request';
+      firstAlternative = 'I need to $request';
+      secondAlternative = 'Looking to $request';
+      thirdAlternative = 'Need to $request';
     } else if (title.startsWith('I want ')) {
       final request = title.substring('I want '.length);
-      firstAlternative = 'Looking for $request';
-      secondAlternative = 'Need $request';
+      firstAlternative = 'I need $request';
+      secondAlternative = 'Looking for $request';
+      thirdAlternative = 'Need $request';
     } else if (title.startsWith('Looking for ')) {
       final request = title.substring('Looking for '.length);
       firstAlternative = 'I need $request';
       secondAlternative = 'I want $request';
+      thirdAlternative = 'Need $request';
     } else if (title.startsWith('Looking to ')) {
       final request = title.substring('Looking to '.length);
       firstAlternative = 'I want to $request';
-      secondAlternative = 'Need to $request';
+      secondAlternative = 'I need to $request';
+      thirdAlternative = 'Need to $request';
     } else if (title.startsWith('Need to ')) {
       final request = title.substring('Need to '.length);
       firstAlternative = 'I need to $request';
-      secondAlternative = 'Looking to $request';
+      secondAlternative = 'I want to $request';
+      thirdAlternative = 'Looking to $request';
     } else if (title.startsWith('Need ')) {
       final request = title.substring('Need '.length);
       firstAlternative = 'I need $request';
-      secondAlternative = 'Looking for $request';
+      secondAlternative = 'I want $request';
+      thirdAlternative = 'Looking for $request';
     } else if (title.startsWith('Planning to ')) {
       final request = title.substring('Planning to '.length);
       firstAlternative = 'I want to $request';
-      secondAlternative = 'Looking to $request';
+      secondAlternative = 'I need to $request';
+      thirdAlternative = 'Looking to $request';
     } else if (title.startsWith('Planning a ')) {
       final request = title.substring('Planning a '.length);
       firstAlternative = 'I want to plan a $request';
       secondAlternative = 'Looking to plan a $request';
+      thirdAlternative = 'I need help planning a $request';
     } else if (title.startsWith('Planning ')) {
       final request = title.substring('Planning '.length);
       firstAlternative = 'I want to plan $request';
       secondAlternative = 'Looking to plan $request';
+      thirdAlternative = 'I need help planning $request';
+    } else if (title.startsWith('Find ')) {
+      final request = title.substring('Find '.length);
+      firstAlternative = 'I need $request';
+      secondAlternative = 'I want $request';
+      thirdAlternative = 'Looking for $request';
     } else {
       return title;
     }
 
-    return [title, firstAlternative, secondAlternative][tapCount % 3];
+    return [
+      title,
+      firstAlternative,
+      secondAlternative,
+      thirdAlternative
+    ][tapCount % 4];
   }
 
   List<NeedsListing> get _recentRequestsForCategory => _recentRequests
@@ -669,6 +724,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
 
   void _applyRecentRequest(NeedsListing request) {
     setState(() {
+      _customChoiceFields.clear();
       _titleController.text = request.title;
       _specificationController.text = request.specification;
       if (request.currency == _currency(context.read<AuthBloc>().state)) {
@@ -743,33 +799,25 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       ...presets.take(presetOffset),
     ];
     final allSuggestions = [
-      ...recentSuggestions,
       ...rotatedPresets.map((preset) => preset.label),
+      ...recentSuggestions,
     ];
-    const collapsedSuggestionCount = 5;
-    final hasMore = allSuggestions.length > collapsedSuggestionCount;
-    final suggestions = _showAllStarterPresets
-        ? [
-            ...allSuggestions,
-            if (hasMore) l10n.showLess,
-          ]
-        : [
-            ...allSuggestions.take(collapsedSuggestionCount),
-            if (hasMore) l10n.showMore,
-          ];
+    final moreDescriptions = {
+      for (final preset in presets) preset.label: preset.specification,
+      for (final request in recentRequests.take(2))
+        'Repeat: ${request.title}': 'Reuse your previous request and edit it.',
+    };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         FormSuggestionStrip(
           label: 'Start with',
-          suggestions: suggestions,
+          suggestions: allSuggestions,
+          moreLabel: l10n.showMore,
+          maxVisibleChoices: 3,
+          moreSubtitle: 'Choose a starting point. You can edit it next.',
+          moreDescriptions: moreDescriptions,
           onSelected: (value) {
-            if (value == l10n.showMore || value == l10n.showLess) {
-              setState(() {
-                _showAllStarterPresets = !_showAllStarterPresets;
-              });
-              return;
-            }
             final recent = recentRequests
                 .where((request) => 'Repeat: ${request.title}' == value)
                 .firstOrNull;
@@ -934,21 +982,21 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           _countryInfo(context.read<AuthBloc>().state),
         ),
       'purpose' => const [
-          'Hajj',
-          'Umrah',
           'Tourism',
           'Business',
           'Study',
           'Family visit',
+          'Hajj',
+          'Umrah',
           'Medical',
         ],
       'visa_type' => const [
-          'Hajj visa',
-          'Umrah visa',
           'Tourist visa',
           'Business visa',
-          'Student visa',
           'Transit visa',
+          'Student visa',
+          'Hajj visa',
+          'Umrah visa',
         ],
       'travel_date' || 'return_date' || 'event_date' || 'shoot_date' => const [
           'As soon as possible',
@@ -958,31 +1006,69 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           'Flexible',
         ],
       'duration_days' => const ['3', '7', '14', '30', '60'],
+      'duration' when category == 'education_training' => const [
+          '2 months',
+          '6 months',
+          '1 year',
+          'Flexible',
+        ],
       'duration' => const ['2 weeks', '8 weeks', '3 months', '6 months'],
       'schedule' => const ['Full-time', 'Part-time', 'Weekends', 'Flexible'],
+      'start_date' when category == 'education_training' => const [
+          'As soon as possible',
+          'Next month',
+          'Flexible',
+        ],
       'start_date' => const [
           'As soon as possible',
           'Next week',
           'Next month',
           'Flexible',
         ],
-      'training_type' => const [
-          'Tutoring',
-          'Internship',
-          'Vocational training',
-          'Professional training',
-        ],
       'training_level' => const [
-          'Beginner',
-          'Intermediate',
-          'Advanced',
-          'University',
+          'Kindergarten / Early childhood',
+          'Primary school',
+          'Secondary school',
+          'Tertiary / University',
+          'Vocational / Technical',
+        ],
+      'subject_or_skill' => const [
+          'Mathematics',
+          'English',
+          'Science',
+          'Languages',
+          'Computer studies',
+          'Coding',
+          'Accounting',
+          'Business studies',
+          'Academic writing',
+          'Vocational skill',
+        ],
+      'preferred_format' => const [
+          'Online',
+          'In-person',
+          'Either',
+        ],
+      'max_travel_distance' => const [
+          '2 km',
+          '5 km',
+          '10 km',
+          '20 km',
+          'Anywhere',
         ],
       'preferred_location' => const [
           'Near campus',
           'At home',
           'Provider location',
           'Flexible',
+        ],
+      'timeline'
+          when category == 'technology_digital' ||
+              category == 'marketing_promotion' =>
+        const [
+          '2 weeks',
+          '4 weeks',
+          '8 weeks',
         ],
       'deadline' || 'timeline' => const [
           '1 week',
@@ -1009,9 +1095,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       'venue_location' ||
       'location' ||
       'site_location' ||
-      'farm_location' ||
       'delivery_location' ||
-      'installation_site' ||
       'from_location' ||
       'to_location' =>
         CountryLocations.localitiesFor(
@@ -1031,16 +1115,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         ],
       'project_type' => const ['Roofing', 'Plumbing', 'Electrical', 'Painting'],
       'agri_item' => const [
-          'Seeds',
-          'Fertilizer',
-          'Harvester hire',
-          'Irrigation equipment',
-        ],
-      'tech_requirement' => const [
-          'Website',
-          'Mobile app',
-          'POS system',
-          'CCTV setup',
+          'Soil testing',
+          'Veterinary care',
+          'Farm labour',
         ],
       'production_type' => const [
           'Music video',
@@ -1084,32 +1161,85 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     return key.contains('location') || key.contains('city');
   }
 
+  bool _isCompactChoiceField(NeedFormField field) {
+    if (_categorySlug == 'travel_international') {
+      return const {'nationality', 'purpose', 'visa_type'}.contains(field.key);
+    }
+    return _categorySlug == 'agriculture_agribusiness' &&
+            const {'agri_item', 'volume_or_acres'}.contains(field.key) ||
+        (_categorySlug == 'energy_utilities' && field.key == 'system_type') ||
+        ((_categorySlug == 'technology_digital' ||
+                _categorySlug == 'marketing_promotion') &&
+            field.key == 'timeline') ||
+        (_categorySlug == 'education_training' &&
+            const {
+              'subject_or_skill',
+              'training_level',
+              'preferred_format',
+              'max_travel_distance',
+              'start_date',
+              'duration',
+              'schedule',
+            }.contains(field.key));
+  }
+
   Widget _buildFieldQuickValues(NeedFormField field) {
-    if (_categorySlug == 'travel_international' && field.key == 'nationality') {
-      final country = _countryInfo(context.read<AuthBloc>().state);
-      final countryNationality =
-          CountryLocations.nationalitiesFor(country).first;
+    if (_isCompactChoiceField(field)) {
+      final values = field.key == 'nationality'
+          ? CountryLocations.nationalitiesFor(
+              _countryInfo(context.read<AuthBloc>().state),
+            ).take(3).toList()
+          : _categorySlug == 'education_training'
+              ? _quickValuesForField(field)
+              : _quickValuesForField(field).take(3).toList();
       final localizedNationalities =
           _localizedNationalities(AppLocalizations.of(context)!);
-      final localizedCountryNationality =
-          localizedNationalities[countryNationality] ?? countryNationality;
+      final localizedValues = values
+          .map((value) => field.key == 'nationality'
+              ? localizedNationalities[value] ?? value
+              : value)
+          .toList();
+      final currentValue = _dynamicControllers[field.key]?.text.trim() ?? '';
+      final selectedValue = values.contains(currentValue)
+          ? field.key == 'nationality'
+              ? localizedNationalities[currentValue] ?? currentValue
+              : currentValue
+          : null;
 
       return FormSuggestionStrip(
         label: field.label,
-        suggestions: [localizedCountryNationality, 'Custom'],
+        suggestions: [
+          ...localizedValues,
+          'Custom',
+        ],
+        maxVisibleChoices: _categorySlug == 'education_training' &&
+                const {'training_level', 'subject_or_skill'}.contains(field.key)
+            ? 3
+            : null,
+        topPadding: 0,
         selectedValue:
-            _dynamicControllers[field.key]?.text.trim() == countryNationality
-                ? localizedCountryNationality
-                : null,
+            _customChoiceFields.contains(field.key) ? 'Custom' : selectedValue,
         onSelected: (value) {
           if (value == 'Custom') {
             final controller = _dynamicControllers[field.key]!;
-            if (controller.text.trim() == countryNationality) {
+            if (values.contains(controller.text.trim())) {
               controller.clear();
             }
-            _nationalityFocusNode.requestFocus();
+            setState(() => _customChoiceFields.add(field.key));
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _compactChoiceFocusNodes[field.key]?.requestFocus();
+              }
+            });
           } else {
-            _setFieldValue(field, countryNationality);
+            final selectedIndex = localizedValues.indexOf(value);
+            final storedValue =
+                selectedIndex >= 0 ? values[selectedIndex] : null;
+            if (storedValue == null) return;
+            setState(() {
+              _customChoiceFields.remove(field.key);
+              _dynamicControllers[field.key]?.text = storedValue;
+            });
           }
         },
       );
@@ -1155,6 +1285,60 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     );
   }
 
+  Widget _buildCompactChoiceField(NeedFormField field) {
+    final commonValues = field.key == 'nationality'
+        ? CountryLocations.nationalitiesFor(
+            _countryInfo(context.read<AuthBloc>().state),
+          ).take(3).toSet()
+        : _categorySlug == 'education_training'
+            ? _quickValuesForField(field).toSet()
+            : field.key == 'system_type'
+                ? _quickValuesForField(field).toSet()
+                : _quickValuesForField(field).take(3).toSet();
+    final currentValue = _dynamicControllers[field.key]?.text.trim() ?? '';
+    final showInput = _customChoiceFields.contains(field.key) ||
+        (currentValue.isNotEmpty && !commonValues.contains(currentValue));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildFieldQuickValues(field),
+        if (showInput) ...[
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _dynamicControllers[field.key],
+            focusNode: _compactChoiceFocusNodes[field.key],
+            textCapitalization: TextCapitalization.words,
+            decoration: _detailsInputDecoration(
+              label: const Text('Custom value'),
+              hintText: 'Type your own option',
+              suffixIcon: _clearSuffix(_dynamicControllers[field.key]!),
+            ),
+            validator: (value) {
+              if (field.isRequired && (value == null || value.trim().isEmpty)) {
+                return 'Please fill in this requirement';
+              }
+              return null;
+            },
+          ),
+        ],
+        if (!showInput && field.helperText != null) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Text(
+              field.helperText!,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+          ),
+        ],
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
   Widget _buildStepperSuffix(NeedFormField field) {
     final step = field.key == 'travellers' ? 1 : 1;
     return Row(
@@ -1194,8 +1378,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         children: [
           TextFormField(
             controller: controller,
-            focusNode:
-                field.key == 'nationality' ? _nationalityFocusNode : null,
+            focusNode: _compactChoiceFocusNodes[field.key],
             readOnly: isDatePicker,
             onTap: isDatePicker ? () => _pickDateForField(field) : null,
             keyboardType: field.type == NeedFieldType.number
@@ -1330,46 +1513,49 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   Widget _buildBooleanNeedField(NeedFormField field) {
     final theme = Theme.of(context);
     final isOperator = field.key == 'operator_needed';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isOperator ? 'I need a machine operator' : field.label,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (isOperator || field.helperText != null) ...[
-                  const SizedBox(height: 2),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    isOperator
-                        ? 'Turn on if the machine needs a driver or operator.'
-                        : field.helperText!,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                    isOperator ? 'I need a machine operator' : field.label,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
+                  if (isOperator || field.helperText != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      isOperator
+                          ? 'Turn on if the machine needs a driver or operator.'
+                          : field.helperText!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Switch.adaptive(
-            value: _dynamicBooleans[field.key] ?? false,
-            onChanged: (value) => setState(() {
-              _dynamicBooleans[field.key] = value;
-            }),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Switch.adaptive(
+              value: _dynamicBooleans[field.key] ?? false,
+              onChanged: (value) => setState(() {
+                _dynamicBooleans[field.key] = value;
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1502,9 +1688,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
               ),
               _previewRow(l10n.needsTitleLabel, _titleController.text.trim()),
               _previewRow(
-                _categorySlug == 'education_training'
-                    ? 'Course / Subject / Skill'
-                    : l10n.needsSpecificationLabel,
+                l10n.needsSpecificationLabel,
                 _specificationController.text.trim(),
               ),
               for (final field in dynamicFields)
@@ -1895,6 +2079,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                               )
                             else if (_isTravelDatePairEnd(dynamicFields, field))
                               const SizedBox.shrink()
+                            else if (_isCompactChoiceField(field))
+                              _buildCompactChoiceField(field)
                             else if (_isTransportLocationPairStart(
                                 dynamicFields, field))
                               Row(
@@ -1977,10 +2163,16 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                           ],
                         ],
                         if (_categorySlug == 'machinery_equipment' ||
+                            _categorySlug == 'travel_international' ||
+                            _categorySlug == 'agriculture_agribusiness' ||
+                            _categorySlug == 'energy_utilities' ||
                             _categorySlug == 'transport_logistics' ||
                             _categorySlug == 'specialized_products' ||
                             _categorySlug == 'construction_building' ||
-                            _categorySlug == 'professional_services') ...[
+                            _categorySlug == 'professional_services' ||
+                            _categorySlug == 'technology_digital' ||
+                            _categorySlug == 'marketing_promotion' ||
+                            _categorySlug == 'education_training') ...[
                           const SizedBox(height: 4),
                           Text(
                             'Specification (optional)',
@@ -1998,15 +2190,20 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                           textCapitalization: TextCapitalization.sentences,
                           decoration: _detailsInputDecoration(
                             label: _categorySlug == 'machinery_equipment' ||
+                                    _categorySlug == 'travel_international' ||
+                                    _categorySlug ==
+                                        'agriculture_agribusiness' ||
+                                    _categorySlug == 'energy_utilities' ||
                                     _categorySlug == 'transport_logistics' ||
                                     _categorySlug == 'specialized_products' ||
                                     _categorySlug == 'construction_building' ||
-                                    _categorySlug == 'professional_services'
+                                    _categorySlug == 'professional_services' ||
+                                    _categorySlug == 'technology_digital' ||
+                                    _categorySlug == 'marketing_promotion' ||
+                                    _categorySlug == 'education_training'
                                 ? null
                                 : _fieldLabel(
-                                    _categorySlug == 'education_training'
-                                        ? 'Course / Subject / Skill'
-                                        : l10n.needsSpecificationLabel,
+                                    l10n.needsSpecificationLabel,
                                     guidance.specificationHelper,
                                   ),
                             hintText: _categorySlug == 'machinery_equipment'
@@ -2037,9 +2234,14 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                           },
                         ),
                         if (_categorySlug != 'machinery_equipment' &&
+                            _categorySlug != 'agriculture_agribusiness' &&
+                            _categorySlug != 'energy_utilities' &&
                             _categorySlug != 'transport_logistics' &&
                             _categorySlug != 'construction_building' &&
-                            _categorySlug != 'professional_services')
+                            _categorySlug != 'professional_services' &&
+                            _categorySlug != 'technology_digital' &&
+                            _categorySlug != 'marketing_promotion' &&
+                            _categorySlug != 'education_training')
                           FormSuggestionStrip(
                             label: 'Previous text',
                             suggestions: _recentValues(
@@ -2113,7 +2315,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                             textCapitalization: TextCapitalization.words,
                             decoration: InputDecoration(
                               labelText: 'Location',
-                              hintText: 'e.g. [town or neighborhood]',
+                              hintText: 'Town or neighborhood',
                               helperText:
                                   'Enter a town, neighborhood, or specific area.',
                               suffixIcon: _clearSuffix(

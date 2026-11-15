@@ -1085,36 +1085,36 @@ class _ListingCreatePageState extends State<ListingCreatePage>
         if (!didPop) _confirmLoanExit();
       },
       child: Scaffold(
-          body: SafeArea(
-            child: Column(
-              children: [
-                ListingStepHeader(
-                  title: l10n?.requestALoan ?? 'Request a loan',
-                  subtitle: l10n?.stepCounter(
-                        _step + 1,
-                        4,
-                        _subtitleForStep(),
-                      ) ??
-                      'Step ${_step + 1} of 4 · ${_subtitleForStep()}',
-                  progress: (_step + 1) / 4,
-                  onBack: _step > 0 ? _back : _confirmLoanExit,
+        body: SafeArea(
+          child: Column(
+            children: [
+              ListingStepHeader(
+                title: l10n?.requestALoan ?? 'Request a loan',
+                subtitle: l10n?.stepCounter(
+                      _step + 1,
+                      4,
+                      _subtitleForStep(),
+                    ) ??
+                    'Step ${_step + 1} of 4 · ${_subtitleForStep()}',
+                progress: (_step + 1) / 4,
+                onBack: _step > 0 ? _back : _confirmLoanExit,
+              ),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _buildStep1(),
+                    _buildStep2(),
+                    _buildStep3(),
+                    _buildStep4(),
+                  ],
                 ),
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [
-                      _buildStep1(),
-                      _buildStep2(),
-                      _buildStep3(),
-                      _buildStep4(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          bottomNavigationBar: _buildBottomBar(),
+        ),
+        bottomNavigationBar: _buildBottomBar(),
       ),
     );
   }
@@ -1303,9 +1303,7 @@ class _ListingCreatePageState extends State<ListingCreatePage>
     return BoxDecoration(
       color: colors.surfaceContainerHighest,
       borderRadius: radius,
-      border: hasError
-          ? Border.all(color: colors.error, width: 1.5)
-          : null,
+      border: hasError ? Border.all(color: colors.error, width: 1.5) : null,
     );
   }
 
@@ -1821,7 +1819,7 @@ class _ListingCreatePageState extends State<ListingCreatePage>
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   labelText: 'Location',
-                  hintText: 'e.g. [town or neighborhood]',
+                  hintText: 'Town or neighborhood',
                 ),
                 onChanged: (value) => setState(() => _district = value),
                 validator: (value) => value == null || value.trim().isEmpty

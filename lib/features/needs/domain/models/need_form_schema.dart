@@ -129,18 +129,16 @@ class NeedFormSchema {
           'Include compatibility, quality standards, packaging, or acceptable alternatives.',
     ),
     'education_training': NeedFormGuidance(
-      titleHint: 'e.g. I need a weekend math tutor for Senior 4',
-      specificationHint:
-          'Describe the subject, level, and kind of support you need',
+      titleHint: 'e.g. I need help reaching a learning goal',
+      specificationHint: 'Add learning requirements not covered above',
       specificationHelper:
-          'Include your current level, preferred format or schedule, start date, and any goals.',
+          'Include learning goals, preferred teaching approach, or any constraints.',
     ),
     'travel_international': NeedFormGuidance(
       titleHint: 'e.g. I want help planning a December trip to Sweden',
-      specificationHint:
-          'Describe your destination and the travel service you need',
+      specificationHint: 'Add preferences or constraints not covered above',
       specificationHelper:
-          'Include destination, travel dates, number of travellers, and services needed. Do not post passport numbers or private document details.',
+          'Do not share passport numbers or private document details.',
     ),
     'construction_building': NeedFormGuidance(
       titleHint: 'e.g. Need a contractor to replace my house roof',
@@ -151,15 +149,20 @@ class NeedFormSchema {
     ),
     'agriculture_agribusiness': NeedFormGuidance(
       titleHint: 'e.g. I need a maize harvester for my farm',
-      specificationHint: 'Describe the farm need, quantity, and location',
-      specificationHelper:
-          'Include the crop or input, quantity or acreage, farm location, and when you need it.',
+      specificationHint: 'Add other requirements not covered above',
+      specificationHelper: 'Mention quality, delivery, or timing preferences.',
     ),
     'technology_digital': NeedFormGuidance(
       titleHint: 'e.g. I want an online shop for my business',
-      specificationHint: 'Describe what you want built or fixed',
+      specificationHint: 'Add other requirements not covered above',
       specificationHelper:
-          'List the main features, users or devices, expected deliverables, and preferred timeline.',
+          'Include important features, users or devices, and any constraints.',
+    ),
+    'marketing_promotion': NeedFormGuidance(
+      titleHint: 'e.g. I need to promote my new product',
+      specificationHint: 'Add campaign requirements not covered above',
+      specificationHelper:
+          'Include brand guidelines, campaign constraints, or success measures.',
     ),
     'events_production': NeedFormGuidance(
       titleHint: 'e.g. Looking for catering for a 200-guest gala',
@@ -181,10 +184,10 @@ class NeedFormSchema {
           'Include the occasion, date, venue or town, guest count, and any style or package preferences.',
     ),
     'energy_utilities': NeedFormGuidance(
-      titleHint: 'e.g. Need solar power installed at my poultry farm',
-      specificationHint: 'Describe the system and where it will be installed',
+      titleHint: 'e.g. I need a reliable power system for my site',
+      specificationHint: 'Add power or water requirements not covered above',
       specificationHelper:
-          'Include the power or water needs, site location, system size if known, and whether installation is required.',
+          'Include expected demand, usage patterns, or special site constraints.',
     ),
   };
 
@@ -201,18 +204,34 @@ class NeedFormSchema {
   static const Map<String, List<NeedFormPreset>> categoryPresets = {
     'education_training': [
       NeedFormPreset(
-        label: 'Weekend tutor',
-        title: 'I need a tutor for [subject or level]',
+        label: 'Private tutor',
+        title: 'I need a private tutor for [learner or learning goal]',
         specification:
             'I need tutoring support for a learner and want a provider who can explain clearly, track progress, and recommend practice work.',
-        details: {
-          'training_type': 'Tutoring',
-          'preferred_format': 'In-person',
-          'max_travel_distance': '10 km',
-          'duration': '3 months',
-          'schedule': 'Weekends',
-        },
-        urgency: 'Within 30 days',
+      ),
+      NeedFormPreset(
+        label: 'Tutor for a child',
+        title: 'I need a tutor for my child',
+        specification:
+            'I am looking for patient, age-appropriate lessons with regular feedback on my child’s progress.',
+      ),
+      NeedFormPreset(
+        label: 'School teacher',
+        title: 'Our school needs a teacher for [class or learner group]',
+        specification:
+            'We need a qualified teacher who can plan lessons, teach the group, and assess learner progress.',
+      ),
+      NeedFormPreset(
+        label: 'School tutor',
+        title: 'Our school needs a tutor for [class or learner group]',
+        specification:
+            'We need focused support for learners, with a clear teaching plan and progress updates.',
+      ),
+      NeedFormPreset(
+        label: 'Lecturer',
+        title: 'Our institution needs a lecturer for [learner group or level]',
+        specification:
+            'We need a lecturer to prepare and deliver lessons, assess learners, and support the course programme.',
       ),
       NeedFormPreset(
         label: 'Internship',
@@ -220,8 +239,6 @@ class NeedFormSchema {
         specification:
             'I need help finding a structured internship with supervision, practical tasks, and a clear start date.',
         details: {
-          'training_type': 'Internship',
-          'training_level': 'Beginner',
           'preferred_format': 'In-person',
           'duration': '8 weeks',
           'schedule': 'Full-time',
@@ -229,15 +246,58 @@ class NeedFormSchema {
       ),
       NeedFormPreset(
         label: 'Online course',
-        title: 'I want an online course in [skill]',
+        title: 'I want an online course for [learner or learning goal]',
         specification:
             'I need a practical online course with guided lessons, assignments, and proof of completion.',
         details: {
-          'training_type': 'Professional training',
           'preferred_format': 'Online',
-          'max_travel_distance': 'Anywhere',
           'schedule': 'Flexible',
         },
+      ),
+      NeedFormPreset(
+        label: 'Exam preparation',
+        title: 'I want to prepare for [exam or qualification]',
+        specification:
+            'I need a study plan, guided practice, and feedback to prepare for an upcoming exam.',
+        details: {
+          'preferred_format': 'Either',
+          'schedule': 'Weekends',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Language lessons',
+        title: 'I want language lessons for [learner or learning goal]',
+        specification:
+            'Share your current level, the skills you want to improve, and how you plan to use the language.',
+        details: {
+          'preferred_format': 'Online',
+          'schedule': 'Flexible',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Vocational training',
+        title: 'I need vocational training for [learner or team]',
+        specification:
+            'Describe the practical skills, equipment access, and qualification or experience you need.',
+        details: {
+          'preferred_format': 'In-person',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Career mentorship',
+        title: 'I want guidance to grow in [career or field]',
+        specification:
+            'Share your goals, experience, and the kind of guidance or feedback you want.',
+        details: {
+          'preferred_format': 'Online',
+          'schedule': 'Flexible',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Skills instructor',
+        title: 'I need an instructor for [learner or team]',
+        specification:
+            'Describe the practical learning outcomes and how learners should demonstrate their skills.',
       ),
     ],
     'travel_international': [
@@ -301,6 +361,45 @@ class NeedFormSchema {
         details: {
           'purpose': 'Study',
           'visa_type': 'Student visa',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Family visit',
+        title: 'I need help planning an international family visit',
+        specification:
+            'I need help arranging travel and accommodation for a family visit, including any entry requirements and local transport.',
+        details: {
+          'purpose': 'Family visit',
+          'flexible_dates': 'true',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Business trip',
+        title: 'Looking for a business trip itinerary',
+        specification:
+            'I need an itinerary for business travel, including suitable flights, accommodation, local transport, and schedule coordination.',
+        details: {
+          'purpose': 'Business',
+          'flexible_dates': 'true',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Medical travel',
+        title: 'I want to travel abroad for medical care',
+        specification:
+            'I need help planning medical travel, including suitable accommodation, local transport, and coordination around appointments.',
+        details: {
+          'purpose': 'Medical',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Holiday trip',
+        title: 'Planning a holiday abroad',
+        specification:
+            'I need help planning a holiday, comparing travel and accommodation options, and arranging an itinerary that fits my budget.',
+        details: {
+          'purpose': 'Tourism',
+          'flexible_dates': 'true',
         },
       ),
     ],
@@ -577,6 +676,56 @@ class NeedFormSchema {
           'volume_or_acres': '10 acres',
         },
       ),
+      NeedFormPreset(
+        label: 'Irrigation',
+        title: 'I want irrigation equipment for [crop or acreage]',
+        specification:
+            'I need an irrigation setup suited to the crop and farm size, with installation, water source, and running costs clearly explained.',
+        details: {
+          'agri_item': 'Irrigation equipment',
+          'volume_or_acres': 'For 5 acres',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Livestock feed',
+        title: 'Looking for feed for [animal type]',
+        specification:
+            'I need suitable livestock feed with clear ingredients, quantity, quality, and delivery details.',
+        details: {
+          'agri_item': 'Livestock feed',
+          'volume_or_acres': 'For 50 animals',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Crop spraying',
+        title: 'Need crop spraying for [crop or acreage]',
+        specification:
+            'I need crop spraying or pest control with the treatment, safety steps, timing, and total cost explained.',
+        details: {
+          'agri_item': 'Crop spraying / pest control',
+          'volume_or_acres': 'For 5 acres',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Tractor hire',
+        title: 'I need a tractor for [farm task]',
+        specification:
+            'I need a tractor and suitable implement for farm work, with availability, operator terms, transport, and total cost confirmed.',
+        details: {
+          'agri_item': 'Tractor / farm implement hire',
+          'volume_or_acres': '10 acres',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Find a produce buyer',
+        title: 'I need a buyer for [crop or produce]',
+        specification:
+            'I am looking for buyers and want to compare prices, quality requirements, quantities, and collection or delivery terms.',
+        details: {
+          'agri_item': 'Buyer for farm produce',
+          'volume_or_acres': '50 bags',
+        },
+      ),
     ],
     'technology_digital': [
       NeedFormPreset(
@@ -585,7 +734,6 @@ class NeedFormSchema {
         specification:
             'I need a provider to design and launch a business website with mobile-friendly pages, contact options, and basic training.',
         details: {
-          'tech_requirement': 'Business website',
           'deliverables': 'Website, domain setup, contact form',
           'timeline': '4 weeks',
         },
@@ -596,9 +744,108 @@ class NeedFormSchema {
         specification:
             'I need a team to build a mobile app with user accounts, core workflows, admin tools, testing, and launch support.',
         details: {
-          'tech_requirement': 'Mobile app',
           'deliverables': 'Android app, admin portal, launch support',
           'timeline': '8 weeks',
+        },
+      ),
+      NeedFormPreset(
+        label: 'IT support',
+        title: 'I need help with [computer or network issue]',
+        specification:
+            'Describe the issue, affected devices, and whether support is needed on site or remotely.',
+        details: {
+          'deliverables': 'Diagnosis, repair, and recommended next steps',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Digital marketing',
+        title: 'Looking for help to [marketing goal]',
+        specification:
+            'Share the audience, channels, and results you want to achieve.',
+        details: {
+          'deliverables': 'Campaign plan, content, and performance report',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Software setup',
+        title: 'I want to set up [software or system]',
+        specification:
+            'Include the tools involved, number of users, and any integrations needed.',
+        details: {
+          'deliverables': 'Installation, configuration, and user training',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Data & cloud',
+        title: 'I need help with [data or cloud task]',
+        specification:
+            'Describe the data or service, access needs, and expected outcome.',
+        details: {
+          'deliverables':
+              'Setup or migration, access configuration, and handover',
+        },
+      ),
+    ],
+    'marketing_promotion': [
+      NeedFormPreset(
+        label: 'Social media',
+        title: 'I need help promoting [brand or offer] on social media',
+        specification:
+            'I want a social media campaign with a content plan, creative assets, posting schedule, and performance summary.',
+        details: {
+          'deliverables':
+              'Content plan, creative assets, and performance summary',
+          'timeline': '4 weeks',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Paid advertising',
+        title: 'I want to reach [target audience] with paid advertising',
+        specification:
+            'Include campaign setup, audience targeting, ad creatives, budget monitoring, and results reporting.',
+        details: {
+          'deliverables':
+              'Ad setup, creative, optimization, and results report',
+          'timeline': '4 weeks',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Influencer campaign',
+        title: 'Looking for creators to promote [product or service]',
+        specification:
+            'Share the audience, creator type, content format, and campaign goals.',
+        details: {
+          'deliverables':
+              'Creator shortlist, agreed content, and campaign report',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Brand identity',
+        title: 'I need a brand identity for [business or product]',
+        specification:
+            'Describe the audience, brand style, and where the identity will be used.',
+        details: {
+          'deliverables':
+              'Logo, color and type guide, and reusable brand files',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Content creation',
+        title: 'I want content for [campaign or platform]',
+        specification:
+            'List the content formats, quantity, publishing channels, and preferred style.',
+        details: {
+          'deliverables': 'Campaign-ready copy, graphics, or video content',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Public relations',
+        title: 'I need help sharing news about [brand or announcement]',
+        specification:
+            'Include the announcement, audiences, media targets, and desired coverage.',
+        details: {
+          'deliverables':
+              'Press materials, media outreach, and coverage summary',
         },
       ),
     ],
@@ -666,22 +913,60 @@ class NeedFormSchema {
     'energy_utilities': [
       NeedFormPreset(
         label: 'Solar install',
-        title: 'I need a solar system installed',
+        title: 'I need a reliable power system for my site',
         specification:
             'I need a provider to size, quote, install, and commission a solar power system for my site.',
         details: {
-          'system_type': 'Solar power system',
-          'installation_site': 'Home or business site',
+          'system_type': 'Solar system',
           'installation_labor_needed': 'true',
         },
       ),
       NeedFormPreset(
         label: 'Water pump',
-        title: 'Looking for a water pump system installation',
+        title: 'Looking for a reliable water supply for my site',
         specification:
             'I need a provider to supply or install a water pump system with clear capacity, materials, and commissioning support.',
         details: {
-          'system_type': 'Borehole / water pump system',
+          'system_type': 'Water pump',
+          'installation_labor_needed': 'true',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Backup power',
+        title: 'I need backup power for [property or equipment]',
+        specification:
+            'I need a backup power system sized for my essential equipment, with runtime, installation, and maintenance needs covered.',
+        details: {
+          'system_type': 'Backup power',
+          'installation_labor_needed': 'true',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Borehole pump',
+        title: 'Looking for a pump for [water source or use]',
+        specification:
+            'I need a pump suited to the water source and expected demand, with capacity, materials, and installation costs explained.',
+        details: {
+          'system_type': 'Borehole pump',
+          'installation_labor_needed': 'true',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Solar repair',
+        title: 'Need help repairing an existing power system',
+        specification:
+            'I need a provider to inspect and repair an existing system, identify faulty components, and explain the repair cost and warranty.',
+        details: {
+          'system_type': 'Solar system inspection / repair',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Water filtration',
+        title: 'I want safer water for [household or business]',
+        specification:
+            'I need a water treatment or filtration solution suited to the source and usage, with maintenance needs clearly explained.',
+        details: {
+          'system_type': 'Water treatment / filtration system',
           'installation_labor_needed': 'true',
         },
       ),
@@ -709,62 +994,44 @@ class NeedFormSchema {
   static const Map<String, List<NeedFormField>> categoryFields = {
     'education_training': [
       NeedFormField.text(
-        'training_type',
-        label: 'Training Type',
-        hint: 'e.g. Internship, tutoring, professional or vocational training',
+        'subject_or_skill',
+        label: 'Subject(s) or skill needed',
+        hint: 'Choose one or enter one or more subjects or skills',
       ),
       NeedFormField.text(
         'training_level',
-        label: 'Training Level',
-        hint: 'e.g. Beginner, intermediate, advanced, university',
+        label: "Learner or applicant's current level",
+        hint: 'Choose a school stage or enter another level',
       ),
       NeedFormField.text(
         'preferred_format',
-        label: 'Preferred Format',
+        label: 'Lesson format',
         hint: 'Choose online, in-person, or either',
-        options: ['Online', 'In-person', 'Either'],
-      ),
-      NeedFormField.text(
-        'preferred_location',
-        label: 'Preferred Location',
-        hint: 'e.g. Near campus, home, or a specific area',
       ),
       NeedFormField.text(
         'max_travel_distance',
-        label: 'Maximum Travel Distance',
+        label: 'Maximum travel distance',
         hint: 'Choose a maximum distance',
-        options: ['2 km', '5 km', '10 km', '20 km', 'Anywhere'],
       ),
       NeedFormField.text(
         'start_date',
-        label: 'Start Date',
-        hint: 'e.g. June 2026 or as soon as possible',
+        label: 'When do you want to start?',
+        hint: 'e.g. Next month or as soon as possible',
       ),
       NeedFormField.text(
         'duration',
-        label: 'Duration',
+        label: 'Course or support duration',
         hint: 'e.g. 8 weeks, 3 months, or flexible',
       ),
       NeedFormField.text(
         'schedule',
-        label: 'Schedule',
+        label: 'Preferred schedule',
         hint: 'e.g. Full-time, part-time, weekends, flexible',
       ),
       NeedFormField.text(
         'required_qualifications',
         label: 'Required Qualifications / Experience',
         hint: 'e.g. Current university student, prior experience',
-        isRequired: false,
-      ),
-      NeedFormField.text(
-        'specific_skills_topics',
-        label: 'Specific Skills / Topics',
-        hint: 'e.g. Software development, accounting, academic writing',
-      ),
-      NeedFormField.text(
-        'additional_requirements',
-        label: 'Additional Requirements',
-        hint: 'Anything else providers should know',
         isRequired: false,
       ),
     ],
@@ -828,21 +1095,14 @@ class NeedFormSchema {
       NeedFormField.text(
         'departure_city',
         label: 'Departure city',
-        hint: 'e.g. [departure town or city]',
-        helperText: 'Enter the city you expect to start your journey from.',
+        hint: 'Town or city you are travelling from',
+        helperText: 'Used to find relevant routes and providers.',
       ),
       NeedFormField.boolean(
         'flexible_dates',
         label: 'Flexible dates are acceptable',
         helperText:
             'Turn this on if you can travel on nearby dates for better options.',
-      ),
-      NeedFormField.text(
-        'additional_requirements',
-        label: 'Additional requirements',
-        hint: 'e.g. Hotel booking, passport renewal help, visa checklist',
-        helperText:
-            'Add preferences or constraints, but do not share private document details.',
       ),
     ],
     'machinery_equipment': [
@@ -894,7 +1154,7 @@ class NeedFormSchema {
       NeedFormField.text(
         'delivery_location',
         label: 'Delivery destination',
-        hint: 'e.g. [town or delivery area]',
+        hint: 'Town or delivery area',
       ),
     ],
     'construction_building': [
@@ -906,7 +1166,7 @@ class NeedFormSchema {
       NeedFormField.text(
         'site_location',
         label: 'Site / property location',
-        hint: 'e.g. [district or site address]',
+        hint: 'District or site address',
       ),
       NeedFormField.text(
         'project_scope',
@@ -917,13 +1177,8 @@ class NeedFormSchema {
     'agriculture_agribusiness': [
       NeedFormField.text(
         'agri_item',
-        label: 'Commodity, machinery or inputs',
-        hint: 'e.g. Hybrid maize seeds, Combine harvester hire',
-      ),
-      NeedFormField.text(
-        'farm_location',
-        label: 'Farm / district location',
-        hint: 'e.g. [district or farm area]',
+        label: 'Farm item or service',
+        hint: 'e.g. Soil testing, veterinary care, farm labour',
       ),
       NeedFormField.text(
         'volume_or_acres',
@@ -933,11 +1188,6 @@ class NeedFormSchema {
     ],
     'technology_digital': [
       NeedFormField.text(
-        'tech_requirement',
-        label: 'Project or tech requirement',
-        hint: 'e.g. E-commerce Flutter app, Office CCTV networking',
-      ),
-      NeedFormField.text(
         'deliverables',
         label: 'Key features / deliverables',
         hint: 'e.g. Mobile app on Play Store, Admin portal',
@@ -946,6 +1196,18 @@ class NeedFormSchema {
         'timeline',
         label: 'Desired completion timeline',
         hint: 'e.g. 6 weeks',
+      ),
+    ],
+    'marketing_promotion': [
+      NeedFormField.text(
+        'deliverables',
+        label: 'Key deliverables',
+        hint: 'e.g. Content, ad creatives, campaign report',
+      ),
+      NeedFormField.text(
+        'timeline',
+        label: 'Desired campaign timeline',
+        hint: 'e.g. 4 weeks',
       ),
     ],
     'events_production': [
@@ -962,7 +1224,7 @@ class NeedFormSchema {
       NeedFormField.text(
         'venue_location',
         label: 'Venue or town',
-        hint: 'e.g. [venue name], [town]',
+        hint: 'Venue name or town',
       ),
     ],
     'music_video': [
@@ -979,7 +1241,7 @@ class NeedFormSchema {
       NeedFormField.text(
         'location',
         label: 'Studio, venue, or town',
-        hint: 'e.g. [studio, venue, or town]',
+        hint: 'Studio, venue, or town',
       ),
     ],
     'weddings_celebrations': [
@@ -996,7 +1258,7 @@ class NeedFormSchema {
       NeedFormField.text(
         'venue_location',
         label: 'Venue or town',
-        hint: 'e.g. [venue or town]',
+        hint: 'Venue or town',
       ),
     ],
     'energy_utilities': [
@@ -1005,14 +1267,10 @@ class NeedFormSchema {
         label: 'Power or utility system',
         hint: 'e.g. 10kW Commercial Solar System, Borehole pump',
       ),
-      NeedFormField.text(
-        'installation_site',
-        label: 'Installation location / facility',
-        hint: 'e.g. [facility type], [town or district]',
-      ),
       NeedFormField.boolean(
         'installation_labor_needed',
         label: 'Installation & commissioning labor required',
+        helperText: 'Turn on if the provider should handle the setup.',
       ),
     ],
   };
