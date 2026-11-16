@@ -70,8 +70,11 @@ class NeedCategory {
 
   String localizedName(String? localeCode) {
     final code = localeCode?.toLowerCase();
+    if (slug == 'events_production' && (code == null || code == 'en')) {
+      return 'Events & Celebrations';
+    }
     if (slug == 'financial_services' && (code == null || code == 'en')) {
-      return 'Finance';
+      return 'Finance & Investments';
     }
     final map = switch (code) {
       'rw' => {
@@ -318,7 +321,7 @@ class NeedCategory {
     ),
     NeedCategory(
       slug: 'financial_services',
-      name: 'Finance',
+      name: 'Finance & Investments',
       icon: '💰',
       description:
           'Loans, forex, savings groups, SACCOs and investment opportunities.',

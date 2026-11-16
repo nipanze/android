@@ -1733,7 +1733,7 @@
     },
     {
       "id": "photo_video_music_talent",
-      "name": "Media",
+      "name": "Photo, Video, Music & Talent",
       "icon": "🎬",
       "description": "Creative production and performers for any occasion",
       "service_groups": [
@@ -2035,7 +2035,7 @@
     },
     {
       "id": "beauty_fashion_styling",
-      "name": "Beauty",
+      "name": "Beauty, Fashion, Styling & Wellness",
       "icon": "💄",
       "description": "Makeup, hair, styling, clothing, massage, spa, and wellness services",
       "service_groups": [
@@ -4070,12 +4070,42 @@
               "name": "Airport Transfers",
               "is_active": true,
               "database_slug": "airport_transfers"
-            },
+            }
+          ]
+        },
+        {
+          "id": "tourism_services",
+          "name": "Tourism Services",
+          "services": [
             {
               "id": "tour_packages",
               "name": "Tour Packages",
               "is_active": true,
               "database_slug": "tour_packages"
+            },
+            {
+              "id": "tour_guiding_services",
+              "name": "Tour Guiding",
+              "is_active": true,
+              "database_slug": "tour_guiding_services"
+            },
+            {
+              "id": "tour_operator_services",
+              "name": "Tour Operations",
+              "is_active": true,
+              "database_slug": "tour_operator_services"
+            },
+            {
+              "id": "travel_planning_services",
+              "name": "Travel Planning & Itineraries",
+              "is_active": true,
+              "database_slug": "travel_planning_services"
+            },
+            {
+              "id": "local_experiences",
+              "name": "Local Experiences",
+              "is_active": true,
+              "database_slug": "local_experiences"
             }
           ]
         },
@@ -5719,7 +5749,7 @@
     },
     {
       "id": "financial_services",
-      "name": "Finance",
+      "name": "Finance & Investments",
       "icon": "💰",
       "description": "Loans, Forex, SACCOs, investments, and other financial services.",
       "provider_verification_required": true,

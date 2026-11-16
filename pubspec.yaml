@@ -82,7 +82,6 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/icons/
 
   fonts:
     # Inter — body text, labels, forms, data tables

@@ -1,8 +1,10 @@
 # Nipanze Provider Services Catalog
 
 > Catalog source: [`provider_services_v2.json`](./provider_services_v2.json). Database updates are in [`sql/patch_provider_catalog_one_word_hierarchy.sql`](./sql/patch_provider_catalog_one_word_hierarchy.sql). Apply that migration after its prerequisite catalog and verification patches.
+> The Tourism Services group is added by [`sql/patch_travel_tourism_services.sql`](./sql/patch_travel_tourism_services.sql), after `patch_provider_services_v2_catalog.sql`.
+> Full category names in the backend are set by [`sql/patch_provider_category_full_names.sql`](./sql/patch_provider_category_full_names.sql), after `patch_provider_services_v2_catalog.sql`.
 
-**Catalog size:** 18 categories · 200 services · 90 Individual roles.
+**Catalog size:** 18 categories · 204 services · 90 Individual roles.
 
 The picker flow is **Category → Subcategory → Individual or Company / Organization → Services**. Category and subcategory labels are display values; existing database slugs are preserved. Finance supports both identity types. Individual profiles select work roles; company profiles select services.
 
@@ -15,8 +17,8 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | 3 | Business | `professional_services` | 2 | 5 | 8 |
 | 4 | Education | `education_training` | 3 | 17 | 5 |
 | 5 | Events | `events_production` | 3 | 10 | 5 |
-| 6 | Media | `photo_video_music_talent` | 4 | 14 | 4 |
-| 7 | Beauty | `beauty_fashion_styling` | 3 | 10 | 7 |
+| 6 | Photo, Video, Music & Talent | `photo_video_music_talent` | 4 | 14 | 4 |
+| 7 | Beauty, Fashion, Styling & Wellness | `beauty_fashion_styling` | 3 | 10 | 7 |
 | 8 | Construction | `construction_building` | 4 | 10 | 5 |
 | 9 | Energy | `energy_utilities` | 3 | 8 | 4 |
 | 10 | Transport | `transport_logistics` | 5 | 13 | 5 |
@@ -27,7 +29,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | 15 | Domestic | `domestic_household` | 2 | 7 | 5 |
 | 16 | Health | `health_medical` | 4 | 15 | 12 |
 | 17 | Cultural | `traditional_cultural` | 2 | 5 | 4 |
-| 18 | Finance | `financial_services` | 4 | 39 | 2 |
+| 18 | Finance & Investments | `financial_services` | 4 | 39 | 2 |
 
 ## Full catalog
 
@@ -538,7 +540,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Managed 5+ events | No |
 | Team leadership | No |
 
-## 6. 🎬 Media
+## 6. 🎬 Photo, Video, Music & Talent
 
 **Database slug:** `photo_video_music_talent`
 **Description:** Creative production and performers for any occasion
@@ -632,7 +634,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Budget handling | No |
 | Crew network | No |
 
-## 7. 💄 Beauty
+## 7. 💄 Beauty, Fashion, Styling & Wellness
 
 **Database slug:** `beauty_fashion_styling`
 **Description:** Makeup, hair, styling, clothing, massage, spa, and wellness services
@@ -1289,7 +1291,16 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Flight Tickets & Bookings | `flight_tickets` | Available | `Configured by verification rules` |
 | Accommodation | `accommodation` | Available | `Configured by verification rules` |
 | Airport Transfers | `airport_transfers` | Available | `Configured by verification rules` |
+
+### Tourism Services
+
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
 | Tour Packages | `tour_packages` | Available | `Configured by verification rules` |
+| Tour Guiding | `tour_guiding_services` | Available | `Configured by verification rules` |
+| Tour Operations | `tour_operator_services` | Available | `Configured by verification rules` |
+| Travel Planning & Itineraries | `travel_planning_services` | Available | `Configured by verification rules` |
+| Local Experiences | `local_experiences` | Available | `Configured by verification rules` |
 
 ### Documents & Cover
 
@@ -1725,7 +1736,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Registration with relevant association or local authority | Yes |
 | Referees | No |
 
-## 18. 💰 Finance
+## 18. 💰 Finance & Investments
 
 **Database slug:** `financial_services`
 **Description:** Loans, Forex, SACCOs, investments, and other financial services.

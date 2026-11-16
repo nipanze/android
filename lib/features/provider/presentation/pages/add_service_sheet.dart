@@ -140,32 +140,31 @@ String _financeUiGroupSlug(NeedCapability capability) {
   return 'investment_opportunities';
 }
 
-// The provider catalog keeps its database slugs. These labels are the
-// customer-facing one-word category names from provider_catalog_one_word_categories.md.
+// Keep the catalog's database slugs while showing the full category names.
 const _providerCategoryLabels = <String, String>{
-  'technology_digital': 'Technology',
-  'marketing_promotion': 'Marketing',
-  'professional_services': 'Business',
-  'education_training': 'Education',
-  'events_production': 'Events',
-  'events_celebrations': 'Events',
-  'weddings_celebrations': 'Events',
-  'photo_video_music_talent': 'Media',
-  'photo_video_talent': 'Media',
-  'music_video': 'Media',
-  'beauty_fashion_styling': 'Beauty',
-  'construction_building': 'Construction',
-  'energy_utilities': 'Energy',
-  'transport_logistics': 'Transport',
-  'machinery_equipment': 'Machinery',
-  'agriculture_agribusiness': 'Agriculture',
-  'specialized_products': 'Sourcing',
-  'travel_international': 'Travel',
-  'domestic_household': 'Domestic',
-  'health_medical': 'Health',
-  'business_investment': 'Finance',
-  'financial_services': 'Finance',
-  'traditional_cultural': 'Cultural',
+  'technology_digital': 'Technology & Digital',
+  'marketing_promotion': 'Marketing & Promotion',
+  'professional_services': 'Business & Professional Services',
+  'education_training': 'Education & Training',
+  'events_production': 'Events & Celebrations',
+  'events_celebrations': 'Events & Celebrations',
+  'weddings_celebrations': 'Events & Celebrations',
+  'photo_video_music_talent': 'Photo, Video, Music & Talent',
+  'photo_video_talent': 'Photo, Video & Talent',
+  'music_video': 'Music & Video',
+  'beauty_fashion_styling': 'Beauty, Fashion, Styling & Wellness',
+  'construction_building': 'Construction & Building',
+  'energy_utilities': 'Energy & Utilities',
+  'transport_logistics': 'Transport & Logistics',
+  'machinery_equipment': 'Machinery & Equipment',
+  'agriculture_agribusiness': 'Agriculture & Agribusiness',
+  'specialized_products': 'Specialized Products & Procurement',
+  'travel_international': 'Travel & International',
+  'domestic_household': 'Domestic & Household',
+  'health_medical': 'Health & Medical',
+  'business_investment': 'Business & Investment',
+  'financial_services': 'Finance & Investments',
+  'traditional_cultural': 'Traditional & Cultural Services',
 };
 
 const _providerCategoryOrder = <String, int>{
@@ -4097,7 +4096,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
             if (financialServicePath)
               _FinancialCapabilityGroupTile(
                 title: capabilities.isEmpty
-                    ? 'Financial Services'
+                    ? 'Finance & Investments'
                     : NeedCatalogLocalizations.serviceGroupName(
                           localeCode,
                           capabilities.first.serviceGroupSlug ?? '',
@@ -4105,7 +4104,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                         capabilities.first.serviceGroupName ??
                         _financeUiGroupNames[capabilities.first.uiGroupSlug ??
                             _financeUiGroupSlug(capabilities.first)] ??
-                        'Financial Services',
+                        'Finance & Investments',
                 capabilities: capabilities,
                 localeCode: localeCode,
                 selected: selected,

@@ -27,6 +27,32 @@ import '../../data/needs_repository.dart';
 import '../../domain/models/need_category.dart';
 import '../../domain/models/need_form_schema.dart';
 
+const _providerStyleNeedCategoryLabels = <String, String>{
+  'technology_digital': 'Technology & Digital',
+  'marketing_promotion': 'Marketing & Promotion',
+  'professional_services': 'Business & Professional Services',
+  'education_training': 'Education & Training',
+  'events_production': 'Events & Celebrations',
+  'events_celebrations': 'Events & Celebrations',
+  'weddings_celebrations': 'Events & Celebrations',
+  'photo_video_music_talent': 'Photo, Video, Music & Talent',
+  'photo_video_talent': 'Photo, Video & Talent',
+  'music_video': 'Music & Video',
+  'beauty_fashion_styling': 'Beauty, Fashion, Styling & Wellness',
+  'construction_building': 'Construction & Building',
+  'energy_utilities': 'Energy & Utilities',
+  'transport_logistics': 'Transport & Logistics',
+  'machinery_equipment': 'Machinery & Equipment',
+  'agriculture_agribusiness': 'Agriculture & Agribusiness',
+  'specialized_products': 'Specialized Products & Procurement',
+  'travel_international': 'Travel & International',
+  'domestic_household': 'Domestic & Household',
+  'health_medical': 'Health & Medical',
+  'business_investment': 'Business & Investment',
+  'financial_services': 'Finance & Investments',
+  'traditional_cultural': 'Traditional & Cultural Services',
+};
+
 class NeedsCreatePage extends StatefulWidget {
   const NeedsCreatePage({super.key, this.initialCategorySlug, this.draftId});
 
@@ -1592,6 +1618,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
 
   String _categoryLocalizedName(AppLocalizations l10n, String slug) {
     final localeCode = Localizations.localeOf(context).languageCode;
+    if (localeCode.toLowerCase() == 'en') {
+      final providerStyleName = _providerStyleNeedCategoryLabels[slug];
+      if (providerStyleName != null) return providerStyleName;
+    }
     final defaultCategory = NeedCategory.findBySlug(slug);
     if (localeCode.toLowerCase() == 'en' && defaultCategory.name != slug) {
       return defaultCategory.name;
