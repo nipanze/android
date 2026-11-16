@@ -70,6 +70,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   String _categoryAtOpen = 'machinery_equipment';
   String _urgency = 'Within 30 days';
   String? _location;
+  String? _selectedPresetLabel;
   bool _locationTouched = false;
   bool _durationCustomSelected = false;
   final Set<String> _customChoiceFields = {};
@@ -277,18 +278,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     );
   }
 
-  bool get _specificationIsOptional => const {
-        'machinery_equipment',
-        'travel_international',
-        'agriculture_agribusiness',
-        'specialized_products',
-        'construction_building',
-        'professional_services',
-        'energy_utilities',
-        'technology_digital',
-        'marketing_promotion',
-        'education_training',
-      }.contains(_categorySlug);
+  bool get _specificationIsOptional => true;
+
+  int? _maxVisibleChoiceCount(int count) {
+    if (count >= 6 && count <= 8) return 3;
+    if (count > 8) return 5;
+    return null;
+  }
 
   bool get _titleHasUnfilledPrompt =>
       RegExp(r'\[[^\]]+\]').hasMatch(_titleController.text.trim());
@@ -378,6 +374,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       _urgency = 'Within 30 days';
       _durationCustomSelected = false;
       _customChoiceFields.clear();
+      _selectedPresetLabel = null;
       for (final controller in _dynamicControllers.values) {
         controller.clear();
       }
@@ -575,6 +572,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       final presetKey = '$_categorySlug:${preset.label}';
       final tapCount = _presetTapCounts[presetKey] ?? 0;
       _presetTapCounts[presetKey] = tapCount + 1;
+      _selectedPresetLabel = preset.label;
       _titleController.text = _presetTitleVariant(preset.title, tapCount);
       _specificationController.text = preset.specification;
       _durationCustomSelected = false;
@@ -725,6 +723,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   void _applyRecentRequest(NeedsListing request) {
     setState(() {
       _customChoiceFields.clear();
+      _selectedPresetLabel = null;
       _titleController.text = request.title;
       _specificationController.text = request.specification;
       if (request.currency == _currency(context.read<AuthBloc>().state)) {
@@ -814,7 +813,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           label: 'Start with',
           suggestions: allSuggestions,
           moreLabel: l10n.showMore,
-          maxVisibleChoices: 3,
+          maxVisibleChoices: 4,
+          selectedValue: _selectedPresetLabel,
           moreSubtitle: 'Choose a starting point. You can edit it next.',
           moreDescriptions: moreDescriptions,
           onSelected: (value) {
@@ -886,10 +886,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   }
 
   Widget _buildOptionPills(NeedFormField field) {
+    final selected = _dynamicControllers[field.key]?.text.trim();
     return FormSuggestionStrip(
       label: 'Options',
       topPadding: 0,
       suggestions: _optionsForField(field),
+      maxVisibleChoices: _maxVisibleChoiceCount(_optionsForField(field).length),
+      selectedValue: selected?.isEmpty == true ? null : selected,
       onSelected: (value) => _setFieldValue(field, value),
     );
   }
@@ -1079,13 +1082,6 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         ],
       'quantity' => const ['1 unit', '10 units', '50 units', '100 units'],
       'volume_or_acres' => const ['1 acre', '5 acres', '10 acres', '50 bags'],
-      'event_type' when category == 'events_production' => const [
-          'Catering',
-          'Sound & stage',
-          'Corporate event',
-          'Birthday',
-          'Graduation',
-        ],
       'celebration_type' => const [
           'Wedding, 150 guests',
           'Introduction ceremony',
@@ -1118,12 +1114,6 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           'Soil testing',
           'Veterinary care',
           'Farm labour',
-        ],
-      'production_type' => const [
-          'Music video',
-          'Live session',
-          'Short film',
-          'Event coverage',
         ],
       'system_type' => const [
           'Solar system',
@@ -1189,9 +1179,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           ? CountryLocations.nationalitiesFor(
               _countryInfo(context.read<AuthBloc>().state),
             ).take(3).toList()
-          : _categorySlug == 'education_training'
-              ? _quickValuesForField(field)
-              : _quickValuesForField(field).take(3).toList();
+          : _quickValuesForField(field);
       final localizedNationalities =
           _localizedNationalities(AppLocalizations.of(context)!);
       final localizedValues = values
@@ -1205,6 +1193,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
               ? localizedNationalities[currentValue] ?? currentValue
               : currentValue
           : null;
+      final maxVisibleChoices = _maxVisibleChoiceCount(values.length);
 
       return FormSuggestionStrip(
         label: field.label,
@@ -1212,10 +1201,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           ...localizedValues,
           'Custom',
         ],
-        maxVisibleChoices: _categorySlug == 'education_training' &&
-                const {'training_level', 'subject_or_skill'}.contains(field.key)
-            ? 3
-            : null,
+        maxVisibleChoices: maxVisibleChoices,
+        pinnedChoices: const {'Custom'},
         topPadding: 0,
         selectedValue:
             _customChoiceFields.contains(field.key) ? 'Custom' : selectedValue,
@@ -1270,11 +1257,16 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     final localizedNationalities = field.key == 'nationality'
         ? _localizedNationalities(AppLocalizations.of(context)!)
         : const <String, String>{};
+    final currentValue = _dynamicControllers[field.key]?.text.trim() ?? '';
+    final localizedCurrentValue = localizedNationalities[currentValue] ??
+        (currentValue.isEmpty ? null : currentValue);
     return FormSuggestionStrip(
       label: field.label,
       suggestions: values
           .map((value) => localizedNationalities[value] ?? value)
           .toList(),
+      maxVisibleChoices: _maxVisibleChoiceCount(values.length),
+      selectedValue: localizedCurrentValue,
       onSelected: (value) {
         final source = localizedNationalities.entries
             .where((entry) => entry.value == value)
@@ -1290,11 +1282,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         ? CountryLocations.nationalitiesFor(
             _countryInfo(context.read<AuthBloc>().state),
           ).take(3).toSet()
-        : _categorySlug == 'education_training'
-            ? _quickValuesForField(field).toSet()
-            : field.key == 'system_type'
-                ? _quickValuesForField(field).toSet()
-                : _quickValuesForField(field).take(3).toSet();
+        : _quickValuesForField(field).toSet();
     final currentValue = _dynamicControllers[field.key]?.text.trim() ?? '';
     final showInput = _customChoiceFields.contains(field.key) ||
         (currentValue.isNotEmpty && !commonValues.contains(currentValue));
@@ -2162,60 +2150,23 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                               ),
                           ],
                         ],
-                        if (_categorySlug == 'machinery_equipment' ||
-                            _categorySlug == 'travel_international' ||
-                            _categorySlug == 'agriculture_agribusiness' ||
-                            _categorySlug == 'energy_utilities' ||
-                            _categorySlug == 'transport_logistics' ||
-                            _categorySlug == 'specialized_products' ||
-                            _categorySlug == 'construction_building' ||
-                            _categorySlug == 'professional_services' ||
-                            _categorySlug == 'technology_digital' ||
-                            _categorySlug == 'marketing_promotion' ||
-                            _categorySlug == 'education_training') ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            'Specification (optional)',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
-                            ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Specification (optional)',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w500,
                           ),
-                          const SizedBox(height: 4),
-                        ],
+                        ),
+                        const SizedBox(height: 4),
                         TextFormField(
                           controller: _specificationController,
                           minLines: 3,
                           maxLines: 6,
                           textCapitalization: TextCapitalization.sentences,
                           decoration: _detailsInputDecoration(
-                            label: _categorySlug == 'machinery_equipment' ||
-                                    _categorySlug == 'travel_international' ||
-                                    _categorySlug ==
-                                        'agriculture_agribusiness' ||
-                                    _categorySlug == 'energy_utilities' ||
-                                    _categorySlug == 'transport_logistics' ||
-                                    _categorySlug == 'specialized_products' ||
-                                    _categorySlug == 'construction_building' ||
-                                    _categorySlug == 'professional_services' ||
-                                    _categorySlug == 'technology_digital' ||
-                                    _categorySlug == 'marketing_promotion' ||
-                                    _categorySlug == 'education_training'
-                                ? null
-                                : _fieldLabel(
-                                    l10n.needsSpecificationLabel,
-                                    guidance.specificationHelper,
-                                  ),
-                            hintText: _categorySlug == 'machinery_equipment'
-                                ? 'Capacity, condition, attachments, or other requirements'
-                                : _categorySlug == 'transport_logistics'
-                                    ? 'Cargo, weight, pickup and drop-off details, or preferred dates'
-                                    : guidance.specificationHint,
-                            helperText: _categorySlug ==
-                                        'machinery_equipment' ||
-                                    _categorySlug == 'transport_logistics'
-                                ? 'The more detail you add, the better the offers.'
-                                : guidance.specificationHelper,
+                            hintText: guidance.specificationHint,
+                            helperText: guidance.specificationHelper,
                             suffixIcon: _clearSuffix(_specificationController),
                             alignLabelWithHint: true,
                           ),

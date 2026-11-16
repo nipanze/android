@@ -104,9 +104,9 @@ class NeedFormSchema {
   static const Map<String, NeedFormGuidance> categoryGuidance = {
     'machinery_equipment': NeedFormGuidance(
       titleHint: 'Looking for [equipment needed]',
-      specificationHint: 'Describe the machine, work site, and rental period',
+      specificationHint: 'Add machine or rental requirements not covered above',
       specificationHelper:
-          'Include the model or capacity, location, dates, and whether you need an operator.',
+          'Mention required capacity, attachments, condition, or site constraints.',
     ),
     'professional_services': NeedFormGuidance(
       titleHint: 'e.g. I need an accountant for my small business',
@@ -117,9 +117,9 @@ class NeedFormSchema {
     ),
     'transport_logistics': NeedFormGuidance(
       titleHint: 'I need transport for [cargo needed]',
-      specificationHint: 'Describe the cargo and the journey',
+      specificationHint: 'Add cargo or handling requirements not covered above',
       specificationHelper:
-          'Include pickup and drop-off points, cargo size or weight, preferred dates, and loading needs.',
+          'Mention fragile items, loading support, or special handling needs.',
     ),
     'specialized_products': NeedFormGuidance(
       titleHint: 'Looking for [product or part needed]',
@@ -138,7 +138,7 @@ class NeedFormSchema {
       titleHint: 'e.g. I want help planning a December trip to Sweden',
       specificationHint: 'Add preferences or constraints not covered above',
       specificationHelper:
-          'Do not share passport numbers or private document details.',
+          'Mention travel preferences not covered above. Do not share passport numbers or private document details.',
     ),
     'construction_building': NeedFormGuidance(
       titleHint: 'e.g. Need a contractor to replace my house roof',
@@ -166,22 +166,21 @@ class NeedFormSchema {
     ),
     'events_production': NeedFormGuidance(
       titleHint: 'e.g. Looking for catering for a 200-guest gala',
-      specificationHint: 'Describe the event and the service you need',
+      specificationHint: 'Add requirements not covered by the event fields',
       specificationHelper:
-          'Include the event date, guest count, venue or town, and the services or equipment required.',
+          'Include service details, setup, or special requests.',
     ),
     'music_video': NeedFormGuidance(
       titleHint: 'e.g. I need a videographer for a music video',
-      specificationHint:
-          'Describe the production and the people or services needed',
+      specificationHint: 'Add creative or production requirements',
       specificationHelper:
-          'Include the project type, shoot or performance date, location, and any style or deliverable requirements.',
+          'Describe the concept, style, crew, equipment, or delivery needs.',
     ),
     'weddings_celebrations': NeedFormGuidance(
-      titleHint: 'e.g. Looking to book a wedding photographer in [town]',
-      specificationHint: 'Describe the celebration and the service you need',
+      titleHint: 'e.g. Looking to book a wedding photographer in Kampala',
+      specificationHint: 'Add style or service requirements not covered above',
       specificationHelper:
-          'Include the occasion, date, venue or town, guest count, and any style or package preferences.',
+          'Mention package preferences, setup needs, or special requests.',
     ),
     'energy_utilities': NeedFormGuidance(
       titleHint: 'e.g. I need a reliable power system for my site',
@@ -189,15 +188,58 @@ class NeedFormSchema {
       specificationHelper:
           'Include expected demand, usage patterns, or special site constraints.',
     ),
+    'events_celebrations': NeedFormGuidance(
+      titleHint: 'e.g. I need catering for a family celebration',
+      specificationHint:
+          'Add event requirements not covered by the fields above',
+      specificationHelper:
+          'Mention service details, setup, or special requests.',
+    ),
+    'photo_video_talent': NeedFormGuidance(
+      titleHint: 'e.g. I need a photographer for a product launch',
+      specificationHint: 'Add creative or production requirements',
+      specificationHelper:
+          'Describe the style, crew, equipment, or delivery needs.',
+    ),
+    'beauty_fashion_styling': NeedFormGuidance(
+      titleHint: 'e.g. I need a makeup artist for a wedding',
+      specificationHint: 'Add style or preparation requirements',
+      specificationHelper:
+          'Mention the desired look, products, or preparation schedule.',
+    ),
+    'domestic_household': NeedFormGuidance(
+      titleHint: 'e.g. I need help cleaning my home each week',
+      specificationHint: 'Add household requirements not covered above',
+      specificationHelper:
+          'Mention routines, access needs, or household preferences.',
+    ),
+    'health_medical': NeedFormGuidance(
+      titleHint: 'e.g. I need help arranging a dental appointment',
+      specificationHint: 'Add care or access requirements not covered above',
+      specificationHelper:
+          'Share scheduling or accessibility needs. Avoid posting private medical records.',
+    ),
+    'traditional_cultural': NeedFormGuidance(
+      titleHint: 'e.g. I need performers for a cultural celebration',
+      specificationHint: 'Add cultural or event requirements',
+      specificationHelper:
+          'Mention traditions, program details, or participant needs.',
+    ),
+    'financial_services': NeedFormGuidance(
+      titleHint: 'e.g. I want to compare business financing options',
+      specificationHint: 'Add financial requirements not covered above',
+      specificationHelper:
+          'Mention timing, repayment preferences, or eligibility questions. Do not share account numbers.',
+    ),
   };
 
   static NeedFormGuidance guidanceForCategory(String slug) {
     return categoryGuidance[slug] ??
         const NeedFormGuidance(
           titleHint: 'e.g. Briefly describe what you need',
-          specificationHint: 'Explain what you need and any important details',
+          specificationHint: 'Add requirements not covered by the fields above',
           specificationHelper:
-              'Include quantities, dates, location, preferences, and the result you expect.',
+              'Mention special constraints, preferences, or expected outcomes.',
         );
   }
 
@@ -406,7 +448,7 @@ class NeedFormSchema {
     'machinery_equipment': [
       NeedFormPreset(
         label: 'Equipment rental',
-        title: 'Need [equipment needed] for a job site',
+        title: 'I need [equipment needed] for a job site',
         specification:
             'I need reliable equipment for site work, delivered on time, with clear rental terms and maintenance support.',
         details: {
@@ -422,6 +464,26 @@ class NeedFormSchema {
         details: {
           'duration_days': '7',
           'operator_needed': 'false',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Excavator',
+        title: 'Looking for an excavator for [project or site]',
+        specification:
+            'I need an excavator suited to the job, with availability, operator terms, transport, and total rental cost clearly stated.',
+        details: {
+          'duration_days': '7',
+          'operator_needed': 'true',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Farm machinery',
+        title: 'I want farm machinery for [field work or acreage]',
+        specification:
+            'I need machinery for farm work with availability, capacity, operator terms, transport, and total cost explained.',
+        details: {
+          'duration_days': '3',
+          'operator_needed': 'true',
         },
       ),
     ],
@@ -562,6 +624,30 @@ class NeedFormSchema {
         specification:
             'I need a provider to collect items, confirm receipt, and deliver them safely to the destination.',
         details: const {},
+      ),
+      NeedFormPreset(
+        label: 'House move',
+        title: 'Looking for help moving [household or office items]',
+        specification:
+            'Describe fragile or bulky items, access at both ends, and any packing or loading help required.',
+      ),
+      NeedFormPreset(
+        label: 'Building materials',
+        title: 'I need transport for [building materials]',
+        specification:
+            'Share the material type, load size, handling needs, and delivery timing.',
+      ),
+      NeedFormPreset(
+        label: 'Farm produce',
+        title: 'Looking for transport for [produce or livestock]',
+        specification:
+            'Describe the load, any temperature or animal care needs, and collection timing.',
+      ),
+      NeedFormPreset(
+        label: 'Business deliveries',
+        title: 'I need regular deliveries for [business or route]',
+        specification:
+            'Share delivery frequency, load size, handling requirements, and service hours.',
       ),
     ],
     'specialized_products': [
@@ -854,60 +940,397 @@ class NeedFormSchema {
         label: 'Catering',
         title: 'Looking for catering for [event type]',
         specification:
-            'I need catering for an event, including menu options, service staff, setup, and clear price per guest.',
-        details: {
-          'event_type': 'Event catering',
-        },
+            'Share menu preferences, dietary needs, service style, and setup requirements.',
       ),
       NeedFormPreset(
         label: 'Sound & stage',
         title: 'I need sound and stage equipment for [event type]',
         specification:
-            'I need sound, stage, lighting, setup, and technical support for an event.',
-        details: {
-          'event_type': 'Sound, stage, and lighting',
-        },
+            'Describe the sound, stage, lighting, setup, and technical support needed.',
+      ),
+      NeedFormPreset(
+        label: 'Event decor',
+        title: 'I want decor for [event type]',
+        specification:
+            'Share the theme, colors, decoration style, setup, and teardown needs.',
+      ),
+      NeedFormPreset(
+        label: 'Event photography',
+        title: 'Looking for a photographer for [event type]',
+        specification:
+            'Describe coverage hours, photo style, editing, and delivery needs.',
+      ),
+      NeedFormPreset(
+        label: 'DJ & entertainment',
+        title: 'I need entertainment for [event type]',
+        specification:
+            'Share music preferences, performance length, equipment, and program needs.',
+      ),
+      NeedFormPreset(
+        label: 'Event planning',
+        title: 'I want help planning [event type]',
+        specification:
+            'List the planning, coordination, staffing, and supplier support you need.',
+      ),
+      NeedFormPreset(
+        label: 'Venue hire',
+        title: 'Looking for a venue for [event type]',
+        specification:
+            'Share your setup, accessibility, and facility requirements for the venue.',
+      ),
+      NeedFormPreset(
+        label: 'Event equipment',
+        title: 'I need equipment for [event type]',
+        specification:
+            'Name any equipment, delivery, setup, and collection requirements.',
       ),
     ],
     'music_video': [
       NeedFormPreset(
         label: 'Music video',
-        title: 'Looking for a music video team',
+        title: 'Looking for a music video team for [artist or track]',
         specification:
-            'I need a video team for concept planning, shooting, editing, and delivery of a finished music video.',
-        details: {
-          'production_type': 'Music video',
-        },
+            'Share the creative concept, visual style, crew, and final video formats you need.',
       ),
       NeedFormPreset(
         label: 'Live session',
-        title: 'I want to record a live session',
+        title: 'I want to record a live session for [artist or group]',
         specification:
-            'I need a provider for live session filming or recording, including setup, capture, editing, and final files.',
-        details: {
-          'production_type': 'Live session',
-          'location': 'Studio or venue',
-        },
+            'Describe the audio and video setup, number of cameras, editing, and final files.',
+      ),
+      NeedFormPreset(
+        label: 'Short film',
+        title: 'I need a production team for [short film project]',
+        specification:
+            'Share the visual style, crew roles, equipment, and editing or delivery requirements.',
+      ),
+      NeedFormPreset(
+        label: 'Event coverage',
+        title: 'Looking for video coverage of [event]',
+        specification:
+            'Describe coverage hours, key moments, editing, and the final video format.',
+      ),
+      NeedFormPreset(
+        label: 'Product video',
+        title: 'I want a video to showcase [product or service]',
+        specification:
+            'Share the audience, style, key messages, and versions needed for each platform.',
+      ),
+      NeedFormPreset(
+        label: 'Interview or podcast',
+        title: 'I need recording and editing for [interview or podcast]',
+        specification:
+            'Describe the recording setup, number of speakers, editing, and audio or video deliverables.',
+      ),
+    ],
+    'events_celebrations': [
+      NeedFormPreset(
+        label: 'Catering',
+        title: 'I need catering for [celebration]',
+        specification:
+            'Share menu preferences, dietary needs, service style, and setup requirements.',
+      ),
+      NeedFormPreset(
+        label: 'Decor',
+        title: 'Looking for decor for [celebration]',
+        specification:
+            'Share the theme, colors, decoration style, setup, and teardown needs.',
+      ),
+      NeedFormPreset(
+        label: 'Photography',
+        title: 'I need a photographer for [celebration]',
+        specification:
+            'Describe coverage hours, photo style, editing, and delivery preferences.',
+      ),
+      NeedFormPreset(
+        label: 'Sound & music',
+        title: 'Looking for sound and music for [celebration]',
+        specification:
+            'Share music preferences, equipment, performance length, and program details.',
+      ),
+      NeedFormPreset(
+        label: 'Event planning',
+        title: 'I want help planning [celebration]',
+        specification:
+            'List the planning, coordination, staffing, and supplier support you need.',
+      ),
+      NeedFormPreset(
+        label: 'Venue setup',
+        title: 'I need a venue for [celebration]',
+        specification:
+            'Share setup, accessibility, and facility requirements for the venue.',
+      ),
+    ],
+    'photo_video_talent': [
+      NeedFormPreset(
+        label: 'Photography',
+        title: 'I need a photographer for [project or event]',
+        specification:
+            'Describe the style, coverage, editing, and delivery format you need.',
+      ),
+      NeedFormPreset(
+        label: 'Videography',
+        title: 'Looking for a video team for [project or event]',
+        specification:
+            'Share the concept, filming needs, editing style, and final formats.',
+      ),
+      NeedFormPreset(
+        label: 'Music video',
+        title: 'I want a music video for [artist or track]',
+        specification:
+            'Describe the creative direction, crew, equipment, and deliverables.',
+      ),
+      NeedFormPreset(
+        label: 'Live performance',
+        title: 'I need performers for [event or occasion]',
+        specification:
+            'Share the performance type, duration, technical setup, and audience.',
+      ),
+      NeedFormPreset(
+        label: 'Recording session',
+        title: 'Looking for a recording session for [artist or group]',
+        specification:
+            'Describe the recording setup, number of tracks, mixing, and final files.',
+      ),
+      NeedFormPreset(
+        label: 'Content creator',
+        title: 'I need content created for [brand or platform]',
+        specification:
+            'Share the content format, style, publishing channels, and quantity.',
+      ),
+      NeedFormPreset(
+        label: 'Presenter or MC',
+        title: 'I need a presenter for [program or event]',
+        specification:
+            'Describe the audience, language, program length, and hosting style.',
+      ),
+    ],
+    'beauty_fashion_styling': [
+      NeedFormPreset(
+        label: 'Makeup artist',
+        title: 'I need makeup for [occasion or look]',
+        specification:
+            'Describe the desired look, number of people, products, and preparation time.',
+      ),
+      NeedFormPreset(
+        label: 'Hair styling',
+        title: 'Looking for a hairstylist for [occasion or style]',
+        specification:
+            'Share the style, hair length, products, and appointment needs.',
+      ),
+      NeedFormPreset(
+        label: 'Tailoring',
+        title: 'I need tailoring for [garment or outfit]',
+        specification:
+            'Describe the garment, fit changes, fabric, and completion timing.',
+      ),
+      NeedFormPreset(
+        label: 'Personal styling',
+        title: 'I want help styling outfits for [occasion or need]',
+        specification:
+            'Share the occasion, preferred styles, sizing needs, and budget range.',
+      ),
+      NeedFormPreset(
+        label: 'Nails',
+        title: 'Looking for nail services for [occasion or style]',
+        specification:
+            'Describe the design, products, and number of people to be served.',
+      ),
+      NeedFormPreset(
+        label: 'Fashion design',
+        title: 'I need an outfit designed for [occasion]',
+        specification:
+            'Share the design direction, fabric preferences, fitting needs, and deadline.',
+      ),
+    ],
+    'domestic_household': [
+      NeedFormPreset(
+        label: 'Home cleaning',
+        title: 'I need help cleaning [home or rooms]',
+        specification:
+            'Describe the areas, cleaning frequency, supplies, and any special care needs.',
+      ),
+      NeedFormPreset(
+        label: 'Childcare',
+        title: 'Looking for childcare for [child or schedule]',
+        specification:
+            'Share the schedule, routine, relevant experience, and care preferences.',
+      ),
+      NeedFormPreset(
+        label: 'Home cooking',
+        title: 'I need a cook for [household or occasion]',
+        specification:
+            'Mention meal preferences, dietary needs, and preparation schedule.',
+      ),
+      NeedFormPreset(
+        label: 'Laundry',
+        title: 'Looking for laundry help for [household or business]',
+        specification:
+            'Describe the volume, collection needs, and garment care preferences.',
+      ),
+      NeedFormPreset(
+        label: 'Household support',
+        title: 'I need household help with [routine or task]',
+        specification:
+            'List the regular tasks, schedule, and any access or household preferences.',
+      ),
+      NeedFormPreset(
+        label: 'Home organization',
+        title: 'I want help organizing [room or household area]',
+        specification:
+            'Share the areas, sorting needs, and preferred storage approach.',
+      ),
+    ],
+    'health_medical': [
+      NeedFormPreset(
+        label: 'Dental care',
+        title: 'I need help arranging dental care for [need]',
+        specification:
+            'Share appointment preferences and accessibility needs. Avoid posting private medical records.',
+      ),
+      NeedFormPreset(
+        label: 'Clinic appointment',
+        title: 'Looking to arrange a clinic appointment for [need]',
+        specification:
+            'Mention scheduling or accessibility needs. Share private records directly with the provider.',
+      ),
+      NeedFormPreset(
+        label: 'Home nursing',
+        title: 'I need a home care provider for [support needed]',
+        specification:
+            'Describe the type of support, schedule, and relevant provider qualifications.',
+      ),
+      NeedFormPreset(
+        label: 'Physiotherapy',
+        title: 'Looking for physiotherapy support for [goal]',
+        specification:
+            'Share appointment preferences, mobility access needs, and provider requirements.',
+      ),
+      NeedFormPreset(
+        label: 'Lab services',
+        title: 'I need help arranging [lab service]',
+        specification:
+            'Mention timing or collection needs. Share any private medical information directly with the provider.',
+      ),
+      NeedFormPreset(
+        label: 'Medical equipment',
+        title: 'Looking for [medical equipment needed]',
+        specification:
+            'Describe compatibility, delivery, setup, or training requirements.',
+      ),
+    ],
+    'traditional_cultural': [
+      NeedFormPreset(
+        label: 'Cultural ceremony',
+        title: 'I need support with [cultural ceremony]',
+        specification:
+            'Share the ceremony program, traditions to observe, and participant needs.',
+      ),
+      NeedFormPreset(
+        label: 'Traditional attire',
+        title: 'Looking for traditional attire for [occasion]',
+        specification:
+            'Describe the style, number of outfits, sizing, and completion date.',
+      ),
+      NeedFormPreset(
+        label: 'Music and dance',
+        title: 'I need cultural performers for [occasion]',
+        specification:
+            'Share the performance type, duration, group size, and technical setup.',
+      ),
+      NeedFormPreset(
+        label: 'Ceremony host',
+        title: 'Looking for a host for [traditional occasion]',
+        specification:
+            'Mention language, program length, audience, and traditions to observe.',
+      ),
+      NeedFormPreset(
+        label: 'Cultural instruction',
+        title: 'I want instruction in [cultural skill or practice]',
+        specification:
+            'Describe the learning goal, experience level, and preferred schedule.',
+      ),
+      NeedFormPreset(
+        label: 'Ceremony supplies',
+        title: 'I need supplies for [cultural occasion]',
+        specification:
+            'List the items, quantities, quality preferences, and delivery timing.',
+      ),
+    ],
+    'financial_services': [
+      NeedFormPreset(
+        label: 'Business financing',
+        title: 'I want to compare financing for [business need]',
+        specification:
+            'Share the intended use, timing, and repayment preferences. Do not include account numbers.',
+      ),
+      NeedFormPreset(
+        label: 'Personal loan',
+        title: 'Looking for a personal loan for [purpose]',
+        specification:
+            'Mention the amount range and timing. Do not share account or identity numbers.',
+      ),
+      NeedFormPreset(
+        label: 'SACCO membership',
+        title: 'I want to join a SACCO for [goal]',
+        specification:
+            'Share your preferred area, membership questions, and savings goals.',
+      ),
+      NeedFormPreset(
+        label: 'Savings group',
+        title: 'Looking for a savings group for [goal]',
+        specification:
+            'Mention contribution preferences, meeting schedule, and membership questions.',
+      ),
+      NeedFormPreset(
+        label: 'Currency exchange',
+        title: 'I need help exchanging [currency or amount]',
+        specification:
+            'Share the currencies, timing, and preferred transaction method. Do not include account numbers.',
+      ),
+      NeedFormPreset(
+        label: 'Financial planning',
+        title: 'I want financial planning support for [goal]',
+        specification:
+            'Describe your goals, preferred support, and any qualifications you expect.',
       ),
     ],
     'weddings_celebrations': [
       NeedFormPreset(
         label: 'Photography',
-        title: 'Need a photographer for a wedding',
+        title: 'I need a photographer for [celebration]',
         specification:
-            'I need photography coverage for a celebration, including package options, editing, delivery time, and album details.',
-        details: {
-          'celebration_type': 'Wedding reception, 150 guests',
-        },
+            'Share coverage hours, photo style, editing, and delivery or album preferences.',
       ),
       NeedFormPreset(
         label: 'Decor',
-        title: 'Looking for decor for a celebration',
+        title: 'Looking for decor for [celebration]',
         specification:
-            'I need decor setup for a celebration, including theme options, flowers, seating, lighting, setup, and teardown.',
-        details: {
-          'celebration_type': 'Wedding / introduction ceremony',
-        },
+            'Share the theme, colors, decoration style, setup, and teardown needs.',
+      ),
+      NeedFormPreset(
+        label: 'Catering',
+        title: 'I want catering for [celebration]',
+        specification:
+            'Share menu preferences, dietary needs, service style, and setup requirements.',
+      ),
+      NeedFormPreset(
+        label: 'Makeup & styling',
+        title: 'I need makeup and styling for [celebration]',
+        specification:
+            'Describe the look, number of people, preparation schedule, and any products or styling needs.',
+      ),
+      NeedFormPreset(
+        label: 'Sound & music',
+        title: 'Looking for sound and music for [celebration]',
+        specification:
+            'Share music preferences, equipment, performance length, and program details.',
+      ),
+      NeedFormPreset(
+        label: 'Event planning',
+        title: 'I want help planning [celebration]',
+        specification:
+            'List the planning, coordination, staffing, and supplier support you need.',
       ),
     ],
     'energy_utilities': [
@@ -930,6 +1353,27 @@ class NeedFormSchema {
           'system_type': 'Water pump',
           'installation_labor_needed': 'true',
         },
+      ),
+      NeedFormPreset(
+        label: 'Solar maintenance',
+        title: 'I need maintenance for [solar system or issue]',
+        specification:
+            'Describe the system, symptoms, previous repairs, and any parts you suspect need attention.',
+        details: {'system_type': 'Solar system'},
+      ),
+      NeedFormPreset(
+        label: 'Water treatment',
+        title: 'I need water treatment for [home or business]',
+        specification:
+            'Describe the water source, intended use, and any known quality concerns.',
+        details: {'system_type': 'Water treatment / filtration system'},
+      ),
+      NeedFormPreset(
+        label: 'Borehole pump',
+        title: 'Looking for a borehole pump for [site]',
+        specification:
+            'Share the borehole depth, required flow, power availability, and installation needs.',
+        details: {'system_type': 'Borehole pump'},
       ),
       NeedFormPreset(
         label: 'Backup power',
@@ -1151,22 +1595,12 @@ class NeedFormSchema {
         label: 'Quantity or volume',
         hint: 'e.g. 50 units',
       ),
-      NeedFormField.text(
-        'delivery_location',
-        label: 'Delivery destination',
-        hint: 'Town or delivery area',
-      ),
     ],
     'construction_building': [
       NeedFormField.text(
         'project_type',
         label: 'Construction or work type',
         hint: 'e.g. Residential roofing, Commercial plumbing',
-      ),
-      NeedFormField.text(
-        'site_location',
-        label: 'Site / property location',
-        hint: 'District or site address',
       ),
       NeedFormField.text(
         'project_scope',
@@ -1211,54 +1645,81 @@ class NeedFormSchema {
       ),
     ],
     'events_production': [
-      NeedFormField.text(
-        'event_type',
-        label: 'Event type & guest count',
-        hint: 'e.g. Corporate gala dinner (200 guests)',
+      NeedFormField.number(
+        'guest_count',
+        label: 'Expected guest count',
+        hint: 'e.g. 200',
       ),
       NeedFormField.date(
         'event_date',
         label: 'Event date',
         hint: 'e.g. 15 November 2026',
       ),
-      NeedFormField.text(
-        'venue_location',
-        label: 'Venue or town',
-        hint: 'Venue name or town',
+    ],
+    'events_celebrations': [
+      NeedFormField.number(
+        'guest_count',
+        label: 'Expected guest count',
+        hint: 'e.g. 80',
+        isRequired: false,
+      ),
+      NeedFormField.date(
+        'event_date',
+        label: 'Event date',
+        hint: 'e.g. 15 November 2026',
+        isRequired: false,
       ),
     ],
     'music_video': [
-      NeedFormField.text(
-        'production_type',
-        label: 'Music or video project',
-        hint: 'e.g. Music video, live session, short film',
-      ),
       NeedFormField.date(
         'shoot_date',
         label: 'Shoot or performance date',
         hint: 'e.g. 15 November 2026',
+        isRequired: false,
       ),
-      NeedFormField.text(
-        'location',
-        label: 'Studio, venue, or town',
-        hint: 'Studio, venue, or town',
+    ],
+    'photo_video_talent': [
+      NeedFormField.date(
+        'shoot_date',
+        label: 'Shoot or performance date',
+        hint: 'e.g. 15 November 2026',
+        isRequired: false,
+      ),
+    ],
+    'beauty_fashion_styling': [
+      NeedFormField.date(
+        'appointment_date',
+        label: 'Appointment or event date',
+        hint: 'e.g. 15 November 2026',
+        isRequired: false,
+      ),
+    ],
+    'health_medical': [
+      NeedFormField.date(
+        'appointment_date',
+        label: 'Preferred appointment date',
+        hint: 'e.g. 15 November 2026',
+        isRequired: false,
+      ),
+    ],
+    'traditional_cultural': [
+      NeedFormField.date(
+        'event_date',
+        label: 'Event date',
+        hint: 'e.g. 15 November 2026',
+        isRequired: false,
       ),
     ],
     'weddings_celebrations': [
-      NeedFormField.text(
-        'celebration_type',
-        label: 'Celebration type and guest count',
-        hint: 'e.g. Wedding reception, 150 guests',
+      NeedFormField.number(
+        'guest_count',
+        label: 'Expected guest count',
+        hint: 'e.g. 150',
       ),
       NeedFormField.date(
         'event_date',
         label: 'Event date',
         hint: 'e.g. 15 November 2026',
-      ),
-      NeedFormField.text(
-        'venue_location',
-        label: 'Venue or town',
-        hint: 'Venue or town',
       ),
     ],
     'energy_utilities': [

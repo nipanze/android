@@ -12,6 +12,7 @@ class FormSuggestionStrip extends StatelessWidget {
     this.maxVisibleChoices,
     this.moreSubtitle = 'Select an option to continue.',
     this.moreDescriptions = const {},
+    this.pinnedChoices = const {},
   });
 
   final List<String> suggestions;
@@ -23,9 +24,86 @@ class FormSuggestionStrip extends StatelessWidget {
   final int? maxVisibleChoices;
   final String moreSubtitle;
   final Map<String, String> moreDescriptions;
+  final Set<String> pinnedChoices;
 
   IconData _iconForOption(String value) {
     final text = value.toLowerCase();
+    if (text.contains('catering') || text.contains('food')) {
+      return Icons.restaurant_rounded;
+    }
+    if (text.contains('decor') || text.contains('flor')) {
+      return Icons.celebration_rounded;
+    }
+    if (text.contains('photograph') || text.contains('photo')) {
+      return Icons.photo_camera_rounded;
+    }
+    if (text.contains('dj') || text.contains('entertainment')) {
+      return Icons.music_note_rounded;
+    }
+    if (text.contains('venue')) return Icons.location_city_rounded;
+    if (text.contains('event planning') || text.contains('planner')) {
+      return Icons.event_available_rounded;
+    }
+    if (text.contains('sound') ||
+        text.contains('stage') ||
+        text.contains('lighting')) {
+      return Icons.speaker_rounded;
+    }
+    if (text.contains('event equipment')) return Icons.event_rounded;
+    if (text.contains('makeup') || text.contains('nail')) {
+      return Icons.face_retouching_natural_rounded;
+    }
+    if (text.contains('hair') || text.contains('styling')) {
+      return Icons.content_cut_rounded;
+    }
+    if (text.contains('tailor') ||
+        text.contains('fashion') ||
+        text.contains('attire')) {
+      return Icons.checkroom_rounded;
+    }
+    if (text.contains('cleaning') || text.contains('household')) {
+      return Icons.cleaning_services_rounded;
+    }
+    if (text.contains('childcare')) return Icons.child_care_rounded;
+    if (text.contains('laundry')) return Icons.local_laundry_service_rounded;
+    if (text.contains('home cooking') || text.contains('cook')) {
+      return Icons.restaurant_rounded;
+    }
+    if (text.contains('dental') ||
+        text.contains('medical') ||
+        text.contains('lab')) {
+      return Icons.medical_services_rounded;
+    }
+    if (text.contains('physiotherapy') || text.contains('home nursing')) {
+      return Icons.health_and_safety_rounded;
+    }
+    if (text.contains('sacco') ||
+        text.contains('savings') ||
+        text.contains('loan') ||
+        text.contains('financing')) {
+      return Icons.account_balance_rounded;
+    }
+    if (text.contains('currency exchange'))
+      return Icons.currency_exchange_rounded;
+    if (text.contains('financial planning')) return Icons.calculate_rounded;
+    if (text.contains('traditional attire')) return Icons.checkroom_rounded;
+    if (text.contains('cultural') || text.contains('ceremony host')) {
+      return Icons.diversity_3_rounded;
+    }
+    if (text.contains('house move') || text.contains('business deliveries')) {
+      return Icons.local_shipping_rounded;
+    }
+    if (text.contains('podcast') || text.contains('interview')) {
+      return Icons.mic_rounded;
+    }
+    if (text.contains('music video') || text.contains('live session')) {
+      return Icons.video_camera_back_rounded;
+    }
+    if (text.contains('short film') || text.contains('product video')) {
+      return Icons.movie_creation_rounded;
+    }
+    if (text.contains('event coverage'))
+      return Icons.video_camera_front_rounded;
     if (text.contains('hajj') ||
         text.contains('umrah') ||
         text.contains('holiday') ||
@@ -350,6 +428,18 @@ class FormSuggestionStrip extends StatelessWidget {
         .toSet()
         .toList();
     if (values.isEmpty) return const SizedBox.shrink();
+    final pinnedValues =
+        values.where((value) => pinnedChoices.contains(value)).toList();
+    final choiceValues =
+        values.where((value) => !pinnedChoices.contains(value)).toList();
+    // Keep a choice made from the More sheet in the visible chip row. The
+    // displaced option remains available from More.
+    final selected = selectedValue;
+    if (selected != null && choiceValues.contains(selected)) {
+      choiceValues
+        ..remove(selected)
+        ..insert(0, selected);
+    }
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     Widget choiceChip(String value) {
@@ -405,15 +495,29 @@ class FormSuggestionStrip extends StatelessWidget {
           maxLines: 1,
         )..layout();
         final moreWidth = morePainter.width + 22;
+        final pinnedWidth = pinnedValues.fold<double>(
+          0,
+          (width, value) => width + chipWidth(value),
+        );
         final availableWidth = constraints.maxWidth;
-        final limit = choiceLimit < values.length ? choiceLimit : values.length;
+        final limit = choiceLimit < choiceValues.length
+            ? choiceLimit
+            : choiceValues.length;
+        if (choiceValues.length <= choiceLimit) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: values.map(choiceChip).toList()),
+          );
+        }
         var visibleLimit = 0;
         var visibleWidth = 0.0;
         for (var index = 0; index < limit; index++) {
-          final nextWidth = chipWidth(values[index]);
-          final hasMoreAfter = index < values.length - 1;
-          final requiredWidth =
-              visibleWidth + nextWidth + (hasMoreAfter ? moreWidth : 0);
+          final nextWidth = chipWidth(choiceValues[index]);
+          final hasMoreAfter = index < choiceValues.length - 1;
+          final requiredWidth = visibleWidth +
+              nextWidth +
+              pinnedWidth +
+              (hasMoreAfter ? moreWidth : 0);
           // Leave a small safety margin for font shaping and fractional
           // layout rounding so the pinned More chip never overflows the row.
           if (requiredWidth + 12 > availableWidth) break;
@@ -421,10 +525,13 @@ class FormSuggestionStrip extends StatelessWidget {
           visibleLimit++;
         }
 
-        final hiddenValues = values.skip(visibleLimit).toList();
+        final hiddenValues = choiceValues.skip(visibleLimit).toList();
         final hasSelectedHiddenValue =
             selectedValue != null && hiddenValues.contains(selectedValue);
-        final visibleChips = values.take(visibleLimit).map(choiceChip).toList();
+        final visibleChips = [
+          ...choiceValues.take(visibleLimit).map(choiceChip),
+          ...pinnedValues.map(choiceChip),
+        ];
         if (hiddenValues.isEmpty) {
           return Row(children: visibleChips);
         }
@@ -435,7 +542,7 @@ class FormSuggestionStrip extends StatelessWidget {
               : colors.primary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(10),
           child: InkWell(
-            onTap: () => _showMore(context, values, visibleLimit),
+            onTap: () => _showMore(context, choiceValues, visibleLimit),
             borderRadius: BorderRadius.circular(10),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
