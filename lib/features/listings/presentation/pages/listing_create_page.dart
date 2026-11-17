@@ -2984,6 +2984,27 @@ class _LoanPurposePickerSheetState extends State<_LoanPurposePickerSheet> {
   String _purposeName(Map<String, dynamic> row) =>
       row['name']?.toString() ?? '';
 
+  String _categoryIcon(Map<String, dynamic> row) {
+    switch (row['slug']?.toString()) {
+      case 'lifestyle':
+        return '🌿';
+      case 'education':
+        return '🎓';
+      case 'property':
+        return '🏠';
+      case 'agricultural':
+        return '🌱';
+      case 'asset_financing':
+        return '🚜';
+      case 'business':
+        return '💼';
+      case 'personal':
+        return '👤';
+      default:
+        return '💰';
+    }
+  }
+
   List<Map<String, dynamic>> _purposesFor(String slug) {
     final rows =
         _purposes.where((row) => row['category_slug'] == slug).toList();
@@ -3049,6 +3070,8 @@ class _LoanPurposePickerSheetState extends State<_LoanPurposePickerSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final border = isDark ? AppColors.borderDark : AppColors.borderLight;
     final category =
         _categories.where((row) => row['slug'] == _categorySlug).firstOrNull;
     final query = _searchController.text.trim().toLowerCase();
@@ -3060,247 +3083,260 @@ class _LoanPurposePickerSheetState extends State<_LoanPurposePickerSheet> {
             .toDouble(),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          20,
-          4,
-          20,
-          12,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                if (category != null)
-                  IconButton(
-                    onPressed: () => setState(() => _categorySlug = null),
-                    tooltip: 'Back to categories',
-                    icon: const Icon(Icons.arrow_back),
-                    constraints:
-                        const BoxConstraints(minWidth: 44, minHeight: 44),
-                  ),
-                Expanded(
-                  child: Text(
-                    category == null
-                        ? 'What is the loan for?'
-                        : _categoryName(category),
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  tooltip: 'Close',
-                  icon: const Icon(Icons.close),
-                  constraints:
-                      const BoxConstraints(minWidth: 44, minHeight: 44),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            TextField(
-              controller: _searchController,
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                hintText: category == null
-                    ? 'Search, e.g. boda, school, farm'
-                    : 'Search all purposes',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isEmpty
-                    ? null
-                    : IconButton(
-                        tooltip: 'Clear search',
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {});
-                        },
-                        icon: const Icon(Icons.close),
+        padding: const EdgeInsets.only(bottom: 12),
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                child: Row(
+                  children: [
+                    if (category != null)
+                      IconButton(
+                        onPressed: () => setState(() => _categorySlug = null),
+                        tooltip: 'Back to categories',
+                        icon: const Icon(Icons.arrow_back),
+                        constraints:
+                            const BoxConstraints(minWidth: 44, minHeight: 44),
                       ),
-                filled: true,
-                fillColor: theme.colorScheme.surfaceContainerHighest,
-                isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 13, horizontal: 14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.outlineVariant,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.outlineVariant,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide:
-                      const BorderSide(color: AppColors.accent, width: 1.2),
+                    Expanded(
+                      child: Text(
+                        category == null
+                            ? 'What is the loan for?'
+                            : _categoryName(category),
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      tooltip: 'Close',
+                      icon: const Icon(Icons.close),
+                      constraints:
+                          const BoxConstraints(minWidth: 44, minHeight: 44),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            if (category == null) ...[
-              const SizedBox(height: 12),
-              Text(
-                'Pick a category first, then the purpose.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+              Divider(
+                height: 1,
+                color: border,
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (_) => setState(() {}),
+                  decoration: InputDecoration(
+                    hintText: category == null
+                        ? 'Search, e.g. boda, school, farm'
+                        : 'Search all purposes',
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                    suffixIcon: _searchController.text.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: 'Clear search',
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {});
+                            },
+                            icon: const Icon(Icons.clear_rounded, size: 18),
+                          ),
+                    filled: true,
+                    fillColor: theme.colorScheme.surfaceContainerHighest,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
                 ),
+              ),
+              const SizedBox(height: 8),
+              Flexible(
+                fit: FlexFit.loose,
+                child: category == null
+                    ? _visibleCategories.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _reloadFailed
+                                        ? 'Could not reload the loan catalogue. Check the database connection and try again.'
+                                        : _categories.isEmpty
+                                            ? 'No active loan categories were returned. Apply the catalogue SQL patches, then retry.'
+                                            : 'No categories or purposes match your search.',
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  if (_categories.isEmpty) ...[
+                                    const SizedBox(height: 12),
+                                    OutlinedButton.icon(
+                                      onPressed:
+                                          _reloading ? null : _reloadCatalog,
+                                      icon: _reloading
+                                          ? const SizedBox.square(
+                                              dimension: 16,
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2),
+                                            )
+                                          : const Icon(Icons.refresh),
+                                      label: Text(
+                                          _reloading ? 'Loading…' : 'Retry'),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          )
+                        : ListView.separated(
+                            shrinkWrap: true,
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            itemCount: _visibleCategories.length,
+                            separatorBuilder: (_, __) =>
+                                Divider(height: 1, color: border),
+                            itemBuilder: (context, index) {
+                              final row = _visibleCategories[index];
+                              final slug = row['slug'].toString();
+                              final purposes = _purposesFor(slug);
+                              final matchingPurpose = query.isEmpty
+                                  ? null
+                                  : purposes
+                                      .where((purpose) => _purposeName(purpose)
+                                          .toLowerCase()
+                                          .contains(query))
+                                      .firstOrNull;
+                              final selectedName =
+                                  slug == widget.selectedCategory
+                                      ? _purposes
+                                          .where((purpose) =>
+                                              purpose['slug'] ==
+                                                  widget.selectedPurpose &&
+                                              purpose['category_slug'] == slug)
+                                          .map(_purposeName)
+                                          .firstOrNull
+                                      : null;
+                              final countLabel = '${purposes.length}'
+                                  '${purposes.length == 1 ? ' purpose' : ' purposes'}';
+                              final subtitle = matchingPurpose != null
+                                  ? '$countLabel · ${_purposeName(matchingPurpose)}'
+                                  : selectedName != null
+                                      ? '$countLabel · $selectedName'
+                                      : countLabel;
+                              return ListTile(
+                                minVerticalPadding: 12,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                leading: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: theme
+                                        .colorScheme.surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    _categoryIcon(row),
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                ),
+                                title: Text(
+                                  _categoryName(row),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    height: 1.2,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  subtitle,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    height: 1.25,
+                                    fontWeight: FontWeight.w500,
+                                    color: matchingPurpose != null
+                                        ? theme.colorScheme.primary
+                                        : theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                trailing:
+                                    const Icon(Icons.chevron_right_rounded),
+                                onTap: () =>
+                                    setState(() => _categorySlug = slug),
+                              );
+                            },
+                          )
+                    : _visiblePurposes.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Text(
+                                _purposesFor(_categorySlug!).isEmpty
+                                    ? 'No active purposes are configured for this category.'
+                                    : 'No purposes match your search.',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                          )
+                        : ListView.separated(
+                            shrinkWrap: true,
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            itemCount: _visiblePurposes.length,
+                            separatorBuilder: (_, __) =>
+                                Divider(height: 1, color: border),
+                            itemBuilder: (context, index) {
+                              final row = _visiblePurposes[index];
+                              final isSelected =
+                                  row['slug'] == widget.selectedPurpose;
+                              return ListTile(
+                                minVerticalPadding: 12,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                title: Text(
+                                  _purposeName(row),
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    color: isSelected
+                                        ? theme.colorScheme.primary
+                                        : theme.colorScheme.onSurface,
+                                  ),
+                                ),
+                                trailing: isSelected
+                                    ? Icon(Icons.check_circle_rounded,
+                                        color: theme.colorScheme.primary,
+                                        size: 20)
+                                    : Icon(Icons.chevron_right_rounded,
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                        size: 20),
+                                onTap: () => _selectPurpose(row),
+                              );
+                            },
+                          ),
               ),
             ],
-            const SizedBox(height: 8),
-            Flexible(
-              fit: FlexFit.loose,
-              child: category == null
-                  ? _visibleCategories.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _reloadFailed
-                                      ? 'Could not reload the loan catalogue. Check the database connection and try again.'
-                                      : _categories.isEmpty
-                                          ? 'No active loan categories were returned. Apply the catalogue SQL patches, then retry.'
-                                          : 'No categories or purposes match your search.',
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                                if (_categories.isEmpty) ...[
-                                  const SizedBox(height: 12),
-                                  OutlinedButton.icon(
-                                    onPressed:
-                                        _reloading ? null : _reloadCatalog,
-                                    icon: _reloading
-                                        ? const SizedBox.square(
-                                            dimension: 16,
-                                            child: CircularProgressIndicator(
-                                                strokeWidth: 2),
-                                          )
-                                        : const Icon(Icons.refresh),
-                                    label:
-                                        Text(_reloading ? 'Loading…' : 'Retry'),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        )
-                      : ListView.separated(
-                          shrinkWrap: true,
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          itemCount: _visibleCategories.length,
-                          separatorBuilder: (_, __) => Divider(
-                            height: 1,
-                            thickness: 1,
-                            color: theme.colorScheme.outlineVariant
-                                .withValues(alpha: .72),
-                          ),
-                          itemBuilder: (context, index) {
-                            final row = _visibleCategories[index];
-                            final slug = row['slug'].toString();
-                            final purposes = _purposesFor(slug);
-                            final matchingPurpose = query.isEmpty
-                                ? null
-                                : purposes
-                                    .where((purpose) => _purposeName(purpose)
-                                        .toLowerCase()
-                                        .contains(query))
-                                    .firstOrNull;
-                            final selectedName = slug == widget.selectedCategory
-                                ? _purposes
-                                    .where((purpose) =>
-                                        purpose['slug'] ==
-                                            widget.selectedPurpose &&
-                                        purpose['category_slug'] == slug)
-                                    .map(_purposeName)
-                                    .firstOrNull
-                                : null;
-                            final countLabel = '${purposes.length}'
-                                '${purposes.length == 1 ? ' purpose' : ' purposes'}';
-                            final subtitle = matchingPurpose != null
-                                ? '$countLabel · ${_purposeName(matchingPurpose)}'
-                                : selectedName != null
-                                    ? '$countLabel · $selectedName'
-                                    : countLabel;
-                            return ListTile(
-                              minVerticalPadding: 7,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 2),
-                              title: Text(
-                                _categoryName(row),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  height: 1.2,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              subtitle: Text(
-                                subtitle,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  height: 1.25,
-                                  fontWeight: FontWeight.w500,
-                                  color: matchingPurpose != null
-                                      ? theme.colorScheme.primary
-                                      : theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () => setState(() => _categorySlug = slug),
-                            );
-                          },
-                        )
-                  : _visiblePurposes.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Text(
-                              _purposesFor(_categorySlug!).isEmpty
-                                  ? 'No active purposes are configured for this category.'
-                                  : 'No purposes match your search.',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        )
-                      : ListView.separated(
-                          shrinkWrap: true,
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          itemCount: _visiblePurposes.length,
-                          separatorBuilder: (_, __) => Divider(
-                            height: 1,
-                            thickness: 1,
-                            color: theme.colorScheme.outlineVariant
-                                .withValues(alpha: .72),
-                          ),
-                          itemBuilder: (context, index) {
-                            final row = _visiblePurposes[index];
-                            return ListTile(
-                              minVerticalPadding: 7,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 2),
-                              title: Text(_purposeName(row)),
-                              trailing: row['slug'] == widget.selectedPurpose
-                                  ? Icon(Icons.check,
-                                      color: theme.colorScheme.primary)
-                                  : null,
-                              onTap: () => _selectPurpose(row),
-                            );
-                          },
-                        ),
-            ),
-          ],
+          ),
         ),
       ),
     );

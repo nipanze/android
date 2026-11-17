@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,6 +32,9 @@ class PostingSystemPage extends StatefulWidget {
 }
 
 class _PostingSystemPageState extends State<PostingSystemPage> {
+  late final List<_PostingPrompt> _popularPrompts;
+  Timer? _searchHintTimer;
+  int _searchHintOffset = 0;
   final _search = TextEditingController();
   final _pickerScroll = ScrollController();
   final _budget = TextEditingController();
@@ -59,6 +63,15 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
   @override
   void initState() {
     super.initState();
+    final rotatingPrompts = _prompts.skip(6).toList()..shuffle(Random());
+    _popularPrompts = [
+      ..._prompts.take(6),
+      ...rotatingPrompts.take(4),
+    ]..shuffle(Random());
+    _searchHintTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!mounted || _search.text.isNotEmpty) return;
+      setState(() => _searchHintOffset++);
+    });
     _draftId = widget.draftId;
     _pickerScroll.addListener(_onPickerScroll);
     _budget.addListener(_refresh);
@@ -298,6 +311,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
   @override
   void dispose() {
     _scrollIdleTimer?.cancel();
+    _searchHintTimer?.cancel();
     _pickerScroll
       ..removeListener(_onPickerScroll)
       ..dispose();
@@ -309,14 +323,37 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
     super.dispose();
   }
 
+  String get _searchHint {
+    final popularCategories = _popularPrompts
+        .map((prompt) => prompt.category)
+        .whereType<String>()
+        .toSet();
+    final presets = NeedFormSchema.categoryPresets.entries
+        .where((entry) {
+          final categorySlug = entry.key == 'photo_video_music_talent'
+              ? 'photo_video_talent'
+              : entry.key;
+          return !popularCategories.contains(categorySlug);
+        })
+        .expand((entry) => entry.value.map((preset) => preset.label))
+        .toList();
+    if (presets.isEmpty) return 'Search for a service...';
+    final start = _searchHintOffset % presets.length;
+    final examples = List.generate(
+      3,
+      (index) => presets[(start + index) % presets.length],
+    );
+    return 'Search: ${examples.join(', ')}...';
+  }
+
   List<_PostingPrompt> get _visiblePrompts {
+    if (_search.text.trim().isEmpty) return _popularPrompts;
+
     final results = _matchingPrompts;
-    if (_search.text.trim().isEmpty ||
-        _showAllSearchResults ||
-        results.length <= 6) {
+    if (_showAllSearchResults || results.length <= 10) {
       return results;
     }
-    return results.take(6).toList();
+    return results.take(10).toList();
   }
 
   List<_PostingPrompt> get _matchingPrompts {
@@ -382,6 +419,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
     if (value.contains('transport') || value.contains('truck')) return '🚚';
     if (value.contains('equipment') || value.contains('tractor')) return '🚜';
     if (value.contains('loan') || value.contains('finance')) return '💰';
+    if (value.contains('repair') || value.contains('maintenance')) return '🔧';
     if (value.contains('energy') || value.contains('solar')) return '⚡';
     if (value.contains('construct') || value.contains('builder')) return '🏗️';
     if (value.contains('tutor') || value.contains('training')) return '🎓';
@@ -557,7 +595,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
                         setState(() => _showAllSearchResults = false);
                       },
                     ),
-              hintText: 'Search: permit, visa, truck, loan...',
+              hintText: _searchHint,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide.none,

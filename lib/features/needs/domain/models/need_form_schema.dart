@@ -896,6 +896,16 @@ class NeedFormSchema {
         },
       ),
       NeedFormPreset(
+        label: 'Device repair',
+        title: 'I need phone, laptop, or tablet repair for [device and issue]',
+        specification:
+            'My [phone, laptop, or tablet] has [screen, battery, charging, or software issue]. Please diagnose the problem, explain the repair and parts needed, and let me know the expected turnaround. I will back up my data and discuss device access directly with the repairer.',
+        specificationVariants: [
+          'I need help repairing a [device model] with [fault or symptoms]. Please explain the diagnostic process, whether parts are available, and how long the repair may take.',
+          'My [device] needs repair because [what happened and what no longer works]. I would like a diagnosis, repair options, and an estimate of the turnaround before proceeding.',
+        ],
+      ),
+      NeedFormPreset(
         label: 'Digital marketing',
         title: 'Looking for help to [marketing goal]',
         specification:
@@ -949,12 +959,15 @@ class NeedFormSchema {
       ),
       NeedFormPreset(
         label: 'Influencer campaign',
-        title: 'Looking for creators to promote [product or service]',
+        title: 'I need one creator to promote [product or service]',
         specification:
-            'I want to work with two local food creators to make short videos trying our new menu. Please suggest creators whose followers engage with food content and share campaign results afterward.',
+            'I run a local restaurant and need one food creator to make two short videos featuring our new menu and post them on [platform]. Please share your audience location, engagement on food posts, rate, and availability, then provide reach and engagement results after the campaign.',
+        specificationVariants: [
+          'I am looking for one local food creator to visit our restaurant, film a short tasting video about [menu item], and post it to [platform]. Please share your audience location, availability, and a sample of similar work.',
+          'I need one creator to introduce [product or service] to their audience through [video, post, or story]. Please describe the content you would make, when you are available, and how you can share its reach and engagement afterward.',
+        ],
         details: {
-          'deliverables':
-              'Creator shortlist, agreed content, and campaign report',
+          'deliverables': 'Two short videos and campaign performance results',
         },
       ),
       NeedFormPreset(
@@ -1146,9 +1159,13 @@ class NeedFormSchema {
       ),
       NeedFormPreset(
         label: 'Content creator',
-        title: 'I need content created for [brand or platform]',
+        title: 'I need one content creator for [brand or platform]',
         specification:
-            'Share the content format, style, publishing channels, and quantity.',
+            'I need one creator to film three 20-second vertical videos showing how customers can use our new product. Please share your filming and editing style, relevant examples, turnaround time, and whether you can provide captions.',
+        specificationVariants: [
+          'I am looking for one creator to make a short demo of [product] for [platform]. Please share your filming style, an example video, and when you could deliver the edited clip.',
+          'I need one person to create [number] short videos about [brand or product], with captions and a clear call to action. Please describe your approach and show a relevant sample.',
+        ],
       ),
       NeedFormPreset(
         label: 'Presenter or MC',
@@ -1206,27 +1223,43 @@ class NeedFormSchema {
       ),
       NeedFormPreset(
         label: 'Influencer campaign',
-        title: 'I need creators to promote [brand, product, or event]',
+        title: 'I need one creator to promote [brand, product, or event]',
         specification:
-            'Share your audience, platforms, content format, campaign dates, usage rights, and success goals.',
+            'I am looking for one creator whose audience is interested in [topic or customer group] to publish [number and type of posts] on [platform] during [campaign period]. Please share your audience location, engagement on related posts, availability, and content usage terms.',
+        specificationVariants: [
+          'I need one creator to make [content format] about [product or event] for [platform]. Please share who your content reaches, examples of related posts, your availability, and whether I may reuse the content.',
+          'I am looking for one creator to publish [number] posts for [campaign] during [dates]. Please tell me your usual content style, audience location, and how you report post performance.',
+        ],
       ),
       NeedFormPreset(
         label: 'Influencer content collaboration',
-        title: 'Looking to collaborate with creators on [content idea]',
+        title: 'I want to collaborate with one creator on [content idea]',
         specification:
-            'Describe the creative concept, creator audience, deliverables, channels, and collaboration terms.',
+            'I would like to work with one creator on [specific content idea], such as a short video showing [product or activity]. Please share your approach, audience fit, the content you can deliver, and whether we can both share the finished post.',
+        specificationVariants: [
+          'I have an idea for a [video, photo, or live session] about [topic] and would like one creator to shape and make it with me. Please share a related example, your creative approach, and the deliverables you can provide.',
+          'I am looking for one creator to collaborate on [content idea] for [platform]. Please describe your role, how we can coordinate production, and the final content we would each be able to share.',
+        ],
       ),
       NeedFormPreset(
         label: 'UGC creator',
         title: 'I need user-style content for [product or service]',
         specification:
-            'Share the target audience, video or photo format, key points, platform, and usage period.',
+            'I need one creator to make a 30-second vertical video showing [product] in everyday use, with a clear opening, captions, and a short call to action. Please share a relevant sample and confirm whether the delivered video can be used on [platform].',
+        specificationVariants: [
+          'I am looking for one UGC creator to record a 20–30 second vertical video showing [product] solving [customer need]. Please include clear captions and share a sample in a similar style.',
+          'I need a short, natural product video from one creator: show [product feature], explain [key point], and finish with [call to action]. Please confirm your delivery format and content usage terms.',
+        ],
       ),
       NeedFormPreset(
         label: 'Influencer event coverage',
-        title: 'I need creators to cover [event or launch]',
+        title: 'I need one creator to cover [event or launch]',
         specification:
-            'Share the event details, platforms, number of creators, posting schedule, and content rights.',
+            'I need one local creator to attend [event] on [date], capture short behind-the-scenes clips, and publish [number] stories or posts on [platform]. Please share your availability, audience location, and how long you would need at the event.',
+        specificationVariants: [
+          'I am looking for one creator to attend our [launch or event] in [area], capture a few short moments, and post them to [platform]. Please share your availability and the content format you recommend.',
+          'I need one local creator to cover [event] on [date] with [number] stories and one recap post. Please describe your approach, expected time on site, and how you share performance insights.',
+        ],
       ),
       NeedFormPreset(
         label: 'Voice-over artist',
@@ -1260,9 +1293,13 @@ class NeedFormSchema {
       ),
       NeedFormPreset(
         label: 'Influencer product review',
-        title: 'I want creators to review [product or service]',
+        title: 'I want one creator to review [product or service]',
         specification:
-            'Share the audience, platforms, review format, key messages, disclosure needs, and usage rights.',
+            'I would like one creator to try [product or service] and share an honest [video, photo, or written] review with an audience interested in [topic]. Please share your review format, relevant audience insights, availability, and content usage terms.',
+        specificationVariants: [
+          'I am looking for one reviewer to try [product] and create an honest [short video or photo] review for [platform]. Please share an example review and tell me how you disclose gifted or sponsored products.',
+          'I need one creator to test [service or product] and explain their experience to an audience interested in [topic]. Please suggest a format, share a related sample, and confirm your availability and usage terms.',
+        ],
       ),
     ],
     'beauty_fashion_styling': [
