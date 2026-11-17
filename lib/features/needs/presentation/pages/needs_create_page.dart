@@ -18,8 +18,8 @@ import '../../../../shared/widgets/kyc_gate_screen.dart';
 import '../../../../shared/widgets/post_duration_info_card.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../marketplace/domain/models/marketplace_item.dart';
 import '../../../listings/presentation/widgets/listing_create_widgets.dart';
+import '../../../marketplace/domain/models/marketplace_item.dart';
 import '../../../settings/data/system_settings_repository.dart';
 import '../../data/need_draft_exit_guard.dart';
 import '../../data/need_draft_store.dart';
@@ -54,9 +54,15 @@ const _providerStyleNeedCategoryLabels = <String, String>{
 };
 
 class NeedsCreatePage extends StatefulWidget {
-  const NeedsCreatePage({super.key, this.initialCategorySlug, this.draftId});
+  const NeedsCreatePage({
+    super.key,
+    this.initialCategorySlug,
+    this.initialPresetLabel,
+    this.draftId,
+  });
 
   final String? initialCategorySlug;
+  final String? initialPresetLabel;
   final String? draftId;
 
   @override
@@ -134,6 +140,15 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       saveDraft: _saveDraft,
     );
     if (widget.draftId != null) _loadDraft();
+    if (widget.initialPresetLabel != null && widget.draftId == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final preset = NeedFormSchema.presetsForCategory(_categorySlug)
+            .where((item) => item.label == widget.initialPresetLabel)
+            .firstOrNull;
+        if (preset != null) _applyPreset(preset);
+      });
+    }
     _loadCategories();
     _loadLimits();
     _loadRecentRequests();
@@ -227,10 +242,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       if (field.type == NeedFieldType.boolean) {
         _dynamicBooleans.putIfAbsent(field.key, () => false);
       } else {
-        _dynamicControllers.putIfAbsent(
+        final controller = _dynamicControllers.putIfAbsent(
           field.key,
           () => TextEditingController()..addListener(_refresh),
         );
+        if (field.key == 'travel_scope' && controller.text.isEmpty) {
+          controller.text = 'International trip';
+        }
       }
     }
   }
@@ -348,8 +366,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
 
     // Verify required category fields
     final fields = NeedFormSchema.fieldsForCategory(_categorySlug);
-    for (final f in fields) {
-      if (f.isRequired && f.type != NeedFieldType.boolean) {
+    for (final f in fields.where((field) => !_isHiddenTravelField(field))) {
+      if (_isFieldRequired(f) && f.type != NeedFieldType.boolean) {
         final ctrl = _dynamicControllers[f.key];
         if (ctrl == null || ctrl.text.trim().isEmpty) {
           return false;
@@ -379,9 +397,52 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
 
   String get _effectiveLocation {
     if (_categorySlug == 'travel_international') {
-      return _dynamicControllers['departure_city']?.text.trim() ?? '';
+      final startingPoint =
+          _dynamicControllers['departure_city']?.text.trim() ?? '';
+      if (startingPoint.isNotEmpty || !_isLocalTour) return startingPoint;
+      return _dynamicControllers['destination_city']?.text.trim() ?? '';
     }
     return _customLocationController.text.trim();
+  }
+
+  bool get _isLocalTour =>
+      _categorySlug == 'travel_international' &&
+      _dynamicControllers['travel_scope']?.text == 'Local tour';
+
+  bool _isHiddenTravelField(NeedFormField field) =>
+      _categorySlug == 'travel_international' &&
+      (_isLocalTour &&
+              const {'destination_country', 'visa_type', 'nationality'}
+                  .contains(field.key) ||
+          !_isLocalTour && field.key == 'tour_activities');
+
+  bool _isFieldRequired(NeedFormField field) {
+    if (_categorySlug == 'travel_international' &&
+        field.key == 'departure_city') {
+      return !_isLocalTour;
+    }
+    return field.isRequired;
+  }
+
+  List<NeedFormField> get _visibleCategoryFields =>
+      NeedFormSchema.fieldsForCategory(_categorySlug)
+          .where((field) => !_isHiddenTravelField(field))
+          .toList();
+
+  void _setTravelScope(String scope) {
+    final controller = _dynamicControllers['travel_scope'];
+    if (controller == null) return;
+    setState(() {
+      controller.text = scope;
+      if (scope == 'Local tour') {
+        _dynamicControllers['destination_country']?.clear();
+        _dynamicControllers['visa_type']?.clear();
+        _dynamicControllers['nationality']?.clear();
+        _customChoiceFields.removeAll({'visa_type', 'nationality'});
+        final purpose = _dynamicControllers['purpose'];
+        if (purpose != null && purpose.text.isEmpty) purpose.text = 'Tourism';
+      }
+    });
   }
 
   int _budgetValue() {
@@ -600,7 +661,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       _presetTapCounts[presetKey] = tapCount + 1;
       _selectedPresetLabel = preset.label;
       _titleController.text = _presetTitleVariant(preset.title, tapCount);
-      _specificationController.text = preset.specification;
+      _specificationController.text = _presetSpecificationVariant(
+        preset,
+        tapCount,
+      );
       _durationCustomSelected = false;
       _customChoiceFields.clear();
       for (final field in NeedFormSchema.fieldsForCategory(_categorySlug)) {
@@ -609,6 +673,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         } else {
           _dynamicControllers[field.key]?.clear();
         }
+      }
+      if (_categorySlug == 'travel_international') {
+        _dynamicControllers['travel_scope']?.text = 'International trip';
       }
       if (preset.budget != null) {
         _budgetController.text = preset.budget.toString();
@@ -628,6 +695,14 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     });
   }
 
+  String _presetSpecificationVariant(NeedFormPreset preset, int tapCount) {
+    if (tapCount == 0 || preset.specificationVariants.isEmpty) {
+      return preset.specification;
+    }
+    return preset.specificationVariants[
+        (tapCount - 1) % preset.specificationVariants.length];
+  }
+
   String _presetTitleVariant(String title, int tapCount) {
     late final String firstAlternative;
     late final String secondAlternative;
@@ -642,6 +717,21 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       firstAlternative = 'Our institution wants $request';
       secondAlternative = 'We are looking for $request';
       thirdAlternative = 'Our institution is looking for $request';
+    } else if (title.startsWith('Our clinic needs one ')) {
+      final role = title.substring('Our clinic needs one '.length);
+      firstAlternative = 'Our clinic is looking for one $role';
+      secondAlternative = 'We need one $role at our clinic';
+      thirdAlternative = 'Seeking one $role for our clinic';
+    } else if (title.startsWith('I am looking for ')) {
+      final request = title.substring('I am looking for '.length);
+      firstAlternative = 'I need $request';
+      secondAlternative = 'I am seeking $request';
+      thirdAlternative = 'Looking for $request';
+    } else if (title.startsWith('I am seeking ')) {
+      final request = title.substring('I am seeking '.length);
+      firstAlternative = 'I am looking for $request';
+      secondAlternative = 'I need $request';
+      thirdAlternative = 'Seeking $request';
     } else if (title.startsWith('I need to ')) {
       final request = title.substring('I need to '.length);
       firstAlternative = 'I want to $request';
@@ -750,6 +840,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     setState(() {
       _customChoiceFields.clear();
       _selectedPresetLabel = null;
+      if (_categorySlug == 'travel_international') {
+        _dynamicControllers['travel_scope']?.text = 'International trip';
+      }
       _titleController.text = request.title;
       _specificationController.text = request.specification;
       if (request.currency == _currency(context.read<AuthBloc>().state)) {
@@ -824,10 +917,24 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       ...presets.take(presetOffset),
     ];
     final allSuggestions = [
-      ...rotatedPresets.map((preset) => preset.label),
+      if (_categorySlug == 'financial_services') 'Loans',
+      if (_categorySlug == 'financial_services') 'Forex',
+      if (_categorySlug == 'travel_international')
+        ...presets
+            .where((preset) => preset.label == 'Guided tour')
+            .map((preset) => preset.label),
+      ...rotatedPresets
+          .where((preset) =>
+              _categorySlug != 'travel_international' ||
+              preset.label != 'Guided tour')
+          .map((preset) => preset.label),
       ...recentSuggestions,
     ];
     final moreDescriptions = {
+      if (_categorySlug == 'financial_services')
+        'Loans': 'Open the standalone loan request flow.',
+      if (_categorySlug == 'financial_services')
+        'Forex': 'Open the standalone currency exchange flow.',
       for (final preset in presets) preset.label: preset.specification,
       for (final request in recentRequests.take(2))
         'Repeat: ${request.title}': 'Reuse your previous request and edit it.',
@@ -844,6 +951,14 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           moreSubtitle: 'Choose a starting point. You can edit it next.',
           moreDescriptions: moreDescriptions,
           onSelected: (value) {
+            if (_categorySlug == 'financial_services' && value == 'Loans') {
+              context.go(AppRoutes.listingCreate);
+              return;
+            }
+            if (_categorySlug == 'financial_services' && value == 'Forex') {
+              context.go(AppRoutes.forexCreate);
+              return;
+            }
             final recent = recentRequests
                 .where((request) => 'Repeat: ${request.title}' == value)
                 .firstOrNull;
@@ -923,6 +1038,16 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     );
   }
 
+  Widget _buildTravelScopePicker() {
+    return FormSuggestionStrip(
+      label: 'Trip type',
+      topPadding: 0,
+      suggestions: const ['International trip', 'Local tour'],
+      selectedValue: _dynamicControllers['travel_scope']?.text,
+      onSelected: _setTravelScope,
+    );
+  }
+
   List<String> _optionsForField(NeedFormField field) {
     final selected = _dynamicControllers[field.key]?.text;
     return {
@@ -995,6 +1120,13 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     final category = _categorySlug;
     return switch (field.key) {
       'destination_city' => const [
+          'Murchison Falls',
+          'Queen Elizabeth National Park',
+          'Jinja',
+          'Sipi Falls',
+          'Bwindi Impenetrable Forest',
+          'Lake Bunyonyi',
+          'Kampala city tour',
           'Makkah',
           'Madinah',
           'Dubai',
@@ -1140,6 +1272,17 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           'Soil testing',
           'Veterinary care',
           'Farm labour',
+          'Seeds / fertilizer / chemicals',
+          'Combine harvester hire',
+          'Irrigation equipment',
+          'Livestock feed',
+          'Crop spraying / pest control',
+          'Tractor / farm implement hire',
+          'Buyer for farm produce',
+          'Wholesale produce buyer',
+          'Institutional produce supply',
+          'Farmland lease',
+          'Agriculture tours and expos',
         ],
       'system_type' => const [
           'Solar system',
@@ -1382,6 +1525,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   Widget _buildTextInputWithHelpers(
     NeedFormField field, {
     double bottomPadding = 12,
+    String? helperTextOverride,
   }) {
     final controller = _dynamicControllers[field.key]!;
     final isDatePicker = field.type == NeedFieldType.date;
@@ -1404,7 +1548,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
             decoration: _detailsInputDecoration(
               label: _fieldLabel(field.label, field.guidance),
               hintText: field.hint,
-              helperText: field.helperText,
+              helperText: helperTextOverride ?? field.helperText,
               suffixIcon: _clearSuffix(
                 controller,
                 trailing: isDatePicker
@@ -1415,7 +1559,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
               ),
             ),
             validator: (val) {
-              if (field.isRequired && (val == null || val.trim().isEmpty)) {
+              if (_isFieldRequired(field) &&
+                  (val == null || val.trim().isEmpty)) {
                 return 'Please fill in this requirement';
               }
               return null;
@@ -1437,11 +1582,76 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       initialDate = DateTime.tryParse(controller.text);
     }
     final today = DateTime.now();
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate ?? today,
       firstDate: DateTime(2000),
       lastDate: DateTime(today.year + 15),
+      builder: (context, child) => Theme(
+        data: theme.copyWith(
+          datePickerTheme: DatePickerThemeData(
+            backgroundColor: colors.surface,
+            surfaceTintColor: Colors.transparent,
+            elevation: 12,
+            shadowColor: colors.shadow.withValues(alpha: 0.18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(26),
+              side: BorderSide(color: colors.outlineVariant),
+            ),
+            headerBackgroundColor: colors.primary.withValues(alpha: 0.10),
+            headerForegroundColor: colors.onSurface,
+            headerHeadlineStyle: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            headerHelpStyle: theme.textTheme.labelMedium?.copyWith(
+              color: colors.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+            weekdayStyle: theme.textTheme.labelMedium?.copyWith(
+              color: colors.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+            dayStyle: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
+            dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected))
+                return colors.onPrimary;
+              if (states.contains(WidgetState.disabled)) {
+                return colors.onSurface.withValues(alpha: 0.38);
+              }
+              return colors.onSurface;
+            }),
+            dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) return colors.primary;
+              if (states.contains(WidgetState.hovered)) {
+                return colors.primary.withValues(alpha: 0.10);
+              }
+              return null;
+            }),
+            todayForegroundColor: WidgetStatePropertyAll(colors.primary),
+            todayBackgroundColor:
+                WidgetStatePropertyAll(colors.primary.withValues(alpha: 0.08)),
+            dividerColor: colors.outlineVariant,
+            cancelButtonStyle: TextButton.styleFrom(
+              foregroundColor: colors.onSurfaceVariant,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            confirmButtonStyle: FilledButton.styleFrom(
+              foregroundColor: colors.onPrimary,
+              backgroundColor: colors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+        child: child!,
+      ),
     );
     if (picked == null || !mounted) return;
     controller.text = DateFormat.yMMMd(locale).format(picked);
@@ -1654,7 +1864,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
 
   Map<String, dynamic> _collectDetails() {
     final map = <String, dynamic>{};
-    final fields = NeedFormSchema.fieldsForCategory(_categorySlug);
+    final fields = _visibleCategoryFields;
     for (final field in fields) {
       if (field.type == NeedFieldType.boolean) {
         map[field.key] = _dynamicBooleans[field.key] ?? false;
@@ -1688,7 +1898,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
 
-    final dynamicFields = NeedFormSchema.fieldsForCategory(_categorySlug);
+    final dynamicFields = _visibleCategoryFields;
     final shouldPublish = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -1726,7 +1936,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
               ),
               _previewRow(
                 _categorySlug == 'travel_international'
-                    ? 'Departure city'
+                    ? _isLocalTour
+                        ? 'Tour starting point'
+                        : 'Departure city'
                     : 'Location',
                 _effectiveLocation.trim(),
               ),
@@ -1931,6 +2143,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     final dynamicFields = categoryFields
         .where((field) =>
             field.key != 'duration_days' &&
+            field.key != 'travel_scope' &&
+            !_isHiddenTravelField(field) &&
             !(_categorySlug == 'machinery_equipment' &&
                 field.type == NeedFieldType.boolean))
         .toList();
@@ -2066,6 +2280,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (isTravelCategory) ...[
+                          _buildTravelScopePicker(),
+                          const SizedBox(height: 10),
+                        ],
                         if (_categorySlug == 'machinery_equipment') ...[
                           for (final field in categoryFields)
                             if (field.type == NeedFieldType.boolean)
@@ -2177,6 +2395,12 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                                 field,
                                 bottomPadding:
                                     _detailsFieldBottomPadding(field),
+                                helperTextOverride: field.key ==
+                                        'departure_city'
+                                    ? _isLocalTour
+                                        ? 'Optional pickup or starting point.'
+                                        : 'Used to plan your departure route.'
+                                    : null,
                               ),
                           ],
                         ],
@@ -2236,8 +2460,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                   const SizedBox(height: 10),
                   _sectionCard(
                     title: 'Budget and location',
-                    isComplete: _budgetValue() > 0 &&
-                        (isTravelCategory || _effectiveLocation.isNotEmpty),
+                    isComplete:
+                        _budgetValue() > 0 && _effectiveLocation.isNotEmpty,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

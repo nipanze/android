@@ -17,6 +17,7 @@ import '../../data/need_draft_exit_guard.dart';
 import '../../data/need_draft_store.dart';
 import '../../data/needs_repository.dart';
 import '../../domain/models/need_category.dart';
+import '../../domain/models/need_form_schema.dart';
 
 /// Prompt-led entry point for the request posting flow. Driving Permit is the
 /// first fully wired prompt; other cards remain visible as the catalog grows.
@@ -41,6 +42,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
   int _step = 0;
   bool _busy = false;
   bool _showAllDrafts = false;
+  bool _showAllSearchResults = false;
   String? _requestId;
   List<Map<String, dynamic>> _drafts = const [];
   bool _allowExit = false;
@@ -266,8 +268,10 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
         'Driving permit', 'Licence help', '🪪', 'Need', 'Matching people'),
     _PostingPrompt(
         'Visa', 'Verified only', '🛂', 'Need', 'Verified providers only'),
-    _PostingPrompt('Loan', 'Ask lenders', '💰', 'Loan', 'Lenders only'),
-    _PostingPrompt('Currency', 'Buy or sell', '💱', 'Forex', 'Matching people'),
+    _PostingPrompt('Loan', 'Ask lenders', '💰', 'Loan', 'Lenders only',
+        searchTerms: 'loans personal business financing borrower'),
+    _PostingPrompt('Currency', 'Buy or sell', '💱', 'Forex', 'Matching people',
+        searchTerms: 'forex currency exchange rates buy sell'),
     _PostingPrompt('Equipment', 'Hire or buy', '🚜', 'Need', 'Everyone',
         category: 'machinery_equipment'),
     _PostingPrompt('Transport', 'Cargo, moving', '🚚', 'Need', 'Everyone',
@@ -305,13 +309,99 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
     super.dispose();
   }
 
-  List<_PostingPrompt> get _visiblePrompts => _prompts
-      .where((prompt) => '${prompt.title} ${prompt.subtitle}'
+  List<_PostingPrompt> get _visiblePrompts {
+    final results = _matchingPrompts;
+    if (_search.text.trim().isEmpty ||
+        _showAllSearchResults ||
+        results.length <= 6) {
+      return results;
+    }
+    return results.take(6).toList();
+  }
+
+  List<_PostingPrompt> get _matchingPrompts {
+    final query = _search.text.trim().toLowerCase();
+    if (query.isEmpty) return _prompts;
+
+    final presetPrompts = NeedFormSchema.categoryPresets.entries.expand(
+      (entry) {
+        final categorySlug = entry.key == 'photo_video_music_talent'
+            ? 'photo_video_talent'
+            : entry.key;
+        final category = NeedCategory.findBySlug(categorySlug);
+        return entry.value.map(
+          (preset) => _PostingPrompt(
+            preset.label,
+            category.name,
+            _presetIcon(preset.label, category.icon),
+            'Need',
+            'Everyone',
+            category: categorySlug,
+            presetLabel: preset.label,
+            searchTerms: '${preset.title} ${category.name}',
+          ),
+        );
+      },
+    );
+    return [
+      ..._prompts,
+      ...presetPrompts,
+    ].where((prompt) {
+      return '${prompt.title} ${prompt.subtitle} ${prompt.searchTerms ?? ''}'
           .toLowerCase()
-          .contains(_search.text.trim().toLowerCase()))
-      .toList();
+          .contains(query);
+    }).toList();
+  }
+
+  String _presetIcon(String label, String categoryIcon) {
+    final value = label.toLowerCase();
+    if (value.contains('eye')) return '👁️';
+    if (value.contains('skin') || value.contains('facial')) return '✨';
+    if (value.contains('tattoo')) return '🎨';
+    if (value.contains('beauty') || value.contains('makeup')) return '💄';
+    if (value.contains('hair') || value.contains('barber')) return '💇';
+    if (value.contains('nail')) return '💅';
+    if (value.contains('dental') || value.contains('braces')) return '🦷';
+    if (value.contains('medical') ||
+        value.contains('specialist') ||
+        value.contains('consultation') ||
+        value.contains('nursing')) {
+      return '🩺';
+    }
+    if (value.contains('circumcision')) return '🩺';
+    if (value.contains('photo') || value.contains('video')) return '📸';
+    if (value.contains('music') || value.contains('song')) return '🎵';
+    if (value.contains('influencer') || value.contains('creator')) return '📱';
+    if (value.contains('event') || value.contains('wedding')) return '🎉';
+    if (value.contains('tour') || value.contains('travel')) return '✈️';
+    if (value.contains('farm') ||
+        value.contains('crop') ||
+        value.contains('soil')) {
+      return '🌱';
+    }
+    if (value.contains('transport') || value.contains('truck')) return '🚚';
+    if (value.contains('equipment') || value.contains('tractor')) return '🚜';
+    if (value.contains('loan') || value.contains('finance')) return '💰';
+    if (value.contains('energy') || value.contains('solar')) return '⚡';
+    if (value.contains('construct') || value.contains('builder')) return '🏗️';
+    if (value.contains('tutor') || value.contains('training')) return '🎓';
+    if (value.contains('clean') || value.contains('household')) return '🏠';
+    if (value.contains('legal') || value.contains('business')) return '💼';
+    return categoryIcon;
+  }
 
   void _select(_PostingPrompt prompt) {
+    if (prompt.presetLabel != null && prompt.category != null) {
+      final route = Uri(
+        path: AppRoutes.needsCreateFull,
+        queryParameters: {
+          'category': prompt.category,
+          'preset': prompt.presetLabel,
+        },
+      );
+      context.go(route.toString());
+      return;
+    }
     if (prompt.title != 'Driving permit') {
       if (prompt.title == 'Loan') context.go(AppRoutes.listingCreate);
       if (prompt.type == 'Forex') context.go(AppRoutes.forexCreate);
@@ -451,12 +541,22 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
           const SizedBox(height: 12),
           TextField(
             controller: _search,
-            onChanged: (_) => setState(() {}),
+            onChanged: (_) => setState(() => _showAllSearchResults = false),
             decoration: InputDecoration(
               filled: true,
               fillColor: theme.colorScheme.surfaceContainerHighest,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
               prefixIcon: const Icon(Icons.search),
+              suffixIcon: _search.text.isEmpty
+                  ? null
+                  : IconButton(
+                      tooltip: 'Clear search',
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        _search.clear();
+                        setState(() => _showAllSearchResults = false);
+                      },
+                    ),
               hintText: 'Search: permit, visa, truck, loan...',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -488,21 +588,44 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
               _draftTile(draft),
           ],
           const SizedBox(height: 10),
-          _sectionLabel('POPULAR', theme),
-          const SizedBox(height: 7),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: ((MediaQuery.sizeOf(context).width - 44) / 2 / 62)
-                .clamp(2.4, 3.9)
-                .toDouble(),
-            children: [
-              for (final prompt in _visiblePrompts) _promptCard(prompt)
-            ],
+          _sectionLabel(
+            _search.text.trim().isEmpty ? 'POPULAR' : 'RESULTS',
+            theme,
           ),
+          const SizedBox(height: 7),
+          if (_visiblePrompts.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              child: Text(
+                'No matching requests. Try another search.',
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            )
+          else
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio:
+                  ((MediaQuery.sizeOf(context).width - 44) / 2 / 68)
+                      .clamp(2.0, 3.9)
+                      .toDouble(),
+              children: [
+                for (final prompt in _visiblePrompts) _promptCard(prompt)
+              ],
+            ),
+          if (_search.text.trim().isNotEmpty &&
+              _matchingPrompts.length > _visiblePrompts.length)
+            Align(
+              alignment: Alignment.center,
+              child: TextButton(
+                onPressed: () => setState(() => _showAllSearchResults = true),
+                child: Text('Show all ${_matchingPrompts.length} results'),
+              ),
+            ),
           const SizedBox(height: 9),
           _somethingElseCard(theme),
         ],
@@ -705,24 +828,29 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
             borderRadius: BorderRadius.circular(13),
           ),
           child: Row(children: [
-            _iconBox(prompt.icon, size: 52),
+            _iconBox(prompt.icon, size: 46),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(prompt.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                          fontWeight: FontWeight.w800, fontSize: 14)),
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                        height: 1.1,
+                      )),
                   const SizedBox(height: 2),
                   Text(prompt.subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            fontSize: 12,
+                            fontSize: 11,
+                            height: 1,
                             fontWeight: FontWeight.w400,
                           )),
                 ],
@@ -912,13 +1040,15 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
 class _PostingPrompt {
   const _PostingPrompt(
       this.title, this.subtitle, this.icon, this.type, this.audience,
-      {this.category});
+      {this.category, this.presetLabel, this.searchTerms});
   final String title;
   final String subtitle;
   final String icon;
   final String type;
   final String audience;
   final String? category;
+  final String? presetLabel;
+  final String? searchTerms;
 }
 
 class _AddServiceEdgeButton extends StatelessWidget {
@@ -973,8 +1103,8 @@ class _AddServiceEdgeButton extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6D4AFF)
-                              .withValues(alpha: 0.32),
+                          color:
+                              const Color(0xFF6D4AFF).withValues(alpha: 0.32),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),

@@ -233,6 +233,7 @@ class AppRouter {
               state,
               NeedsCreatePage(
                 initialCategorySlug: state.uri.queryParameters['category'],
+                initialPresetLabel: state.uri.queryParameters['preset'],
                 draftId: state.uri.queryParameters['draft'],
               ),
             ),
