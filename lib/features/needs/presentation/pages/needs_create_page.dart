@@ -50,6 +50,7 @@ const _providerStyleNeedCategoryLabels = <String, String>{
   'health_medical': 'Health & Medical',
   'business_investment': 'Business & Investment',
   'financial_services': 'Finance & Investments',
+  'property_real_estate': 'Property & Real Estate',
   'traditional_cultural': 'Traditional & Cultural Services',
 };
 
@@ -1026,10 +1027,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     );
   }
 
-  Widget _buildOptionPills(NeedFormField field) {
+  Widget _buildOptionPills(NeedFormField field, {String label = 'Options'}) {
     final selected = _dynamicControllers[field.key]?.text.trim();
     return FormSuggestionStrip(
-      label: 'Options',
+      label: label,
       topPadding: 0,
       suggestions: _optionsForField(field),
       maxVisibleChoices: _maxVisibleChoiceCount(_optionsForField(field).length),
@@ -2342,6 +2343,14 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                               const SizedBox.shrink()
                             else if (field.type == NeedFieldType.boolean)
                               _buildBooleanNeedField(field)
+                            else if (field.key == 'property_contact_preference')
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _buildOptionPills(
+                                  field,
+                                  label: field.label,
+                                ),
+                              )
                             else if (field.options != null)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 12),

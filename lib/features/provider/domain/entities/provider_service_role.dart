@@ -856,13 +856,23 @@ class ProviderServiceRole {
       slug: 'caterer_chef',
       name: 'Caterer / Chef',
       description: 'Food preparation and event catering',
-      kindQuestion: 'What kind?',
+      kindQuestion: 'What cuisine or service?',
       categorySlug: 'events_production',
       capabilitySlug: 'work_caterer_chef',
       kinds: [
         ProviderRoleOption(slug: 'event_catering', name: 'Event catering'),
         ProviderRoleOption(slug: 'cakes_baking', name: 'Cakes & baking'),
         ProviderRoleOption(slug: 'buffet_plated', name: 'Buffet / plated'),
+        ProviderRoleOption(slug: 'african_cuisine', name: 'African foods'),
+        ProviderRoleOption(slug: 'east_african', name: 'East African foods'),
+        ProviderRoleOption(slug: 'muchomo', name: 'Muchomo & grilled meats'),
+        ProviderRoleOption(slug: 'italian_cuisine', name: 'Italian foods'),
+        ProviderRoleOption(
+            slug: 'arabian_cuisine', name: 'Arabian & Middle Eastern foods'),
+        ProviderRoleOption(slug: 'asian_cuisine', name: 'Asian foods'),
+        ProviderRoleOption(slug: 'continental_cuisine', name: 'Continental'),
+        ProviderRoleOption(slug: 'vegetarian', name: 'Vegetarian dishes'),
+        ProviderRoleOption(slug: 'other_cuisine', name: 'Other cuisines'),
       ],
       qualifications: [
         ProviderRoleQualification(
@@ -874,6 +884,34 @@ class ProviderServiceRole {
         ProviderRoleQualification(
             slug: 'culinary_diploma',
             name: 'Culinary diploma',
+            isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'restaurant_chef',
+      name: 'Chef (Restaurant & Kitchen)',
+      description: 'Restaurant, hotel, and professional kitchen cooking',
+      kindQuestion: 'What foods can you prepare?',
+      categorySlug: 'events_production',
+      capabilitySlug: 'work_restaurant_chef',
+      kinds: [
+        ProviderRoleOption(slug: 'local_dishes', name: 'Local dishes'),
+        ProviderRoleOption(slug: 'continental', name: 'Continental'),
+        ProviderRoleOption(slug: 'east_african', name: 'East African'),
+        ProviderRoleOption(slug: 'asian', name: 'Asian'),
+        ProviderRoleOption(slug: 'grilled_food', name: 'Grilled food'),
+        ProviderRoleOption(slug: 'pastries_baking', name: 'Pastries & baking'),
+        ProviderRoleOption(slug: 'vegetarian', name: 'Vegetarian'),
+        ProviderRoleOption(slug: 'other_cuisine', name: 'Other cuisines'),
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'food_handler_certificate',
+            name: 'Food handler certificate',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'culinary_training',
+            name: 'Culinary training',
             isEvidence: false),
       ],
     ),
@@ -1879,6 +1917,63 @@ class ProviderServiceRole {
             slug: 'clean_driving_record',
             name: 'Clean driving record',
             isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'property_agent',
+      name: 'Property Agent / Broker',
+      description: 'Help clients buy, rent, or lease land and homes',
+      kindQuestion: 'What properties do you handle?',
+      categorySlug: 'property_real_estate',
+      capabilitySlug: 'work_property_agent',
+      kinds: [
+        ProviderRoleOption(slug: 'land_purchase', name: 'Land purchase'),
+        ProviderRoleOption(slug: 'home_purchase', name: 'Home purchase'),
+        ProviderRoleOption(slug: 'rentals', name: 'Rentals'),
+        ProviderRoleOption(slug: 'leasing', name: 'Leasing'),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'landowner_seller',
+      name: 'Private Owner / One-time Seller',
+      description: 'Sell your own land or home directly without an agent',
+      kindQuestion: 'What property do you offer?',
+      categorySlug: 'property_real_estate',
+      capabilitySlug: 'work_landowner_seller',
+      kinds: [
+        ProviderRoleOption(
+            slug: 'residential_plots', name: 'Residential plots'),
+        ProviderRoleOption(slug: 'farmland', name: 'Farmland'),
+        ProviderRoleOption(slug: 'houses', name: 'Houses'),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'landlord',
+      name: 'Private Landlord / Direct Rental',
+      description: 'Rent out your own property directly to a tenant',
+      kindQuestion: 'What rentals do you offer?',
+      categorySlug: 'property_real_estate',
+      capabilitySlug: 'work_landlord',
+      kinds: [
+        ProviderRoleOption(slug: 'houses', name: 'Houses'),
+        ProviderRoleOption(slug: 'apartments', name: 'Apartments'),
+        ProviderRoleOption(
+            slug: 'commercial_property', name: 'Commercial property'),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'property_manager',
+      name: 'Property Manager',
+      description: 'Coordinate tenants, rent, and property maintenance',
+      kindQuestion: 'What do you manage?',
+      categorySlug: 'property_real_estate',
+      capabilitySlug: 'work_property_manager',
+      kinds: [
+        ProviderRoleOption(
+            slug: 'tenant_management', name: 'Tenant management'),
+        ProviderRoleOption(slug: 'rent_collection', name: 'Rent collection'),
+        ProviderRoleOption(
+            slug: 'maintenance_coordination', name: 'Maintenance coordination'),
       ],
     ),
     ProviderServiceRole(

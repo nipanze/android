@@ -238,6 +238,12 @@ class NeedFormSchema {
       specificationHelper:
           'Mention timing, repayment preferences, or eligibility questions. Do not share account numbers.',
     ),
+    'property_real_estate': NeedFormGuidance(
+      titleHint: 'e.g. I am looking for a house to rent in [area]',
+      specificationHint: 'Add property preferences not covered above',
+      specificationHelper:
+          'Mention property features, viewing preferences, or timing.',
+    ),
   };
 
   static NeedFormGuidance guidanceForCategory(String slug) {
@@ -1706,6 +1712,139 @@ class NeedFormSchema {
             'I want help creating a practical savings plan, organizing monthly expenses, and setting milestones for an emergency fund and future education costs.',
       ),
     ],
+    'property_real_estate': [
+      NeedFormPreset(
+        label: 'Find land to buy',
+        title: 'I am looking for land to buy in [area]',
+        specification:
+            'I am looking for a residential plot of about 50 by 100 feet in [area], with road access and nearby electricity. I can proceed with a purchase and would like to arrange a viewing and review the ownership documents before making a decision.',
+        specificationVariants: [
+          'I want to buy a residential plot of about 50 by 100 feet in [area]. Road access and nearby electricity are important. Please share the exact location, arrange a viewing, and let me review the ownership documents before I decide.',
+          'I am ready to buy a plot in [area] for a family home. I am looking for around 50 by 100 feet with vehicle access. Please share available plots and let me know when I can view one and verify its ownership documents.',
+        ],
+        details: {
+          'property_type': 'Land',
+          'property_intent': 'Buy',
+          'property_contact_preference': 'Either',
+          'property_size': 'About 50 by 100 feet',
+          'move_or_viewing_timing': 'Ready to view this month',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Buy directly from an owner',
+        title: 'I want to buy [land or a home] directly from its owner',
+        specification:
+            'I am looking for [land or a home] in [area] and prefer to speak directly with the owner rather than use an agent. Please share the location, property details, viewing availability, and ownership documents for me to review before deciding.',
+        specificationVariants: [
+          'I want to buy [land or a home] in [area] directly from its owner. Please share the location, property details, when I can view it, and the ownership documents I can review before making a decision.',
+          'I am ready to discuss buying [land or a home] in [area] with the owner. I prefer a direct conversation and would like to arrange a viewing and check the ownership documents before agreeing to anything.',
+        ],
+        details: {
+          'property_type': 'Land or house',
+          'property_intent': 'Buy',
+          'property_contact_preference': 'Direct owner / landlord',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Find land to lease',
+        title: 'I need land to lease in [area]',
+        specification:
+            'I need about 3 acres of usable land near [area] for crop farming, starting next season. Please share the lease period, water access, road access, and when a viewing can be arranged.',
+        specificationVariants: [
+          'I am looking to lease about 3 acres near [area] for crop farming from next season. Please share the lease length, water source, road access, and when I can inspect the land.',
+          'I need farmland near [area] for the next planting season. Around 3 usable acres with water access would suit me. Please explain the lease terms and arrange a site visit.',
+        ],
+        details: {
+          'property_type': 'Land',
+          'property_intent': 'Lease',
+          'property_contact_preference': 'Either',
+          'property_size': 'About 3 acres',
+          'move_or_viewing_timing': 'Before next planting season',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Buy a home',
+        title: 'I am looking for a home to buy in [area]',
+        specification:
+            'I am looking for a 3-bedroom home in [area] with reliable water, electricity, and vehicle access. I am ready to view suitable properties and discuss the sale process with the owner or agent.',
+        specificationVariants: [
+          'I want to buy a 3-bedroom home in [area] with reliable water, electricity, and vehicle access. Please share available homes, arrange a viewing, and explain how I can review the ownership documents.',
+          'I am ready to buy a family home in [area]. I need 3 bedrooms, reliable water, electricity, and road access. Please send suitable options and let me know when I can view them.',
+        ],
+        details: {
+          'property_type': 'House',
+          'property_intent': 'Buy',
+          'property_contact_preference': 'Either',
+          'property_size': '3 bedrooms',
+          'move_or_viewing_timing': 'Ready to view this month',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Rent a home',
+        title: 'I need a home to rent in [area]',
+        specification:
+            'I am looking for a 2-bedroom home in [area] with secure entry and water. I hope to move in around [month] and would like to arrange a viewing.',
+        specificationVariants: [
+          'I need a 2-bedroom home in [area] with secure entry and reliable water. I plan to move around [month]. Please share available homes and arrange a viewing.',
+          'I am looking to rent a 2-bedroom home in [area] from [month]. Secure entry and water are important. Please let me know the viewing times and basic tenancy terms.',
+        ],
+        details: {
+          'property_type': 'House',
+          'property_intent': 'Rent',
+          'property_contact_preference': 'Either',
+          'property_size': '2 bedrooms',
+          'move_or_viewing_timing': 'Move around next month',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Rent directly from a landlord',
+        title: 'I want to rent a home directly from its owner in [area]',
+        specification:
+            'I am looking for a 2-bedroom home in [area] and prefer to deal directly with the landlord. I hope to move around [month]. Please share the viewing times and tenancy terms.',
+        specificationVariants: [
+          'I need a 2-bedroom rental in [area] from [month] and would like to speak directly with the owner. Please share when I can view it and the main tenancy terms.',
+          'I am looking to rent a home directly from its landlord in [area]. I need 2 bedrooms and hope to move in [month]. Please share available homes and arrange a viewing.',
+        ],
+        details: {
+          'property_type': 'House',
+          'property_intent': 'Rent',
+          'property_contact_preference': 'Direct owner / landlord',
+          'property_size': '2 bedrooms',
+          'move_or_viewing_timing': 'Move around next month',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Find commercial space',
+        title: 'I need commercial space for [business] in [area]',
+        specification:
+            'I am looking for a small shop of about 30 square metres in [area] for a grocery business. I need road access and electricity. Please share viewing times and whether the space is for rent or purchase.',
+        specificationVariants: [
+          'I need a shop of about 30 square metres in [area] for a grocery business. Road access and electricity are important. Please share available spaces and arrange a viewing.',
+          'I am looking for a commercial space in [area] for [business]. Around 30 square metres with electricity and customer access would work. Please include the available lease or sale terms.',
+        ],
+        details: {
+          'property_type': 'Commercial property',
+          'property_intent': 'Rent or buy',
+          'property_contact_preference': 'Either',
+          'property_size': 'About 30 square metres',
+          'move_or_viewing_timing': 'Ready to view this month',
+        },
+      ),
+      NeedFormPreset(
+        label: 'Find a property agent',
+        title: 'I need a property agent to help me find [property]',
+        specification:
+            'I am looking for one local property agent to help me find [land or a home] in [area] within my stated budget. Please share properties you currently handle and arrange viewings with the owner or authorized representative.',
+        specificationVariants: [
+          'I need one local property agent to help me find [land or a home] in [area]. Please share properties you currently handle and arrange viewings with the owner or their authorized representative.',
+          'I am looking for an agent who knows [area] and can help me find [land or a home]. Please explain how you arrange viewings and confirm that owners have authorized you to represent their properties.',
+        ],
+        details: {
+          'property_intent': 'Find an agent',
+          'property_contact_preference': 'Property agent',
+        },
+      ),
+    ],
     'weddings_celebrations': [
       NeedFormPreset(
         label: 'Photography',
@@ -2112,6 +2251,42 @@ class NeedFormSchema {
     ],
     'domestic_household': [],
     'financial_services': [],
+    'property_real_estate': [
+      NeedFormField.text(
+        'property_intent',
+        label: 'What do you want to do?',
+        hint: 'Buy, rent, lease, or find an agent',
+      ),
+      NeedFormField.text(
+        'property_type',
+        label: 'Property type',
+        hint: 'Land, house, apartment, or commercial property',
+        isRequired: false,
+      ),
+      NeedFormField.text(
+        'property_contact_preference',
+        label: 'Who would you prefer to deal with?',
+        hint: 'Choose direct owner or landlord, agent, or either',
+        isRequired: false,
+        options: [
+          'Direct owner / landlord',
+          'Property agent',
+          'Either',
+        ],
+      ),
+      NeedFormField.text(
+        'property_size',
+        label: 'Size or bedrooms',
+        hint: 'e.g. 1 acre or 3 bedrooms',
+        isRequired: false,
+      ),
+      NeedFormField.text(
+        'move_or_viewing_timing',
+        label: 'When do you want to move or view?',
+        hint: 'e.g. View this month, move in January',
+        isRequired: false,
+      ),
+    ],
     'beauty_fashion_styling': [
       NeedFormField.date(
         'appointment_date',

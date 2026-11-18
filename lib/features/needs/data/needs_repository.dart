@@ -29,6 +29,7 @@ const _providerCatalogCategorySlugs = <String>{
   'health_medical',
   'traditional_cultural',
   'financial_services',
+  'property_real_estate',
 };
 
 const _providerCategoriesMissingFromNeeds = <String>{
@@ -36,6 +37,7 @@ const _providerCategoriesMissingFromNeeds = <String>{
   'health_medical',
   'traditional_cultural',
   'financial_services',
+  'property_real_estate',
 };
 
 List<Map<String, dynamic>> deduplicateCatalogSearchResults(

@@ -164,6 +164,7 @@ const _providerCategoryLabels = <String, String>{
   'health_medical': 'Health & Medical',
   'business_investment': 'Business & Investment',
   'financial_services': 'Finance & Investments',
+  'property_real_estate': 'Property & Real Estate',
   'traditional_cultural': 'Traditional & Cultural Services',
 };
 
@@ -191,6 +192,7 @@ const _providerCategoryOrder = <String, int>{
   'traditional_cultural': 16,
   'business_investment': 17,
   'financial_services': 17,
+  'property_real_estate': 18,
 };
 
 String _providerCategoryName(NeedCategory category, String? localeCode) =>

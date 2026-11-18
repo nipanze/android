@@ -28,6 +28,34 @@ class FormSuggestionStrip extends StatelessWidget {
 
   IconData _iconForOption(String value) {
     final text = value.toLowerCase();
+    // Handle specific travel request types before the generic "trip" match.
+    if (text.contains('school trip') || text.contains('school bus')) {
+      return Icons.directions_bus_rounded;
+    }
+    if (text.contains('medical travel')) {
+      return Icons.medical_services_rounded;
+    }
+    if (text.contains('family visit')) {
+      return Icons.family_restroom_rounded;
+    }
+    if (text.contains('business trip')) {
+      return Icons.business_center_rounded;
+    }
+    if (text.contains('holiday trip')) return Icons.beach_access_rounded;
+    if (text.contains('guided tour')) return Icons.tour_rounded;
+    if (text.contains('visa help')) return Icons.badge_rounded;
+    if (text.contains('find land') || text.contains('lease farmland')) {
+      return Icons.landscape_rounded;
+    }
+    if (text.contains('directly from an owner') ||
+        text.contains('directly from its owner') ||
+        text.contains('directly from a landlord')) {
+      return Icons.person_pin_circle_rounded;
+    }
+    if (text.contains('commercial space')) return Icons.storefront_rounded;
+    if (text.contains('property agent')) return Icons.business_center_rounded;
+    if (text.contains('buy a home')) return Icons.home_rounded;
+    if (text.contains('rent a home')) return Icons.vpn_key_rounded;
     if (text.contains('catering') || text.contains('food')) {
       return Icons.restaurant_rounded;
     }

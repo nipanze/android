@@ -155,6 +155,7 @@ class NeedCategory {
     'health_medical': 16,
     'traditional_cultural': 17,
     'financial_services': 18,
+    'property_real_estate': 19,
   };
 
   static List<NeedCategory> sortForDisplay(
@@ -326,6 +327,14 @@ class NeedCategory {
       description:
           'Loans, forex, savings groups, SACCOs and investment opportunities.',
       sortOrder: 18,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'property_real_estate',
+      name: 'Property & Real Estate',
+      icon: '🏡',
+      description: 'Land and homes to buy, rent or lease, and property agents.',
+      sortOrder: 19,
       isActive: true,
     ),
   ];
