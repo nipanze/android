@@ -2294,24 +2294,27 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                             const SizedBox(height: 12),
                           for (final field in dynamicFields) ...[
                             if (_isTravelDatePairStart(dynamicFields, field))
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: _buildTextInputWithHelpers(
-                                      field,
-                                      bottomPadding: 0,
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: _buildTextInputWithHelpers(
+                                        field,
+                                        bottomPadding: 0,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildTextInputWithHelpers(
-                                      dynamicFields[
-                                          dynamicFields.indexOf(field) + 1],
-                                      bottomPadding: 0,
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildTextInputWithHelpers(
+                                        dynamicFields[
+                                            dynamicFields.indexOf(field) + 1],
+                                        bottomPadding: 0,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               )
                             else if (_isTravelDatePairEnd(dynamicFields, field))
                               const SizedBox.shrink()

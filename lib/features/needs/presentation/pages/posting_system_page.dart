@@ -392,6 +392,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
 
   String _presetIcon(String label, String categoryIcon) {
     final value = label.toLowerCase();
+    if (value.contains('van')) return '🚐';
     if (value.contains('eye')) return '👁️';
     if (value.contains('skin') || value.contains('facial')) return '✨';
     if (value.contains('tattoo')) return '🎨';

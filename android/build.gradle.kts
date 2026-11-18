@@ -3,6 +3,12 @@ allprojects {
         google()
         mavenCentral()
     }
+    configurations.all {
+        resolutionStrategy {
+            // Pin dynamic versions to cached artifacts so the build works offline
+            force("androidx.test:runner:1.3.0")
+        }
+    }
 }
 
 val newBuildDir: Directory =

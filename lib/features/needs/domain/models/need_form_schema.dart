@@ -361,6 +361,24 @@ class NeedFormSchema {
         },
       ),
       NeedFormPreset(
+        label: 'School trip van',
+        title: 'I need a van for a school trip to [destination]',
+        specification:
+            'Our school is taking 35 students and 3 staff members from Kampala to Murchison Falls National Park for an educational day trip. We need passenger transport with seat belts and enough room for the group. Please confirm vehicle capacity, driver availability, pickup and return times, and space for bags.',
+        specificationVariants: [
+          'I am arranging a school visit for 28 students and 2 teachers from [pickup area] to [destination]. Please tell me how many passengers your van can carry, whether a driver is included, and what pickup and return times you can offer.',
+          'Our class needs transport for a day trip to [destination] on [date]. We expect 32 students and 3 adults. Please share the available van capacity, safety features such as seat belts, and whether you can make the return trip.',
+        ],
+        details: {
+          'travel_scope': 'Local tour',
+          'destination_city': 'Murchison Falls National Park',
+          'travellers': '38',
+          'purpose': 'Tourism',
+          'departure_city': 'Kampala',
+          'tour_activities': 'Educational visit and nature walk',
+        },
+      ),
+      NeedFormPreset(
         label: 'Visa help',
         title: 'Need help with a visa application',
         specification:
