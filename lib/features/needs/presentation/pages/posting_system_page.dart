@@ -59,6 +59,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
   bool _edgeButtonTucked = false;
   Timer? _scrollIdleTimer;
   double _lastPickerOffset = 0;
+  List<NeedCategory> _needCategories = const [];
 
   @override
   void initState() {
@@ -75,6 +76,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
     _draftId = widget.draftId;
     _pickerScroll.addListener(_onPickerScroll);
     _budget.addListener(_refresh);
+    _loadNeedCategories();
     _loadProviderButtonState();
     _loadDrafts();
     NeedDraftExitGuard.register(
@@ -360,14 +362,16 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
     final query = _search.text.trim().toLowerCase();
     if (query.isEmpty) return _prompts;
 
-    final presetPrompts = NeedFormSchema.categoryPresets.entries.expand(
-      (entry) {
-        final categorySlug = entry.key == 'photo_video_music_talent'
-            ? 'photo_video_talent'
-            : entry.key;
-        final category = NeedCategory.findBySlug(categorySlug);
-        return entry.value.map(
-          (preset) => _PostingPrompt(
+    final presetPrompts = <_PostingPrompt>[];
+    final seenPresets = <String>{};
+    for (final entry in NeedFormSchema.categoryPresets.entries) {
+      final categorySlug = _searchRouteCategory(entry.key);
+      final category = _categoryForSearch(categorySlug);
+      for (final preset in entry.value) {
+        final presetKey = '$categorySlug:${preset.label.trim().toLowerCase()}';
+        if (!seenPresets.add(presetKey)) continue;
+        presetPrompts.add(
+          _PostingPrompt(
             preset.label,
             category.name,
             _presetIcon(preset.label, category.icon),
@@ -378,8 +382,8 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
             searchTerms: '${preset.title} ${category.name}',
           ),
         );
-      },
-    );
+      }
+    }
     return [
       ..._prompts,
       ...presetPrompts,
@@ -390,8 +394,67 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
     }).toList();
   }
 
+  Future<void> _loadNeedCategories() async {
+    try {
+      final categories = await getIt<NeedsRepository>().getCategories();
+      if (!mounted) return;
+      setState(() => _needCategories = categories);
+    } catch (_) {
+      // Search remains usable with its local category fallbacks.
+    }
+  }
+
+  String _searchRouteCategory(String slug) {
+    if (slug == 'events_production' ||
+        slug == 'events_celebrations' ||
+        slug == 'weddings_celebrations') {
+      for (final preferredSlug in const [
+        'events_production',
+        'events_celebrations',
+      ]) {
+        if (_needCategories.any((category) => category.slug == preferredSlug)) {
+          return preferredSlug;
+        }
+      }
+      return 'events_production';
+    }
+    if (slug == 'photo_video_music_talent') {
+      for (final preferredSlug in const [
+        'photo_video_music_talent',
+        'photo_video_talent',
+      ]) {
+        if (_needCategories.any((category) => category.slug == preferredSlug)) {
+          return preferredSlug;
+        }
+      }
+      return 'photo_video_music_talent';
+    }
+    return slug;
+  }
+
+  NeedCategory _categoryForSearch(String slug) {
+    for (final category in _needCategories) {
+      if (category.slug == slug) return category;
+    }
+    final fallback = NeedCategory.findBySlug(slug);
+    if (slug == 'events_production' && fallback.name == slug) {
+      return NeedCategory(
+        slug: slug,
+        name: 'Events & Celebrations',
+        icon: '🎉',
+      );
+    }
+    return fallback;
+  }
+
   String _presetIcon(String label, String categoryIcon) {
     final value = label.toLowerCase();
+    if (value.contains('cake')) return '🎂';
+    if (value.contains('barista')) return '☕';
+    if (value.contains('baker') || value.contains('pastry')) return '🥐';
+    if (value.contains('chef')) return '👨‍🍳';
+    if (value.contains('kitchen assistant')) return '🥣';
+    if (value.contains('food server')) return '🍽️';
     if (value.contains('van')) return '🚐';
     if (value.contains('eye')) return '👁️';
     if (value.contains('skin') || value.contains('facial')) return '✨';

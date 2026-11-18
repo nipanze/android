@@ -125,9 +125,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   void initState() {
     super.initState();
     _draftId = widget.draftId;
-    if (NeedCategory.defaultCategories
-        .any((category) => category.slug == widget.initialCategorySlug)) {
-      _categorySlug = widget.initialCategorySlug!;
+    final initialCategorySlug = widget.initialCategorySlug?.trim();
+    if (initialCategorySlug != null && initialCategorySlug.isNotEmpty) {
+      _categorySlug = initialCategorySlug;
     }
     _categoryAtOpen = _categorySlug;
     _titleController.addListener(_refresh);
@@ -144,9 +144,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     if (widget.initialPresetLabel != null && widget.draftId == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        final preset = NeedFormSchema.presetsForCategory(_categorySlug)
-            .where((item) => item.label == widget.initialPresetLabel)
-            .firstOrNull;
+        final preset = NeedFormSchema.presetForCategory(
+          _categorySlug,
+          widget.initialPresetLabel!,
+        );
         if (preset != null) _applyPreset(preset);
       });
     }
@@ -231,8 +232,16 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     setState(() {
       _categories = categories;
       if (!categories.any((category) => category.slug == _categorySlug)) {
-        _categorySlug = categories.first.slug;
-        _initCategoryControllers();
+        final isExplicitKnownCategory =
+            widget.initialCategorySlug?.trim() == _categorySlug &&
+                (NeedFormSchema.categoryPresets.containsKey(_categorySlug) ||
+                    NeedFormSchema.categoryFields.containsKey(_categorySlug) ||
+                    NeedCategory.defaultCategories
+                        .any((category) => category.slug == _categorySlug));
+        if (!isExplicitKnownCategory) {
+          _categorySlug = categories.first.slug;
+          _initCategoryControllers();
+        }
       }
     });
   }

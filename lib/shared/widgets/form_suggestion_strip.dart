@@ -56,6 +56,18 @@ class FormSuggestionStrip extends StatelessWidget {
     if (text.contains('property agent')) return Icons.business_center_rounded;
     if (text.contains('buy a home')) return Icons.home_rounded;
     if (text.contains('rent a home')) return Icons.vpn_key_rounded;
+    if (text.contains('barista')) return Icons.local_cafe_rounded;
+    if (text.contains('baker') || text.contains('pastry')) {
+      return Icons.cake_rounded;
+    }
+    if (text.contains('kitchen assistant') || text.contains('food prep')) {
+      return Icons.restaurant_rounded;
+    }
+    if (text.contains('food server') || text.contains('waiter')) {
+      return Icons.room_service_rounded;
+    }
+    if (text.contains('cake')) return Icons.cake_rounded;
+    if (text.contains('chef')) return Icons.restaurant_rounded;
     if (text.contains('catering') || text.contains('food')) {
       return Icons.restaurant_rounded;
     }

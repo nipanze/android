@@ -1666,13 +1666,12 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         minChildSize: 0.45,
         maxChildSize: 0.95,
         builder: (_, scrollController) {
-          return Container(
-            decoration: BoxDecoration(
-              color:
-                  financialCategory && !isDark ? const Color(0xFFF6F8FC) : bg,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(20)),
+          return Material(
+            color: financialCategory && !isDark ? const Color(0xFFF6F8FC) : bg,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(20),
             ),
+            clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
                 // Handle

@@ -1032,6 +1032,78 @@ class NeedFormSchema {
             'I need a buffet with chicken, rice, vegetables, and a vegetarian option. Please provide serving staff, plates, and a clear plan for keeping food warm.',
       ),
       NeedFormPreset(
+        label: 'Recruit a chef / food maker',
+        title: 'I need to recruit a chef or food maker for [business]',
+        specification:
+            'I am hiring one chef or food maker for a small café serving about 40 people each day. They should be able to prepare East African meals, grilled meats, pastries, and vegetarian dishes. Please tell me which foods you can prepare confidently, your available work schedule, and what kitchen setup you need.',
+        specificationVariants: [
+          'I want to hire one cook for our café, which serves around 40 customers a day. We need East African dishes, grilled meats, and vegetarian meals. Please list the dishes you can make, your availability, and the kitchen equipment you need.',
+          'We are looking for a chef or food maker for [restaurant, café, school kitchen, or home]. The menu includes [dishes or cuisines], and we serve about [number] people. Please share the foods you prepare well and the schedule you can work.',
+        ],
+      ),
+      NeedFormPreset(
+        label: 'Hire a barista',
+        title: 'I need to hire a barista for [café]',
+        specification:
+            'I am hiring one barista for a café serving about 60 customers each morning. They should prepare espresso, cappuccino, tea, and iced drinks, keep the counter clean, and track milk and coffee supplies. Please share which drinks you can make and the shifts you can work.',
+        specificationVariants: [
+          'Our café needs one barista for the morning shift. We serve about 60 customers and offer espresso, cappuccino, tea, and iced drinks. Please tell me which drinks you make and what hours you are available.',
+          'I want to hire a barista for [café or restaurant]. The role includes preparing [coffee, tea, or cold drinks], serving customers, and keeping the station tidy. Please share your drink specialties and work schedule.',
+        ],
+      ),
+      NeedFormPreset(
+        label: 'Hire a baker / pastry chef',
+        title: 'I need a baker or pastry chef for [business]',
+        specification:
+            'Our café needs one baker to prepare fresh bread, muffins, and pastries each morning, about 50 items a day. Please tell me which baked goods you make, your available schedule, and what oven or equipment you need.',
+        specificationVariants: [
+          'I am hiring a baker for a café that needs about 50 fresh items each day, including bread and pastries. Please list the products you make and the hours you can work.',
+          'We need a pastry chef for [bakery, café, or restaurant]. The regular menu includes [cakes, bread, or pastries]. Please share your specialties, daily capacity, and equipment needs.',
+        ],
+      ),
+      NeedFormPreset(
+        label: 'Hire a kitchen assistant',
+        title: 'I need a kitchen assistant for [business]',
+        specification:
+            'I am hiring one kitchen assistant for a small restaurant. The work includes washing and preparing vegetables, portioning ingredients, keeping the work area clean, and helping the chef during lunch service. Please share the shifts you can work and the kitchen tasks you know.',
+        specificationVariants: [
+          'Our restaurant needs a kitchen assistant for lunch service. Tasks include preparing ingredients, washing utensils, keeping surfaces clean, and helping the chef. Please share your availability.',
+          'I want to hire a kitchen assistant for [restaurant, café, or school kitchen]. The role involves [ingredient preparation, food packing, or cleaning] for a team serving about [number] people.',
+        ],
+      ),
+      NeedFormPreset(
+        label: 'Hire a food server',
+        title: 'I need a food server for [business or event]',
+        specification:
+            'I need one food server for a café lunch shift serving about 40 customers. The work includes taking orders, delivering meals, answering basic menu questions, and clearing tables. Please share your available days and hours.',
+        specificationVariants: [
+          'Our café needs a server for the lunch shift. They should take orders, serve meals, keep tables tidy, and be available from 11 a.m. to 3 p.m. Please share your schedule.',
+          'I am looking for a food server for [café, restaurant, or event]. We expect about [number] customers and need help with [table service, counter service, or meal delivery].',
+        ],
+      ),
+      NeedFormPreset(
+        label: 'Hire a chef',
+        title: 'I need a chef to prepare [meal or menu] for [occasion]',
+        specification:
+            'I need a chef to prepare a meal for 30 guests at home in [area] on [date]. Please plan a menu with grilled chicken, rice, vegetables, and one vegetarian option, and prepare it at the venue.',
+        specificationVariants: [
+          'I am looking for a chef to cook for 30 guests at [venue] on [date]. Please prepare grilled chicken, rice, vegetables, and a vegetarian option, and confirm what kitchen equipment you need.',
+          'I need an on-site chef for a family celebration in [area]. The meal is for about 30 people and should include [dishes]. Please share your menu plan and preparation time.',
+        ],
+        details: {'guest_count': '30'},
+      ),
+      NeedFormPreset(
+        label: 'Order a cake',
+        title: 'I want to order a cake for [occasion]',
+        specification:
+            'I need a vanilla cake for about 30 people for a birthday on [date]. Please use a blue and white design with the name “Amina” on top, and confirm whether delivery to [area] is available.',
+        specificationVariants: [
+          'Please make a vanilla cake for around 30 servings for [occasion] on [date]. I would like a blue and white design with “Amina” written on it. Please confirm pickup or delivery to [area].',
+          'I want a birthday cake for [number] people on [date]. The flavour should be [flavour] and the design should include [colours, theme, or message]. Please confirm when it will be ready.',
+        ],
+        details: {'guest_count': '30'},
+      ),
+      NeedFormPreset(
         label: 'Sound & stage',
         title: 'I need sound and stage equipment for [event type]',
         specification:
@@ -1118,6 +1190,78 @@ class NeedFormSchema {
         title: 'I need catering for [celebration]',
         specification:
             'I need a family-style meal with rice, chicken, vegetables, and a vegetarian option. Please include serving utensils and a simple way to label dishes with common allergens.',
+      ),
+      NeedFormPreset(
+        label: 'Recruit a chef / food maker',
+        title: 'I need to recruit a chef or food maker for [business]',
+        specification:
+            'I am hiring one chef or food maker for a small café serving about 40 people each day. They should be able to prepare East African meals, grilled meats, pastries, and vegetarian dishes. Please tell me which foods you can prepare confidently, your available work schedule, and what kitchen setup you need.',
+        specificationVariants: [
+          'I want to hire one cook for our café, which serves around 40 customers a day. We need East African dishes, grilled meats, and vegetarian meals. Please list the dishes you can make, your availability, and the kitchen equipment you need.',
+          'We are looking for a chef or food maker for [restaurant, café, school kitchen, or home]. The menu includes [dishes or cuisines], and we serve about [number] people. Please share the foods you prepare well and the schedule you can work.',
+        ],
+      ),
+      NeedFormPreset(
+        label: 'Hire a barista',
+        title: 'I need to hire a barista for [café]',
+        specification:
+            'I am hiring one barista for a café serving about 60 customers each morning. They should prepare espresso, cappuccino, tea, and iced drinks, keep the counter clean, and track milk and coffee supplies. Please share which drinks you can make and the shifts you can work.',
+        specificationVariants: [
+          'Our café needs one barista for the morning shift. We serve about 60 customers and offer espresso, cappuccino, tea, and iced drinks. Please tell me which drinks you make and what hours you are available.',
+          'I want to hire a barista for [café or restaurant]. The role includes preparing [coffee, tea, or cold drinks], serving customers, and keeping the station tidy. Please share your drink specialties and work schedule.',
+        ],
+      ),
+      NeedFormPreset(
+        label: 'Hire a baker / pastry chef',
+        title: 'I need a baker or pastry chef for [business]',
+        specification:
+            'Our café needs one baker to prepare fresh bread, muffins, and pastries each morning, about 50 items a day. Please tell me which baked goods you make, your available schedule, and what oven or equipment you need.',
+        specificationVariants: [
+          'I am hiring a baker for a café that needs about 50 fresh items each day, including bread and pastries. Please list the products you make and the hours you can work.',
+          'We need a pastry chef for [bakery, café, or restaurant]. The regular menu includes [cakes, bread, or pastries]. Please share your specialties, daily capacity, and equipment needs.',
+        ],
+      ),
+      NeedFormPreset(
+        label: 'Hire a kitchen assistant',
+        title: 'I need a kitchen assistant for [business]',
+        specification:
+            'I am hiring one kitchen assistant for a small restaurant. The work includes washing and preparing vegetables, portioning ingredients, keeping the work area clean, and helping the chef during lunch service. Please share the shifts you can work and the kitchen tasks you know.',
+        specificationVariants: [
+          'Our restaurant needs a kitchen assistant for lunch service. Tasks include preparing ingredients, washing utensils, keeping surfaces clean, and helping the chef. Please share your availability.',
+          'I want to hire a kitchen assistant for [restaurant, café, or school kitchen]. The role involves [ingredient preparation, food packing, or cleaning] for a team serving about [number] people.',
+        ],
+      ),
+      NeedFormPreset(
+        label: 'Hire a food server',
+        title: 'I need a food server for [business or event]',
+        specification:
+            'I need one food server for a café lunch shift serving about 40 customers. The work includes taking orders, delivering meals, answering basic menu questions, and clearing tables. Please share your available days and hours.',
+        specificationVariants: [
+          'Our café needs a server for the lunch shift. They should take orders, serve meals, keep tables tidy, and be available from 11 a.m. to 3 p.m. Please share your schedule.',
+          'I am looking for a food server for [café, restaurant, or event]. We expect about [number] customers and need help with [table service, counter service, or meal delivery].',
+        ],
+      ),
+      NeedFormPreset(
+        label: 'Hire a chef',
+        title: 'I need a chef to prepare [meal or menu] for [occasion]',
+        specification:
+            'I need a chef to prepare a meal for 30 guests at home in [area] on [date]. Please plan a menu with grilled chicken, rice, vegetables, and one vegetarian option, and prepare it at the venue.',
+        specificationVariants: [
+          'I am looking for a chef to cook for 30 guests at [venue] on [date]. Please prepare grilled chicken, rice, vegetables, and a vegetarian option, and confirm what kitchen equipment you need.',
+          'I need an on-site chef for a family celebration in [area]. The meal is for about 30 people and should include [dishes]. Please share your menu plan and preparation time.',
+        ],
+        details: {'guest_count': '30'},
+      ),
+      NeedFormPreset(
+        label: 'Order a cake',
+        title: 'I want to order a cake for [occasion]',
+        specification:
+            'I need a vanilla cake for about 30 people for a birthday on [date]. Please use a blue and white design with the name “Amina” on top, and confirm whether delivery to [area] is available.',
+        specificationVariants: [
+          'Please make a vanilla cake for around 30 servings for [occasion] on [date]. I would like a blue and white design with “Amina” written on it. Please confirm pickup or delivery to [area].',
+          'I want a birthday cake for [number] people on [date]. The flavour should be [flavour] and the design should include [colours, theme, or message]. Please confirm when it will be ready.',
+        ],
+        details: {'guest_count': '30'},
       ),
       NeedFormPreset(
         label: 'Decor',
@@ -1847,6 +1991,28 @@ class NeedFormSchema {
     ],
     'weddings_celebrations': [
       NeedFormPreset(
+        label: 'Hire a wedding chef',
+        title: 'I need a chef to prepare [menu] for our wedding',
+        specification:
+            'I need a chef to prepare a wedding meal for 150 guests in [area] on [date]. Please plan rice, chicken, vegetables, and a vegetarian option, and coordinate preparation and serving with our venue.',
+        specificationVariants: [
+          'We need a chef for our wedding reception with about 150 guests. Please prepare [menu], coordinate with the venue kitchen, and confirm how much preparation time and equipment you need.',
+          'I am looking for an on-site chef for a 150-guest wedding in [area]. Please help plan the menu, prepare the meal, and coordinate serving on [date].',
+        ],
+        details: {'guest_count': '150'},
+      ),
+      NeedFormPreset(
+        label: 'Order a wedding cake',
+        title: 'I want to order a wedding cake for [number] guests',
+        specification:
+            'I need a two-tier vanilla wedding cake for 150 guests on [date]. Please use a white and gold design with fresh flowers and deliver it to [venue] before the reception.',
+        specificationVariants: [
+          'Please make a two-tier wedding cake for about 150 guests on [date]. I would like a white and gold finish with fresh flowers. Please confirm delivery to [venue] and setup time.',
+          'We need a wedding cake for [number] guests with [flavour] layers and a [colours or theme] design. Please share when it can be delivered to [venue] on [date].',
+        ],
+        details: {'guest_count': '150'},
+      ),
+      NeedFormPreset(
         label: 'Photography',
         title: 'I need a photographer for [celebration]',
         specification:
@@ -1983,6 +2149,35 @@ class NeedFormSchema {
                 'I want providers to send clear quotes with timelines, deliverables, and any requirements from my side.',
           ),
         ];
+  }
+
+  static NeedFormPreset? presetForCategory(String slug, String presetLabel) {
+    final normalizedLabel = presetLabel.trim().toLowerCase();
+    final directMatch = categoryPresets[_canonicalCategorySlug(slug)]
+        ?.where(
+            (preset) => preset.label.trim().toLowerCase() == normalizedLabel)
+        .firstOrNull;
+    if (directMatch != null) return directMatch;
+
+    if (const {
+      'events_production',
+      'events_celebrations',
+      'weddings_celebrations',
+    }.contains(slug)) {
+      for (final relatedSlug in const [
+        'events_celebrations',
+        'events_production',
+        'weddings_celebrations',
+      ]) {
+        if (relatedSlug == slug) continue;
+        final relatedMatch = categoryPresets[relatedSlug]
+            ?.where((preset) =>
+                preset.label.trim().toLowerCase() == normalizedLabel)
+            .firstOrNull;
+        if (relatedMatch != null) return relatedMatch;
+      }
+    }
+    return null;
   }
 
   static const Map<String, List<NeedFormField>> categoryFields = {
@@ -2212,11 +2407,13 @@ class NeedFormSchema {
         'guest_count',
         label: 'Expected guest count',
         hint: 'e.g. 200',
+        isRequired: false,
       ),
       NeedFormField.date(
         'event_date',
         label: 'Event date',
         hint: 'e.g. 15 November 2026',
+        isRequired: false,
       ),
     ],
     'events_celebrations': [

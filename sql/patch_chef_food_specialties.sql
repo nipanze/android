@@ -9,7 +9,15 @@ insert into public.need_capabilities (
 )
 values
   ('work_restaurant_chef', 'events_production', 'Chef (Restaurant & Kitchen)',
-   true, 'events_production', 60, 'work_roles', 'Work Roles', 60, 'work')
+   true, 'events_production', 60, 'work_roles', 'Work Roles', 60, 'work'),
+  ('work_barista', 'events_production', 'Barista',
+   true, 'events_production', 61, 'work_roles', 'Work Roles', 61, 'work'),
+  ('work_baker_pastry_chef', 'events_production', 'Baker / Pastry Chef',
+   true, 'events_production', 62, 'work_roles', 'Work Roles', 62, 'work'),
+  ('work_kitchen_assistant', 'events_production', 'Kitchen Assistant / Food Prep',
+   true, 'events_production', 63, 'work_roles', 'Work Roles', 63, 'work'),
+  ('work_food_server', 'events_production', 'Food Server / Waiter',
+   true, 'events_production', 64, 'work_roles', 'Work Roles', 64, 'work')
 on conflict (slug) do update set
   category_slug = excluded.category_slug,
   name = excluded.name,
@@ -28,7 +36,15 @@ values
   ('restaurant_chef', 'events_production', 'work_restaurant_chef',
    'Chef (Restaurant & Kitchen)', 'What foods can you prepare?', true),
   ('caterer_chef', 'events_production', 'work_caterer_chef',
-   'Caterer / Chef', 'What cuisine or service?', true)
+   'Caterer / Chef', 'What cuisine or service?', true),
+  ('barista', 'events_production', 'work_barista',
+   'Barista', 'Which drinks can you prepare?', true),
+  ('baker_pastry_chef', 'events_production', 'work_baker_pastry_chef',
+   'Baker / Pastry Chef', 'What baked goods do you make?', true),
+  ('kitchen_assistant', 'events_production', 'work_kitchen_assistant',
+   'Kitchen Assistant / Food Prep', 'Which kitchen tasks can you do?', true),
+  ('food_server', 'events_production', 'work_food_server',
+   'Food Server / Waiter', 'What service can you provide?', true)
 on conflict (slug) do update set
   category_slug = excluded.category_slug,
   capability_slug = excluded.capability_slug,
@@ -56,7 +72,23 @@ values
   ('restaurant_chef', 'continental_cuisine', 'Continental', 70),
   ('restaurant_chef', 'vegetarian', 'Vegetarian dishes', 80),
   ('restaurant_chef', 'pastries_baking', 'Pastries & baking', 90),
-  ('restaurant_chef', 'other_cuisine', 'Other cuisines', 100)
+  ('restaurant_chef', 'other_cuisine', 'Other cuisines', 100),
+  ('barista', 'coffee_espresso', 'Coffee & espresso', 10),
+  ('barista', 'tea_drinks', 'Tea drinks', 20),
+  ('barista', 'cold_drinks', 'Cold drinks', 30),
+  ('barista', 'smoothies', 'Smoothies', 40),
+  ('baker_pastry_chef', 'bread', 'Bread', 10),
+  ('baker_pastry_chef', 'cakes', 'Cakes', 20),
+  ('baker_pastry_chef', 'pastries', 'Pastries', 30),
+  ('baker_pastry_chef', 'custom_cakes', 'Custom cakes', 40),
+  ('kitchen_assistant', 'ingredient_prep', 'Ingredient prep', 10),
+  ('kitchen_assistant', 'food_packing', 'Food packing', 20),
+  ('kitchen_assistant', 'kitchen_cleaning', 'Kitchen cleaning', 30),
+  ('kitchen_assistant', 'service_support', 'Service support', 40),
+  ('food_server', 'table_service', 'Table service', 10),
+  ('food_server', 'counter_service', 'Counter service', 20),
+  ('food_server', 'event_service', 'Event service', 30),
+  ('food_server', 'meal_delivery', 'Meal delivery', 40)
 on conflict (role_slug, slug) do update set
   name = excluded.name,
   sort_order = excluded.sort_order;
