@@ -1666,8 +1666,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           '6 weeks',
           'Flexible',
         ],
-      'quantity' => const ['1 unit', '10 units', '50 units', '100 units'],
-      'volume_or_acres' => const ['1 acre', '5 acres', '10 acres', '50 bags'],
+      'quantity' => const [],
+      'volume_or_acres' => const [],
       'celebration_type' => const [
           'Wedding, 150 guests',
           'Introduction ceremony',

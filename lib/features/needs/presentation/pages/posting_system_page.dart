@@ -345,7 +345,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
       3,
       (index) => presets[(start + index) % presets.length],
     );
-    return 'Search: ${examples.join(', ')}...';
+    return '${examples.join(', ')}...';
   }
 
   List<_PostingPrompt> get _visiblePrompts {
