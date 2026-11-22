@@ -5979,6 +5979,13 @@
               "verification_policy": "required_proof"
             },
             {
+              "id": "forex_trading_brokerage",
+              "database_slug": "forex_trading_brokerage",
+              "name": "Forex Trading Brokerage",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
               "id": "money_transfer",
               "database_slug": "money_transfer",
               "name": "Money Transfer",
@@ -6016,6 +6023,47 @@
               "id": "group_savings_chamas",
               "database_slug": "group_savings_chamas",
               "name": "Group Savings & Chamas",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            }
+          ]
+        },
+        {
+          "id": "investment_services",
+          "name": "Investment Services",
+          "services": [
+            {
+              "id": "investment_stocks_shares",
+              "database_slug": "investment_stocks_shares",
+              "name": "Stocks & Shares",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "investment_bonds_treasury_bills",
+              "database_slug": "investment_bonds_treasury_bills",
+              "name": "Bonds & Treasury Bills",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "investment_precious_metals",
+              "database_slug": "investment_precious_metals",
+              "name": "Gold & Precious Metals",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "investment_brokerage",
+              "database_slug": "investment_brokerage",
+              "name": "Investment Brokerage",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "investment_advisory",
+              "database_slug": "investment_advisory",
+              "name": "Investment Advisory",
               "is_active": true,
               "verification_policy": "required_proof"
             }

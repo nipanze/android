@@ -29,7 +29,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | 15 | Domestic | `domestic_household` | 2 | 7 | 5 |
 | 16 | Health | `health_medical` | 4 | 15 | 12 |
 | 17 | Cultural | `traditional_cultural` | 2 | 5 | 4 |
-| 18 | Finance & Investments | `financial_services` | 4 | 39 | 2 |
+| 18 | Finance & Investments | `financial_services` | 5 | 45 | 2 |
 
 ## Full catalog
 
@@ -1780,6 +1780,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 |---|---|---|---|
 | Currency Exchange / Forex Bureau | `forex_currency_exchange` | Available | `required_proof` |
 | Forex Trading Training | `forex_trading_training` | Available | `required_proof` |
+| Forex Trading Brokerage | `forex_trading_brokerage` | Available | `required_proof` |
 | Money Transfer | `money_transfer` | Available | `required_proof` |
 
 ### SACCOs & Cooperatives
@@ -1790,6 +1791,16 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Village Savings Groups (VSLA) | `vsla_groups` | Available | `required_proof` |
 | Cooperative Societies | `cooperative_societies` | Available | `required_proof` |
 | Group Savings & Chamas | `group_savings_chamas` | Available | `required_proof` |
+
+### Investment Services
+
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+| Stocks & Shares | `investment_stocks_shares` | Available | `required_proof` |
+| Bonds & Treasury Bills | `investment_bonds_treasury_bills` | Available | `required_proof` |
+| Gold & Precious Metals | `investment_precious_metals` | Available | `required_proof` |
+| Investment Brokerage | `investment_brokerage` | Available | `required_proof` |
+| Investment Advisory | `investment_advisory` | Available | `required_proof` |
 
 ### Investment Opportunities
 

@@ -158,6 +158,61 @@ AppException _parsePostgrestError(String code, String message) {
   final forex = _parseForexError(code, message);
   if (forex != null) return forex;
 
+  // Provider identity RPCs use P0216 for deliberate, user-correctable
+  // validation failures. Keep these distinct from unexpected database errors.
+  if (code == 'P0216') {
+    final lower = message.toLowerCase();
+    if (lower.contains('identity switch is unavailable')) {
+      return const ValidationException(
+        'This category is already using that identity. Refresh your services and try again.',
+      );
+    }
+    if (lower.contains('switch limit')) {
+      return const ValidationException(
+        'You have reached the identity switch limit for this category. Try again later.',
+      );
+    }
+    if (lower.contains('provider profiles are disabled') ||
+        lower.contains('provider capability profiles are disabled')) {
+      return const DatabaseException(
+        'Provider identity changes are temporarily unavailable. Please try again later.',
+      );
+    }
+    if (lower.contains('category is unavailable') ||
+        lower.contains('unknown or retired provider category')) {
+      return const ValidationException(
+        'This service category is no longer available. Refresh and choose another category.',
+      );
+    }
+    if (lower.contains('display name is required') ||
+        lower.contains('company name is required') ||
+        lower.contains(
+            'representative details and authorization are required') ||
+        lower.contains('invalid identity presentation')) {
+      return const ValidationException(
+        'Complete the identity name and representative details, then try again.',
+      );
+    }
+    if (lower.contains('choose this identity for the category first') ||
+        lower.contains('use the identity switch review')) {
+      return const ValidationException(
+        'Your saved identity changed. Reopen this category and review the switch again.',
+      );
+    }
+    return const ValidationException(
+      'The identity details could not be saved. Check them and try again.',
+    );
+  }
+
+  // PostgREST reports an unavailable RPC as PGRST202. The app cannot complete
+  // an identity switch until the corresponding database patch is installed.
+  if (code == 'PGRST202' &&
+      message.toLowerCase().contains('switch_provider_identity')) {
+    return const DatabaseException(
+      'Identity switching is not enabled on the server yet. Apply the provider identity switch database patch, then try again.',
+    );
+  }
+
   if (code == '23514' &&
       message.toLowerCase().contains('chk_lr_repayment_plan')) {
     return const ValidationException(

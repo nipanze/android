@@ -135,7 +135,8 @@ update public.need_capabilities set is_active = false where capability_type = 's
   'traditional_healing_herbal', 'personal_loan_services', 'emergency_loan_services', 'salary_loan_services', 'medical_financing', 'business_startup_financing', 'working_capital_financing', 'business_expansion_financing',
   'sme_financing', 'boda_boda_financing', 'car_financing', 'tuk_tuk_financing', 'motorcycle_financing', 'smartphone_financing', 'laptop_financing', 'heavy_machinery_financing',
   'equipment_financing', 'agricultural_loan_services', 'livestock_financing', 'crop_financing', 'farm_equipment_financing', 'mortgage_financing', 'land_financing', 'property_development_financing',
-  'school_fees_financing', 'university_financing', 'education_loan_services', 'travel_financing', 'wedding_financing', 'forex_currency_exchange', 'forex_trading_training', 'money_transfer',
+  'school_fees_financing', 'university_financing', 'education_loan_services', 'travel_financing', 'wedding_financing', 'forex_currency_exchange', 'forex_trading_training', 'forex_trading_brokerage', 'money_transfer',
+  'investment_stocks_shares', 'investment_bonds_treasury_bills', 'investment_precious_metals', 'investment_brokerage', 'investment_advisory',
   'sacco_services', 'vsla_groups', 'cooperative_societies', 'group_savings_chamas', 'angel_investor_network', 'startup_advisory', 'investor_introductions', 'incubator_accelerator'
 );
 
@@ -332,18 +333,24 @@ update public.need_capabilities as nc set category_slug = v.category_slug, ui_gr
   ('wedding_financing', 'financial_services', 'loans', 'Loans', 18128, 28, 'Wedding Financing', 'required_proof'),
   ('forex_currency_exchange', 'financial_services', 'forex', 'Forex', 18201, 1, 'Currency Exchange / Forex Bureau', 'required_proof'),
   ('forex_trading_training', 'financial_services', 'forex', 'Forex', 18202, 2, 'Forex Trading Training', 'required_proof'),
-  ('money_transfer', 'financial_services', 'forex', 'Forex', 18203, 3, 'Money Transfer', 'required_proof'),
+  ('forex_trading_brokerage', 'financial_services', 'forex', 'Forex', 18203, 3, 'Forex Trading Brokerage', 'required_proof'),
+  ('money_transfer', 'financial_services', 'forex', 'Forex', 18204, 4, 'Money Transfer', 'required_proof'),
   ('sacco_services', 'financial_services', 'saccos_cooperatives', 'SACCOs & Cooperatives', 18301, 1, 'SACCOs', 'required_proof'),
   ('vsla_groups', 'financial_services', 'saccos_cooperatives', 'SACCOs & Cooperatives', 18302, 2, 'Village Savings Groups (VSLA)', 'required_proof'),
   ('cooperative_societies', 'financial_services', 'saccos_cooperatives', 'SACCOs & Cooperatives', 18303, 3, 'Cooperative Societies', 'required_proof'),
   ('group_savings_chamas', 'financial_services', 'saccos_cooperatives', 'SACCOs & Cooperatives', 18304, 4, 'Group Savings & Chamas', 'required_proof'),
+  ('investment_stocks_shares', 'financial_services', 'investment_services', 'Investment Services', 18411, 1, 'Stocks & Shares', 'required_proof'),
+  ('investment_bonds_treasury_bills', 'financial_services', 'investment_services', 'Investment Services', 18412, 2, 'Bonds & Treasury Bills', 'required_proof'),
+  ('investment_precious_metals', 'financial_services', 'investment_services', 'Investment Services', 18413, 3, 'Gold & Precious Metals', 'required_proof'),
+  ('investment_brokerage', 'financial_services', 'investment_services', 'Investment Services', 18414, 4, 'Investment Brokerage', 'required_proof'),
+  ('investment_advisory', 'financial_services', 'investment_services', 'Investment Services', 18415, 5, 'Investment Advisory', 'required_proof'),
   ('angel_investor_network', 'financial_services', 'investment_opportunities', 'Investment Opportunities', 18401, 1, 'Angel Investor Networks', 'required_proof'),
   ('startup_advisory', 'financial_services', 'investment_opportunities', 'Investment Opportunities', 18402, 2, 'Startup Advisory', 'optional_proof'),
   ('investor_introductions', 'financial_services', 'investment_opportunities', 'Investment Opportunities', 18403, 3, 'Investor Introductions', 'required_proof'),
   ('incubator_accelerator', 'financial_services', 'investment_opportunities', 'Investment Opportunities', 18404, 4, 'Incubators & Accelerators', 'required_proof')
 ) as v(slug, category_slug, group_slug, group_name, sort_order, service_sort_order, name, verification_policy) where nc.slug = v.slug;
 
--- Add the nine services marked new; Forex reuses its existing database slug.
+-- Add the new catalog services; Forex reuses its existing database slug.
 update public.need_capabilities as nc
 set category_slug = v.category_slug,
     name = v.name,
@@ -361,7 +368,13 @@ from (values
   ('graphic_design', 'photo_video_music_talent', 'Graphic Design', 'photo_video_music_talent', 6402, 'art_design', 'Art & Design', 2, 'service', 'open', 'open'),
   ('forex_currency_exchange', 'financial_services', 'Currency Exchange / Forex Bureau', 'financial_services', 18201, 'forex', 'Forex', 1, 'service', 'required_proof', 'required_proof'),
   ('forex_trading_training', 'financial_services', 'Forex Trading Training', 'financial_services', 18202, 'forex', 'Forex', 2, 'service', 'required_proof', 'required_proof'),
-  ('money_transfer', 'financial_services', 'Money Transfer', 'financial_services', 18203, 'forex', 'Forex', 3, 'service', 'required_proof', 'required_proof'),
+  ('forex_trading_brokerage', 'financial_services', 'Forex Trading Brokerage', 'financial_services', 18203, 'forex', 'Forex', 3, 'service', 'required_proof', 'required_proof'),
+  ('money_transfer', 'financial_services', 'Money Transfer', 'financial_services', 18204, 'forex', 'Forex', 4, 'service', 'required_proof', 'required_proof'),
+  ('investment_stocks_shares', 'financial_services', 'Stocks & Shares', 'financial_services', 18411, 'investment_services', 'Investment Services', 1, 'service', 'required_proof', 'required_proof'),
+  ('investment_bonds_treasury_bills', 'financial_services', 'Bonds & Treasury Bills', 'financial_services', 18412, 'investment_services', 'Investment Services', 2, 'service', 'required_proof', 'required_proof'),
+  ('investment_precious_metals', 'financial_services', 'Gold & Precious Metals', 'financial_services', 18413, 'investment_services', 'Investment Services', 3, 'service', 'required_proof', 'required_proof'),
+  ('investment_brokerage', 'financial_services', 'Investment Brokerage', 'financial_services', 18414, 'investment_services', 'Investment Services', 4, 'service', 'required_proof', 'required_proof'),
+  ('investment_advisory', 'financial_services', 'Investment Advisory', 'financial_services', 18415, 'investment_services', 'Investment Services', 5, 'service', 'required_proof', 'required_proof'),
   ('sacco_services', 'financial_services', 'SACCOs', 'financial_services', 18301, 'saccos_cooperatives', 'SACCOs & Cooperatives', 1, 'service', 'required_proof', 'required_proof'),
   ('vsla_groups', 'financial_services', 'Village Savings Groups (VSLA)', 'financial_services', 18302, 'saccos_cooperatives', 'SACCOs & Cooperatives', 2, 'service', 'required_proof', 'required_proof'),
   ('cooperative_societies', 'financial_services', 'Cooperative Societies', 'financial_services', 18303, 'saccos_cooperatives', 'SACCOs & Cooperatives', 3, 'service', 'required_proof', 'required_proof'),
@@ -382,7 +395,13 @@ from (values
   ('graphic_design', 'photo_video_music_talent', 'Graphic Design', 'photo_video_music_talent', 6402, 'art_design', 'Art & Design', 2, 'service', 'open', 'open'),
   ('forex_currency_exchange', 'financial_services', 'Currency Exchange / Forex Bureau', 'financial_services', 18201, 'forex', 'Forex', 1, 'service', 'required_proof', 'required_proof'),
   ('forex_trading_training', 'financial_services', 'Forex Trading Training', 'financial_services', 18202, 'forex', 'Forex', 2, 'service', 'required_proof', 'required_proof'),
-  ('money_transfer', 'financial_services', 'Money Transfer', 'financial_services', 18203, 'forex', 'Forex', 3, 'service', 'required_proof', 'required_proof'),
+  ('forex_trading_brokerage', 'financial_services', 'Forex Trading Brokerage', 'financial_services', 18203, 'forex', 'Forex', 3, 'service', 'required_proof', 'required_proof'),
+  ('money_transfer', 'financial_services', 'Money Transfer', 'financial_services', 18204, 'forex', 'Forex', 4, 'service', 'required_proof', 'required_proof'),
+  ('investment_stocks_shares', 'financial_services', 'Stocks & Shares', 'financial_services', 18411, 'investment_services', 'Investment Services', 1, 'service', 'required_proof', 'required_proof'),
+  ('investment_bonds_treasury_bills', 'financial_services', 'Bonds & Treasury Bills', 'financial_services', 18412, 'investment_services', 'Investment Services', 2, 'service', 'required_proof', 'required_proof'),
+  ('investment_precious_metals', 'financial_services', 'Gold & Precious Metals', 'financial_services', 18413, 'investment_services', 'Investment Services', 3, 'service', 'required_proof', 'required_proof'),
+  ('investment_brokerage', 'financial_services', 'Investment Brokerage', 'financial_services', 18414, 'investment_services', 'Investment Services', 4, 'service', 'required_proof', 'required_proof'),
+  ('investment_advisory', 'financial_services', 'Investment Advisory', 'financial_services', 18415, 'investment_services', 'Investment Services', 5, 'service', 'required_proof', 'required_proof'),
   ('sacco_services', 'financial_services', 'SACCOs', 'financial_services', 18301, 'saccos_cooperatives', 'SACCOs & Cooperatives', 1, 'service', 'required_proof', 'required_proof'),
   ('vsla_groups', 'financial_services', 'Village Savings Groups (VSLA)', 'financial_services', 18302, 'saccos_cooperatives', 'SACCOs & Cooperatives', 2, 'service', 'required_proof', 'required_proof'),
   ('cooperative_societies', 'financial_services', 'Cooperative Societies', 'financial_services', 18303, 'saccos_cooperatives', 'SACCOs & Cooperatives', 3, 'service', 'required_proof', 'required_proof'),
@@ -405,8 +424,9 @@ set identity_required = true,
 where vr.scope_type = 'capability'
   and vr.provider_type = 'both'
   and vr.scope_id in (
-    'forex_currency_exchange', 'forex_trading_training', 'money_transfer',
-    'sacco_services', 'vsla_groups', 'cooperative_societies', 'group_savings_chamas'
+    'forex_currency_exchange', 'forex_trading_training', 'forex_trading_brokerage', 'money_transfer',
+    'sacco_services', 'vsla_groups', 'cooperative_societies', 'group_savings_chamas',
+    'investment_stocks_shares', 'investment_bonds_treasury_bills', 'investment_precious_metals', 'investment_brokerage', 'investment_advisory'
   );
 
 insert into public.verification_requirements (
@@ -419,8 +439,9 @@ select 'capability', nc.slug, 'both', true, false, true,
        array[nc.slug || '_authorization'], 365, true
 from public.need_capabilities nc
 where nc.slug in (
-  'forex_currency_exchange', 'forex_trading_training', 'money_transfer',
-  'sacco_services', 'vsla_groups', 'cooperative_societies', 'group_savings_chamas'
+  'forex_currency_exchange', 'forex_trading_training', 'forex_trading_brokerage', 'money_transfer',
+  'sacco_services', 'vsla_groups', 'cooperative_societies', 'group_savings_chamas',
+  'investment_stocks_shares', 'investment_bonds_treasury_bills', 'investment_precious_metals', 'investment_brokerage', 'investment_advisory'
 )
   and not exists (
     select 1 from public.verification_requirements vr

@@ -337,6 +337,7 @@ Merge note: the old "Business & Investment" category is now folded into **Financ
 ### Forex  **(new subcategory)**
 - Currency Exchange / Forex Bureau — **(new)**
 - Forex Trading Training — **(new)**
+- Forex Trading Brokerage — **(new)**
 - Money Transfer — **(new)**
 
 ### SACCOs & Cooperatives  **(new subcategory)**
@@ -344,6 +345,13 @@ Merge note: the old "Business & Investment" category is now folded into **Financ
 - Village Savings Groups (VSLA) — **(new)**
 - Cooperative Societies — **(new)**
 - Group Savings & Chamas — **(new)**
+
+### Investment Services
+- Stocks & Shares — `investment_stocks_shares`
+- Bonds & Treasury Bills — `investment_bonds_treasury_bills`
+- Gold & Precious Metals — `investment_precious_metals`
+- Investment Brokerage — `investment_brokerage`
+- Investment Advisory — `investment_advisory`
 
 ### Investment Opportunities  *(moved from the old Business & Investment category)*
 - Angel Investor Networks — `angel_investor_network`

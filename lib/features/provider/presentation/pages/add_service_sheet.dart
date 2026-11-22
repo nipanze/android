@@ -84,7 +84,13 @@ const _financialOrderedSlugs = [
   'wedding_financing',
   'forex_currency_exchange',
   'forex_trading_training',
+  'forex_trading_brokerage',
   'money_transfer',
+  'investment_stocks_shares',
+  'investment_bonds_treasury_bills',
+  'investment_precious_metals',
+  'investment_brokerage',
+  'investment_advisory',
   'sacco_services',
   'vsla_groups',
   'cooperative_societies',
@@ -100,6 +106,7 @@ const _financeUiGroupNames = <String, String>{
   'forex': 'Forex',
   'saccos_cooperatives': 'SACCOs & Cooperatives',
   'investment_opportunities': 'Investment Opportunities',
+  'investment_services': 'Investment Services',
 };
 
 const _directIdentityGateCategorySlugs = <String>{
@@ -971,6 +978,25 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
               ? 3
               : _directIdentityGateCategorySlugs.contains(cat.slug)
                   ? 4
+              : const {
+                      'traditional_cultural',
+                      'property_real_estate',
+                      'education_training',
+                      'agriculture_agribusiness',
+                      'photo_video_music_talent',
+                      'photo_video_talent',
+                      'music_video',
+                      'events_production',
+                      'events_celebrations',
+                      'weddings_celebrations',
+                      'energy_utilities',
+                      'beauty_fashion_styling',
+                      'transport_logistics',
+                      'specialized_products',
+                      'travel_international',
+                      'domestic_household',
+                    }.contains(cat.slug)
+                      ? (providerType == null ? 4 : 1)
                   : 8;
       final requestedRoleIndex = widget.initialProofRoleSlug == null
           ? -1
@@ -2605,14 +2631,20 @@ class ProviderTypeStep extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: saving ? null : onContinue,
+                onPressed: saving || selected == null ? null : onContinue,
                 child: saving
                     ? const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(l10n.btnContinue),
+                    : Text(
+                        l10n.btnContinue,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
               ),
             ),
           ),
@@ -2692,6 +2724,7 @@ class IdentitySwitchConfirmStep extends StatelessWidget {
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colors.onSurfaceVariant,
                     height: 1.45,
+                    fontSize: 13,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -2951,7 +2984,7 @@ class IdentitySwitchConfirmStep extends StatelessWidget {
         SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Column(
               children: [
                 SizedBox(
@@ -2969,16 +3002,16 @@ class IdentitySwitchConfirmStep extends StatelessWidget {
                     child: Text(
                       l10n.btnContinue,
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
-                  height: 44,
+                  height: 48,
                   child: TextButton(
                     style: TextButton.styleFrom(
                       foregroundColor: colors.primary,
@@ -2990,8 +3023,8 @@ class IdentitySwitchConfirmStep extends StatelessWidget {
                     child: Text(
                       l10n.cancel,
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -3022,7 +3055,7 @@ class IdentitySwitchConfirmStep extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              fontSize: 13.5,
+              fontSize: 12.5,
               height: 1.38,
               color: textColor,
             ),
@@ -3257,7 +3290,7 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
               children: [
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: 48,
                   child: FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: colors.primary,
@@ -3279,7 +3312,7 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
                             l10n.providerIdentityConfirm,
                             style: const TextStyle(
                               fontWeight: FontWeight.w700,
-                              fontSize: 18,
+                              fontSize: 15,
                             ),
                           ),
                   ),
@@ -3287,7 +3320,7 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
                 const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
-                  height: 40,
+                  height: 48,
                   child: TextButton(
                     onPressed: saving ? null : onBack,
                     style: TextButton.styleFrom(
@@ -3296,7 +3329,7 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
                     child: Text(
                       l10n.btnBack,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -3327,6 +3360,7 @@ class _IdentityReviewRow extends StatelessWidget {
               child: Text(
                 label,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 12.5,
                       color: const Color(0xFF5B6470),
                       fontWeight: FontWeight.w500,
                     ),
@@ -3338,8 +3372,9 @@ class _IdentityReviewRow extends StatelessWidget {
                 value,
                 textAlign: TextAlign.right,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontSize: 14,
                       color: const Color(0xFF1F2A37),
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       height: 1.25,
                     ),
               ),
@@ -3367,6 +3402,7 @@ class _ReviewCheckRow extends StatelessWidget {
             child: Text(
               text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 13,
                     color: const Color(0xFF1F2A37),
                     fontWeight: FontWeight.w500,
                   ),
@@ -3406,6 +3442,7 @@ class _ReviewAttentionRow extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 13,
                         color: const Color(0xFF1F2A37),
                         fontWeight: FontWeight.w700,
                       ),
@@ -3414,6 +3451,7 @@ class _ReviewAttentionRow extends StatelessWidget {
                 Text(
                   subtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 12.5,
                         color: const Color(0xFF5B6470),
                         height: 1.2,
                       ),
@@ -3925,7 +3963,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
             // Provider type is category scoped and can be changed from C/D.
             if (providerType != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -4243,7 +4281,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
 
             // ── Jobs: role selection ───────────────────────────────
             if (showRoles) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 0),
               const _RoleProgressIndicator(step: 1),
               if (individualType)
                 Text(
