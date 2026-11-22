@@ -7,7 +7,9 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/services/offline_service.dart';
+import '../../domain/entities/provider_capability.dart';
 import '../../domain/entities/provider_category_type.dart';
+import '../../domain/entities/provider_opportunity.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
 import 'capabilities_state.dart';
 
@@ -22,10 +24,7 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
   final IProviderRepository _repo;
   late final StreamSubscription<void> _connectionSubscription;
 
-  Future<Map<String, ProviderCategoryType>> _loadCategoryTypes(
-    bool enabled,
-  ) async {
-    if (!enabled) return const {};
+  Future<Map<String, ProviderCategoryType>> _loadCategoryTypes() async {
     try {
       return await _repo.getMyCategoryTypes();
     } catch (_) {
@@ -37,10 +36,17 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
   Future<void> load() async {
     if (state is! CapabilitiesLoaded) emit(const CapabilitiesLoading());
     try {
-      final caps = await _repo.getProviderCapabilities();
-      final enabled = await _repo.capabilityProfilesEnabled();
-      final workEnabled = await _repo.workProfilesEnabled();
-      final categoryTypes = await _loadCategoryTypes(enabled);
+      final results = await Future.wait<Object>([
+        _repo.getProviderCapabilities(),
+        _repo.capabilityProfilesEnabled(),
+        _repo.workProfilesEnabled(),
+        _loadCategoryTypes(),
+      ]);
+      final caps = results[0] as List<ProviderCapability>;
+      final enabled = results[1] as bool;
+      final workEnabled = results[2] as bool;
+      final categoryTypes =
+          results[3] as Map<String, ProviderCategoryType>;
       emit(CapabilitiesLoaded(
         capabilities: caps,
         capabilityProfilesEnabled: enabled,
@@ -58,11 +64,19 @@ class CapabilitiesCubit extends Cubit<CapabilitiesState> {
   Future<void> loadWithOpportunities() async {
     if (state is! CapabilitiesLoaded) emit(const CapabilitiesLoading());
     try {
-      final caps = await _repo.getProviderCapabilities();
-      final opps = await _repo.getProviderOpportunities();
-      final enabled = await _repo.capabilityProfilesEnabled();
-      final workEnabled = await _repo.workProfilesEnabled();
-      final categoryTypes = await _loadCategoryTypes(enabled);
+      final results = await Future.wait<Object>([
+        _repo.getProviderCapabilities(),
+        _repo.getProviderOpportunities(),
+        _repo.capabilityProfilesEnabled(),
+        _repo.workProfilesEnabled(),
+        _loadCategoryTypes(),
+      ]);
+      final caps = results[0] as List<ProviderCapability>;
+      final opps = results[1] as List<ProviderOpportunity>;
+      final enabled = results[2] as bool;
+      final workEnabled = results[3] as bool;
+      final categoryTypes =
+          results[4] as Map<String, ProviderCategoryType>;
       emit(CapabilitiesLoaded(
         capabilities: caps,
         opportunities: opps,

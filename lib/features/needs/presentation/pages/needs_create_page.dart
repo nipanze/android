@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ import '../../../settings/data/system_settings_repository.dart';
 import '../../data/need_draft_exit_guard.dart';
 import '../../data/need_draft_store.dart';
 import '../../data/needs_repository.dart';
+import '../../domain/models/need_capability.dart';
 import '../../domain/models/need_category.dart';
 import '../../domain/models/need_form_schema.dart';
 
@@ -53,6 +55,37 @@ const _providerStyleNeedCategoryLabels = <String, String>{
   'property_real_estate': 'Property & Real Estate',
   'traditional_cultural': 'Traditional & Cultural Services',
 };
+
+class _DashedRoundedBorderPainter extends CustomPainter {
+  const _DashedRoundedBorderPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final border = RRect.fromRectAndRadius(
+      (Offset.zero & size).deflate(0.5),
+      const Radius.circular(13),
+    );
+    final path = Path()..addRRect(border);
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    for (final metric in path.computeMetrics()) {
+      for (var distance = 0.0; distance < metric.length; distance += 8) {
+        canvas.drawPath(
+          metric.extractPath(distance, min(distance + 4, metric.length)),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedRoundedBorderPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
 
 class NeedsCreatePage extends StatefulWidget {
   const NeedsCreatePage({
@@ -96,6 +129,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   final Map<String, bool> _dynamicBooleans = {};
   final Map<String, int> _presetTapCounts = {};
   List<NeedCategory> _categories = NeedCategory.defaultCategories;
+  List<NeedCapability> _targetCapabilities = const [];
   List<NeedsListing> _recentRequests = const [];
   String? _recentRequestsLoadError;
 
@@ -104,8 +138,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
   String _urgency = 'Within 30 days';
   String? _location;
   String? _selectedPresetLabel;
+  String? _targetCapabilitySlug;
   bool _locationTouched = false;
   bool _durationCustomSelected = false;
+  bool _isChoosingTargetCapability = false;
   final Set<String> _customChoiceFields = {};
   final int _starterPresetSeed = Random().nextInt(1 << 30);
   bool _submitting = false;
@@ -152,6 +188,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       });
     }
     _loadCategories();
+    if (_supportsCapabilityTarget(_categorySlug)) {
+      unawaited(_loadTargetCapabilities(_categorySlug));
+    }
     _loadLimits();
     _loadRecentRequests();
   }
@@ -181,6 +220,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       final urgency = draft['urgency']?.toString();
       if (urgency != null && _urgencies.contains(urgency)) _urgency = urgency;
       final details = draft['details'];
+      _targetCapabilitySlug =
+          (draft['target_capability_slug'] ?? draft['financial_service_slug'])
+              ?.toString();
       if (details is Map) {
         for (final entry in details.entries) {
           final field = _fieldByKey(entry.key.toString());
@@ -198,6 +240,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         }
       }
     });
+    if (_supportsCapabilityTarget(_categorySlug)) {
+      unawaited(_loadTargetCapabilities(_categorySlug));
+    }
   }
 
   Future<void> _loadRecentRequests() async {
@@ -246,6 +291,87 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     });
   }
 
+  bool _supportsCapabilityTarget(String categorySlug) =>
+      categorySlug == 'financial_services' ||
+      categorySlug == 'machinery_equipment' ||
+      categorySlug == 'transport_logistics' ||
+      categorySlug == 'specialized_products' ||
+      categorySlug == 'construction_building' ||
+      categorySlug == 'professional_services' ||
+      categorySlug == 'travel_international' ||
+      categorySlug == 'agriculture_agribusiness' ||
+      categorySlug == 'energy_utilities' ||
+      categorySlug == 'technology_digital' ||
+      categorySlug == 'marketing_promotion' ||
+      categorySlug == 'education_training' ||
+      categorySlug == 'events_production' ||
+      categorySlug == 'events_celebrations' ||
+      categorySlug == 'weddings_celebrations' ||
+      categorySlug == 'photo_video_music_talent' ||
+      categorySlug == 'photo_video_talent' ||
+      categorySlug == 'music_video' ||
+      categorySlug == 'beauty_fashion_styling' ||
+      categorySlug == 'domestic_household' ||
+      categorySlug == 'health_medical' ||
+      categorySlug == 'traditional_cultural' ||
+      categorySlug == 'property_real_estate';
+
+  String _capabilityCatalogCategorySlug(String categorySlug) =>
+      switch (categorySlug) {
+        'events_celebrations' || 'weddings_celebrations' => 'events_production',
+        'photo_video_talent' || 'music_video' => 'photo_video_music_talent',
+        _ => categorySlug,
+      };
+
+  String _capabilityTargetLabel(String categorySlug) => switch (categorySlug) {
+        'financial_services' => 'Finance',
+        'machinery_equipment' => 'Machinery',
+        'specialized_products' => 'Sourcing',
+        'construction_building' => 'Construction',
+        'professional_services' => 'Business',
+        'travel_international' => 'Travel',
+        'agriculture_agribusiness' => 'Agriculture',
+        'energy_utilities' => 'Energy',
+        'technology_digital' => 'Digital',
+        'marketing_promotion' => 'Marketing',
+        'education_training' => 'Education',
+        'events_production' ||
+        'events_celebrations' ||
+        'weddings_celebrations' =>
+          'Events',
+        'photo_video_music_talent' ||
+        'photo_video_talent' ||
+        'music_video' =>
+          'Photo & Video',
+        'beauty_fashion_styling' => 'Beauty',
+        'domestic_household' => 'Domestic',
+        'health_medical' => 'Health',
+        'traditional_cultural' => 'Traditional & Cultural',
+        'property_real_estate' => 'Property',
+        _ => 'Transport',
+      };
+
+  Future<void> _loadTargetCapabilities(String categorySlug) async {
+    final catalogCategorySlug = _capabilityCatalogCategorySlug(categorySlug);
+    try {
+      final capabilities = await getIt<NeedsRepository>().getCapabilities(
+        categorySlug: catalogCategorySlug,
+      );
+      if (!mounted ||
+          _capabilityCatalogCategorySlug(_categorySlug) !=
+              catalogCategorySlug) {
+        return;
+      }
+      setState(() {
+        _targetCapabilities = capabilities
+            .where((capability) =>
+                capability.serviceGroupSlug != null &&
+                capability.serviceGroupSlug != 'work_roles')
+            .toList();
+      });
+    } catch (_) {}
+  }
+
   void _initCategoryControllers() {
     final fields = NeedFormSchema.fieldsForCategory(_categorySlug);
     for (final field in fields) {
@@ -288,6 +414,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       _customLocationController.text.trim().isNotEmpty ||
       _locationTouched ||
       _urgency != 'Within 30 days' ||
+      _targetCapabilitySlug != null ||
       _dynamicControllers.values
           .any((controller) => controller.text.trim().isNotEmpty) ||
       _dynamicBooleans.values.any((value) => value);
@@ -472,6 +599,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       _durationCustomSelected = false;
       _customChoiceFields.clear();
       _selectedPresetLabel = null;
+      _targetCapabilitySlug = null;
+      _targetCapabilities = const [];
       for (final controller in _dynamicControllers.values) {
         controller.clear();
       }
@@ -479,7 +608,293 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       _categorySlug = slug;
       _initCategoryControllers();
     });
+    if (_supportsCapabilityTarget(slug)) {
+      unawaited(_loadTargetCapabilities(slug));
+    }
   }
+
+  Future<void> _chooseTargetCapability() async {
+    if (_isChoosingTargetCapability) return;
+    _isChoosingTargetCapability = true;
+    try {
+      if (_targetCapabilities.isEmpty) {
+        await _loadTargetCapabilities(_categorySlug);
+      }
+      if (!mounted) return;
+      final services = _targetCapabilities;
+      final providerGroup = switch (_categorySlug) {
+        'financial_services' => 'Finance',
+        'machinery_equipment' => 'Machinery',
+        'specialized_products' => 'Sourcing',
+        'construction_building' => 'Construction',
+        'professional_services' => 'Business',
+        'travel_international' => 'Travel',
+        'agriculture_agribusiness' => 'Agriculture',
+        'energy_utilities' => 'Energy',
+        'technology_digital' => 'Digital',
+        'marketing_promotion' => 'Marketing',
+        'education_training' => 'Education',
+        'events_production' ||
+        'events_celebrations' ||
+        'weddings_celebrations' =>
+          'Events',
+        'photo_video_music_talent' ||
+        'photo_video_talent' ||
+        'music_video' =>
+          'Photo & Video',
+        'beauty_fashion_styling' => 'Beauty',
+        'domestic_household' => 'Domestic',
+        'health_medical' => 'Health',
+        'traditional_cultural' => 'Traditional & Cultural',
+        'property_real_estate' => 'Property',
+        _ => 'Transport & Logistics',
+      };
+      final serviceKind = '$providerGroup service';
+      final allProviders = 'Not sure / any $providerGroup provider';
+      final selection = await showModalBottomSheet<String?>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: Colors.transparent,
+        builder: (sheetContext) => DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.72,
+          minChildSize: 0.4,
+          maxChildSize: 0.92,
+          builder: (context, scrollController) {
+            final theme = Theme.of(context);
+            final colors = theme.colorScheme;
+            return Material(
+              color: colors.surface,
+              clipBehavior: Clip.antiAlias,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 38,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: colors.outlineVariant,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 14, 12, 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Choose a $serviceKind',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'Pick the service that best matches your request.',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: MaterialLocalizations.of(context)
+                              .closeButtonTooltip,
+                          onPressed: () => Navigator.pop(sheetContext),
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                      children: [
+                        _buildServiceChoiceTile(
+                          context: context,
+                          title: allProviders,
+                          subtitle:
+                              'Your request may reach all $providerGroup providers.',
+                          selected: _targetCapabilitySlug == null,
+                          onTap: () => Navigator.pop(sheetContext, ''),
+                          anyProvider: true,
+                        ),
+                        for (var index = 0;
+                            index < services.length;
+                            index++) ...[
+                          if (index == 0 ||
+                              services[index - 1].serviceGroupSlug !=
+                                  services[index].serviceGroupSlug)
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                4,
+                                index == 0 ? 12 : 14,
+                                4,
+                                4,
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    (services[index].serviceGroupName ??
+                                            '$serviceKind options')
+                                        .toUpperCase(),
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: colors.surfaceContainerHighest,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      '${services.where((service) => service.serviceGroupSlug == services[index].serviceGroupSlug).length}',
+                                      style:
+                                          theme.textTheme.labelSmall?.copyWith(
+                                        color: colors.onSurfaceVariant,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          _buildServiceChoiceTile(
+                            context: context,
+                            title: services[index].name,
+                            subtitle: _serviceDescription(services[index].slug),
+                            selected:
+                                _targetCapabilitySlug == services[index].slug,
+                            onTap: () => Navigator.pop(
+                              sheetContext,
+                              services[index].slug,
+                            ),
+                          ),
+                        ],
+                        if (services.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Text(
+                              '$serviceKind options are unavailable. Try again when connected.',
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+      if (selection == null || !mounted) return;
+      setState(
+          () => _targetCapabilitySlug = selection.isEmpty ? null : selection);
+    } finally {
+      _isChoosingTargetCapability = false;
+    }
+  }
+
+  Widget _buildServiceChoiceTile({
+    required BuildContext context,
+    required String title,
+    required bool selected,
+    required VoidCallback onTap,
+    String? subtitle,
+    bool anyProvider = false,
+  }) {
+    final colors = Theme.of(context).colorScheme;
+    final contents = Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: anyProvider ? 12 : 10,
+        vertical: subtitle == null ? 8 : 7,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight:
+                            selected ? FontWeight.w600 : FontWeight.w500,
+                        color: selected ? colors.primary : colors.onSurface,
+                      ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                          height: 1.2,
+                        ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Icon(
+            selected ? Icons.check_circle : Icons.radio_button_unchecked,
+            color: selected ? colors.primary : colors.outline,
+            size: 22,
+          ),
+        ],
+      ),
+    );
+    return Padding(
+      padding: EdgeInsets.only(bottom: anyProvider ? 6 : 0),
+      child: Material(
+        color: selected && !anyProvider
+            ? colors.primary.withValues(alpha: 0.09)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(13),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(13),
+          onTap: onTap,
+          child: anyProvider
+              ? CustomPaint(
+                  foregroundPainter: _DashedRoundedBorderPainter(
+                    color: colors.outlineVariant,
+                  ),
+                  child: contents,
+                )
+              : contents,
+        ),
+      ),
+    );
+  }
+
+  String? _serviceDescription(String slug) => switch (slug) {
+        'excavator_hire' => 'Digging, trenching and site clearing',
+        'loader_hire' => 'Loading and moving soil or materials',
+        'grader_hire' => 'Road grading and levelling',
+        'crane_hire' => 'Lifting heavy loads on site',
+        'generator_hire' => 'Temporary power for sites and events',
+        'tractor_hire' => 'Ploughing, planting and hauling',
+        _ => null,
+      };
 
   Future<void> _openCategoryDrawer() async {
     final l10n = AppLocalizations.of(context)!;
@@ -670,6 +1085,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       final tapCount = _presetTapCounts[presetKey] ?? 0;
       _presetTapCounts[presetKey] = tapCount + 1;
       _selectedPresetLabel = preset.label;
+      if (_supportsCapabilityTarget(_categorySlug)) {
+        _targetCapabilitySlug = preset.providerCapabilitySlug;
+      }
       _titleController.text = _presetTitleVariant(preset.title, tapCount);
       _specificationController.text = _presetSpecificationVariant(
         preset,
@@ -2023,6 +2441,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         specification: _specificationController.text,
         categorySlug: _categorySlug,
         categoryName: _categoryLocalizedName(l10n, _categorySlug),
+        capabilitySlug: _supportsCapabilityTarget(_categorySlug)
+            ? _targetCapabilitySlug
+            : null,
         details: _collectDetails(),
         budget: _budgetValue(),
         currency: _currency(authState),
@@ -2082,6 +2503,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
           'title': _titleController.text.trim(),
           'specification': _specificationController.text.trim(),
           'category_slug': _categorySlug,
+          'target_capability_slug': _targetCapabilitySlug,
           'details': _collectDetails(),
           'budget': _budgetController.text.trim(),
           'location': _effectiveLocation,
@@ -2226,6 +2648,36 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                           ),
                         ),
                         const SizedBox(height: 12),
+                        if (_supportsCapabilityTarget(_categorySlug)) ...[
+                          InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: _chooseTargetCapability,
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                labelText:
+                                    '${_capabilityTargetLabel(_categorySlug)} service (optional)',
+                                helperText:
+                                    'Choose a service to reach providers who offer it.',
+                                border: const OutlineInputBorder(),
+                                suffixIcon:
+                                    const Icon(Icons.expand_more_rounded),
+                              ),
+                              child: Text(
+                                _targetCapabilitySlug == null
+                                    ? 'Not sure / any ${_capabilityTargetLabel(_categorySlug)} provider'
+                                    : _targetCapabilities
+                                            .where((service) =>
+                                                service.slug ==
+                                                _targetCapabilitySlug)
+                                            .map((service) => service.name)
+                                            .firstOrNull ??
+                                        'Selected service',
+                                style: theme.textTheme.bodyLarge,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
                         TextFormField(
                           controller: _titleController,
                           textCapitalization: TextCapitalization.sentences,

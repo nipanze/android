@@ -910,9 +910,6 @@ class _ModuleFilterRow extends StatelessWidget {
             final isLoading = capabilitiesState is CapabilitiesInitial ||
                 capabilitiesState is CapabilitiesLoading;
             final loadFailed = capabilitiesState is CapabilitiesError;
-            final capabilityProfilesEnabled =
-                capabilitiesState is CapabilitiesLoaded &&
-                    capabilitiesState.capabilityProfilesEnabled;
             return Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 14, 6),
               child: Row(
@@ -980,20 +977,10 @@ class _ModuleFilterRow extends StatelessWidget {
                                               .setModuleFilter(null),
                                         ),
                                         const SizedBox(width: 6),
-                                        if (capabilityProfilesEnabled)
-                                          _DottedAddServiceChip(
-                                            onTap: () => context.push(
-                                                AppRoutes.accountServices),
-                                          )
-                                        else
-                                          ActionChip(
-                                            label: const Text('Add a service'),
-                                            avatar: const Icon(
-                                                Icons.add_rounded,
-                                                size: 16),
-                                            onPressed: () => context.push(
-                                                AppRoutes.accountServices),
-                                          ),
+                                        _DottedAddServiceChip(
+                                          onTap: () => context.push(
+                                              AppRoutes.accountServices),
+                                        ),
                                       ]
                                     : [
                                         _FilterPill(

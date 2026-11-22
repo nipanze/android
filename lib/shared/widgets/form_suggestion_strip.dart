@@ -28,6 +28,30 @@ class FormSuggestionStrip extends StatelessWidget {
 
   IconData _iconForOption(String value) {
     final text = value.toLowerCase();
+    if (text.contains('cargo move')) return Icons.local_shipping_rounded;
+    if (text.contains('delivery run') || text.contains('business deliveries')) {
+      return Icons.delivery_dining_rounded;
+    }
+    if (text.contains('house move')) return Icons.moving_rounded;
+    if (text.contains('building materials')) return Icons.construction_rounded;
+    if (text.contains('farm produce')) return Icons.agriculture_rounded;
+    if (text.contains('dental braces')) return Icons.mood_rounded;
+    if (text.contains('circumcision')) return Icons.health_and_safety_rounded;
+    if (text.contains('medical worker')) return Icons.medical_information_rounded;
+    if (text.contains('bone and joint')) return Icons.accessibility_new_rounded;
+    if (text.contains('consultation')) return Icons.medical_services_rounded;
+    if (text.contains('traditional attire')) return Icons.checkroom_rounded;
+    if (text.contains('music and dance') || text.contains('cultural instruction')) {
+      return Icons.music_note_rounded;
+    }
+    if (text.contains('ceremony supplies')) return Icons.card_giftcard_rounded;
+    if (text.contains('traditional healer') || text.contains('herbal tradition')) {
+      return Icons.spa_rounded;
+    }
+    if (text.contains('religious or spiritual')) return Icons.self_improvement_rounded;
+    if (text.contains('cultural ceremony') || text.contains('ceremony host')) {
+      return Icons.diversity_3_rounded;
+    }
     // Handle specific travel request types before the generic "trip" match.
     if (text.contains('school trip') || text.contains('school bus')) {
       return Icons.directions_bus_rounded;
@@ -126,6 +150,21 @@ class FormSuggestionStrip extends StatelessWidget {
     if (text.contains('currency exchange'))
       return Icons.currency_exchange_rounded;
     if (text.contains('financial planning')) return Icons.calculate_rounded;
+    if (text.contains('stocks') || text.contains('shares')) {
+      return Icons.show_chart_rounded;
+    }
+    if (text.contains('bonds') || text.contains('treasury')) {
+      return Icons.account_balance_rounded;
+    }
+    if (text.contains('investment advice') || text.contains('investing')) {
+      return Icons.insights_rounded;
+    }
+    if (text.contains('gold') || text.contains('precious metals')) {
+      return Icons.monetization_on_rounded;
+    }
+    if (text.contains('startup investment') || text.contains('investor')) {
+      return Icons.rocket_launch_rounded;
+    }
     if (text.contains('traditional attire')) return Icons.checkroom_rounded;
     if (text.contains('cultural') || text.contains('ceremony host')) {
       return Icons.diversity_3_rounded;

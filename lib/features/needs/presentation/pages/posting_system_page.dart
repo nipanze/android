@@ -614,8 +614,7 @@ class _PostingSystemPageState extends State<PostingSystemPage> {
                   clipBehavior: Clip.none,
                   children: [
                     _promptPicker(theme),
-                    if (_providerFeatureEnabled &&
-                        !_modalOpen &&
+                    if (!_modalOpen &&
                         MediaQuery.viewInsetsOf(context).bottom == 0)
                       _AddServiceEdgeButton(
                         tucked: _edgeButtonTucked,
