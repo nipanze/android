@@ -24,6 +24,7 @@ class ListingCard extends StatelessWidget {
     this.onMoreAction,
     this.showDeleteAction = false,
     this.matchReason,
+    this.categoryBadgeColor,
   });
 
   final MarketplaceItem listing;
@@ -35,6 +36,7 @@ class ListingCard extends StatelessWidget {
   final VoidCallback? onMoreAction;
   final bool showDeleteAction;
   final String? matchReason;
+  final Color? categoryBadgeColor;
 
   @override
   Widget build(BuildContext context) {
@@ -184,13 +186,15 @@ class ListingCard extends StatelessWidget {
             builder: (context, constraints) {
               final main = _MainListingArea(
                 accent: accent,
+                moduleBadgeColor: categoryBadgeColor ?? AppColors.accent,
                 moduleLabel: isNeeds
-                    ? '${needs.categoryIcon} ${NeedCategory(slug: needs.categorySlug, name: needs.category, icon: needs.categoryIcon).localizedName(Localizations.localeOf(context).languageCode)}'
-                    : isForex
-                        ? l10n.marketplaceForex
-                        : l10n.marketplaceLoan,
+                    ? '${needs.categoryIcon} ${NeedCategory.findBySlug(needs.categorySlug).localizedName(Localizations.localeOf(context).languageCode)}'
+                    : NeedCategory.findBySlug('financial_services')
+                        .localizedName(
+                        Localizations.localeOf(context).languageCode,
+                      ),
                 moduleIcon: isNeeds
-                    ? Icons.search_rounded
+                    ? null
                     : isForex
                         ? Icons.currency_exchange_rounded
                         : Icons.account_balance_wallet_outlined,
@@ -318,6 +322,7 @@ class _MoreActionsButton extends StatelessWidget {
 class _MainListingArea extends StatelessWidget {
   const _MainListingArea({
     required this.accent,
+    required this.moduleBadgeColor,
     required this.moduleLabel,
     required this.moduleIcon,
     required this.expiryIndicator,
@@ -339,8 +344,9 @@ class _MainListingArea extends StatelessWidget {
   });
 
   final Color accent;
+  final Color moduleBadgeColor;
   final String moduleLabel;
-  final IconData moduleIcon;
+  final IconData? moduleIcon;
   final Widget expiryIndicator;
   final String title;
   final Widget amountWidget;
@@ -401,7 +407,7 @@ class _MainListingArea extends StatelessWidget {
                   _ModuleBadge(
                     label: moduleLabel,
                     icon: moduleIcon,
-                    color: accent,
+                    color: moduleBadgeColor,
                   ),
                   expiryIndicator,
                 ],
@@ -529,7 +535,7 @@ class _ModuleBadge extends StatelessWidget {
   });
 
   final String label;
-  final IconData icon;
+  final IconData? icon;
   final Color color;
 
   @override
@@ -544,8 +550,10 @@ class _ModuleBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 4),
+          if (icon != null) ...[
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+          ],
           Text(
             label,
             style: TextStyle(

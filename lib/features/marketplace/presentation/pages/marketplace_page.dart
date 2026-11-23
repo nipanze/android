@@ -460,9 +460,21 @@ class _MarketplaceView extends StatelessWidget {
                                   listing.requestId,
                                   module: listing.module,
                                 );
-                                final reason = context
-                                    .read<MarketplaceCubit>()
-                                    .forYouReason(listing);
+                                final marketplaceCubit =
+                                    context.read<MarketplaceCubit>();
+                                final reason =
+                                    marketplaceCubit.forYouReason(listing);
+                                final providerIdentityType = marketplaceCubit
+                                    .forYouProviderIdentityType(listing);
+                                final categoryBadgeColor = !isForYou
+                                    ? null
+                                    : switch (providerIdentityType) {
+                                        'individual' => AppColors.proPurple,
+                                        'company' => AppColors.accent,
+                                        _ => reason == null
+                                            ? AppColors.accent
+                                            : AppColors.warning,
+                                      };
                                 return ListingCard(
                                   listing: listing,
                                   onTap: () => context.push(
@@ -474,6 +486,7 @@ class _MarketplaceView extends StatelessWidget {
                                   ),
                                   isSaved: isSaved,
                                   matchReason: isForYou ? reason : null,
+                                  categoryBadgeColor: categoryBadgeColor,
                                   onWatchlistToggle: () {
                                     if (isSaved) {
                                       unawaited(() async {
@@ -542,6 +555,7 @@ Future<void> _enableLending(BuildContext context) async {
   cubit.setForYouPreferences(
     interestSlugs: cubit.forYouInterests,
     providerSlugs: cubit.providerCategories,
+    providerIdentityTypes: cubit.providerCategoryIdentityTypes,
     iLend: true,
   );
 }
@@ -554,17 +568,6 @@ class _ForYouPreferencesSync extends StatefulWidget {
 }
 
 class _ForYouPreferencesSyncState extends State<_ForYouPreferencesSync> {
-  static const _knownInterestSlugs = <String>{
-    "machinery_equipment",
-    "transport_logistics",
-    "professional_services",
-    "specialized_products",
-    "energy_utilities",
-    "agriculture_agribusiness",
-    "education_training",
-    "forex",
-  };
-
   @override
   void initState() {
     super.initState();
@@ -579,24 +582,32 @@ class _ForYouPreferencesSyncState extends State<_ForYouPreferencesSync> {
         SharedPreferences.getInstance(),
       ]);
       if (!mounted) return;
-      final interests =
-          (values[0] as Set<String>).intersection(_knownInterestSlugs);
+      final interests = values[0] as Set<String>;
       final capabilities = values[1] as List<ProviderCapability>;
-      final providerSlugs = capabilities
-          .where((capability) =>
-              capability.isActive &&
-              !capability.isPaused &&
-              (!capability.isWork ||
-                  capability.metadata["is_role_active"] != false))
-          .map((capability) =>
-              capability.categorySlug ?? capability.capabilitySlug)
-          .toSet();
+      final activeCapabilities = capabilities.where((capability) =>
+          capability.isActive &&
+          !capability.isPaused &&
+          (!capability.isWork ||
+              capability.metadata["is_role_active"] != false));
+      final providerIdentityTypes = <String, String>{};
+      for (final capability in activeCapabilities) {
+        final categorySlug =
+            capability.categorySlug ?? capability.capabilitySlug;
+        final identityType = capability.identityType ??
+            (capability.isWork ? 'individual' : 'company');
+        if (identityType == 'company' ||
+            !providerIdentityTypes.containsKey(categorySlug)) {
+          providerIdentityTypes[categorySlug] = identityType;
+        }
+      }
+      final providerSlugs = providerIdentityTypes.keys.toSet();
       final prefs = values[2] as SharedPreferences;
       if (!mounted) return;
       context.read<MarketplaceCubit>().setForYouPreferences(
             interestSlugs: interests,
             providerSlugs: providerSlugs,
-            iLend: prefs.getBool("marketplace_i_lend") ?? true,
+            providerIdentityTypes: providerIdentityTypes,
+            iLend: prefs.getBool("marketplace_i_lend") ?? false,
           );
     } catch (_) {
       // Keep the feed usable if preferences are unavailable offline.
@@ -887,9 +898,51 @@ class _MarketplaceDiscoveryCardState extends State<_MarketplaceDiscoveryCard> {
   }
 }
 
-class _ModuleFilterRow extends StatelessWidget {
+class _ModuleFilterRow extends StatefulWidget {
   const _ModuleFilterRow({required this.onProFilterTap});
   final VoidCallback onProFilterTap;
+
+  @override
+  State<_ModuleFilterRow> createState() => _ModuleFilterRowState();
+}
+
+class _ModuleFilterRowState extends State<_ModuleFilterRow> {
+  String? _selectedProviderCapabilityId;
+
+  Widget _providerServicePill(
+    BuildContext context,
+    ProviderCapability service, {
+    required bool selected,
+  }) {
+    final isIndividual = service.identityType == 'individual';
+    final l10n = AppLocalizations.of(context)!;
+    final identityLabel =
+        isIndividual ? l10n.providerTypeIndividual : l10n.companyLabel;
+    final categoryLabel = service.categoryName?.trim().isNotEmpty == true
+        ? service.categoryName!.trim()
+        : service.capabilityName?.trim().isNotEmpty == true
+            ? service.capabilityName!.trim()
+            : service.capabilitySlug;
+    return _FilterPill(
+      label: _providerServiceLabel(
+        service,
+        context: context,
+        showFullCategoryName: selected,
+      ),
+      selected: selected,
+      accentColor: isIndividual ? AppColors.proPurple : AppColors.accent,
+      colorWhenUnselected: true,
+      icon:
+          isIndividual ? Icons.person_outline_rounded : Icons.business_outlined,
+      semanticsLabel: '$categoryLabel, $identityLabel provider service',
+      onTap: () {
+        setState(() => _selectedProviderCapabilityId = service.id);
+        context
+            .read<MarketplaceCubit>()
+            .setModuleFilter(_moduleForProviderService(service));
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -910,6 +963,24 @@ class _ModuleFilterRow extends StatelessWidget {
             final isLoading = capabilitiesState is CapabilitiesInitial ||
                 capabilitiesState is CapabilitiesLoading;
             final loadFailed = capabilitiesState is CapabilitiesError;
+            ProviderCapability? selectedProviderService;
+            if (selected != null) {
+              for (final service in services) {
+                if (_moduleForProviderService(service) == selected &&
+                    service.id == _selectedProviderCapabilityId) {
+                  selectedProviderService = service;
+                  break;
+                }
+              }
+              if (selectedProviderService == null) {
+                for (final service in services) {
+                  if (_moduleForProviderService(service) == selected) {
+                    selectedProviderService = service;
+                    break;
+                  }
+                }
+              }
+            }
             return Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 14, 6),
               child: Row(
@@ -978,8 +1049,8 @@ class _ModuleFilterRow extends StatelessWidget {
                                         ),
                                         const SizedBox(width: 6),
                                         _DottedAddServiceChip(
-                                          onTap: () => context.push(
-                                              AppRoutes.accountServices),
+                                          onTap: () => context
+                                              .push(AppRoutes.accountServices),
                                         ),
                                       ]
                                     : [
@@ -998,19 +1069,14 @@ class _ModuleFilterRow extends StatelessWidget {
                                             i < services.length;
                                             i++) ...[
                                           if (i > 0) const SizedBox(width: 6),
-                                          _FilterPill(
-                                            label: _providerServiceLabel(
-                                                services[i]),
+                                          _providerServicePill(
+                                            context,
+                                            services[i],
                                             selected: selected ==
-                                                _moduleForProviderService(
-                                                    services[i]),
-                                            accentColor: AppColors.accent,
-                                            onTap: () => context
-                                                .read<MarketplaceCubit>()
-                                                .setModuleFilter(
-                                                  _moduleForProviderService(
-                                                      services[i]),
-                                                ),
+                                                    _moduleForProviderService(
+                                                        services[i]) &&
+                                                selectedProviderService?.id ==
+                                                    services[i].id,
                                           ),
                                         ],
                                       ],
@@ -1018,7 +1084,7 @@ class _ModuleFilterRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  _ProFilterButton(onTap: onProFilterTap),
+                  _ProFilterButton(onTap: widget.onProFilterTap),
                 ],
               ),
             );
@@ -1054,10 +1120,9 @@ class _DottedAddServiceChip extends StatelessWidget {
               height: 28,
               child: Center(
                 child: CustomPaint(
-                  foregroundPainter:
-                      const _DottedRoundedBorderPainter(
-                        color: addServicePurple,
-                      ),
+                  foregroundPainter: const _DottedRoundedBorderPainter(
+                    color: addServicePurple,
+                  ),
                   child: Container(
                     height: 28,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -1126,7 +1191,15 @@ class _DottedRoundedBorderPainter extends CustomPainter {
       oldDelegate.color != color;
 }
 
-String _providerServiceLabel(ProviderCapability service) {
+String _providerServiceLabel(
+  ProviderCapability service, {
+  BuildContext? context,
+  bool showFullCategoryName = false,
+}) {
+  if (showFullCategoryName && context != null && service.categorySlug != null) {
+    return NeedCategory.findBySlug(service.categorySlug!)
+        .localizedName(Localizations.localeOf(context).languageCode);
+  }
   final category = service.categoryName?.trim();
   if (category != null && category.isNotEmpty) return category;
   if (service.isWork) {
@@ -1170,6 +1243,8 @@ class _FilterPill extends StatelessWidget {
     required this.accentColor,
     required this.onTap,
     this.icon,
+    this.colorWhenUnselected = false,
+    this.semanticsLabel,
   });
 
   final String label;
@@ -1177,6 +1252,8 @@ class _FilterPill extends StatelessWidget {
   final Color accentColor;
   final VoidCallback onTap;
   final IconData? icon;
+  final bool colorWhenUnselected;
+  final String? semanticsLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -1189,44 +1266,53 @@ class _FilterPill extends StatelessWidget {
         : (isDark ? AppColors.bg2Dark : AppColors.bg2Light);
     final textColor = selected
         ? Colors.white
-        : (isDark ? AppColors.text2Dark : AppColors.text2Light);
+        : colorWhenUnselected
+            ? accentColor
+            : (isDark ? AppColors.text2Dark : AppColors.text2Light);
     final borderColor = selected
         ? accentColor
-        : (isDark ? AppColors.borderDark : AppColors.borderLight);
+        : colorWhenUnselected
+            ? accentColor.withValues(alpha: 0.38)
+            : (isDark ? AppColors.borderDark : AppColors.borderLight);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        constraints: const BoxConstraints(minHeight: 28, minWidth: 64),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        decoration: BoxDecoration(
-          color: shellColor,
-          borderRadius: BorderRadius.circular(7),
-          border: Border.all(color: borderColor),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
-              Icon(
-                icon,
-                size: 13,
-                color: textColor,
+    return Semantics(
+      label: semanticsLabel,
+      button: true,
+      selected: selected,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          constraints: const BoxConstraints(minHeight: 28, minWidth: 64),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: shellColor,
+            borderRadius: BorderRadius.circular(7),
+            border: Border.all(color: borderColor),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 13,
+                  color: textColor,
+                ),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: textColor,
+                ),
               ),
-              const SizedBox(width: 4),
             ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: textColor,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

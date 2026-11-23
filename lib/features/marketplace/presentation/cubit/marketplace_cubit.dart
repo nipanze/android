@@ -74,7 +74,8 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   Set<String> _personalizationCategorySlugs = {};
   Set<String> _forYouInterestSlugs = {};
   Set<String> _providerCategorySlugs = {};
-  bool _iLend = true;
+  Map<String, String> _providerCategoryIdentityTypes = {};
+  bool _iLend = false;
 
   /// Full, unfiltered listings fetched from the view (kept in memory so we
   /// can re-apply a Pro filter client-side without another network fetch).
@@ -343,21 +344,35 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   void setForYouPreferences({
     required Set<String> interestSlugs,
     required Set<String> providerSlugs,
+    Map<String, String> providerIdentityTypes = const {},
     required bool iLend,
   }) {
     _forYouInterestSlugs = {...interestSlugs};
     _providerCategorySlugs = {...providerSlugs};
+    _providerCategoryIdentityTypes = {...providerIdentityTypes};
     _iLend = iLend;
     if (state is MarketplaceLoaded) _emitLoaded();
   }
 
   String? forYouReason(MarketplaceItem item) {
     if (item.loan != null) {
+      if (_providerCategorySlugs.contains('financial_services')) {
+        return 'You offer Finance';
+      }
+      if (_forYouInterestSlugs.contains('financial_services')) {
+        return 'Interested in Finance';
+      }
       return _iLend ? 'You lend' : null;
     }
     if (item.needs == null) {
-      return _forYouInterestSlugs.contains('forex')
-          ? 'Interested in Forex'
+      if (_providerCategorySlugs.contains('financial_services')) {
+        return 'You offer Finance';
+      }
+      if (_forYouInterestSlugs.contains('forex')) {
+        return 'Interested in Forex';
+      }
+      return _forYouInterestSlugs.contains('financial_services')
+          ? 'Interested in Finance'
           : null;
     }
     final slug = item.needs!.categorySlug;
@@ -374,6 +389,15 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   Set<String> get forYouInterests => Set.unmodifiable(_forYouInterestSlugs);
   Set<String> get providerCategories =>
       Set.unmodifiable(_providerCategorySlugs);
+  Map<String, String> get providerCategoryIdentityTypes =>
+      Map.unmodifiable(_providerCategoryIdentityTypes);
+
+  String? forYouProviderIdentityType(MarketplaceItem item) {
+    final categorySlug = item.needs?.categorySlug ??
+        (item.loan != null || item.forex != null ? 'financial_services' : null);
+    if (categorySlug == null) return null;
+    return _providerCategoryIdentityTypes[categorySlug];
+  }
 
   String _interestName(String slug) => switch (slug) {
         'machinery_equipment' => 'Equipment',
@@ -394,7 +418,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     final now = DateTime.now();
     var interestFiltered =
         _applyInterestFilter(overrideListings ?? _allListings);
-    if (_moduleFilter == null && (_forYouInterestSlugs.isNotEmpty || !_iLend)) {
+    if (_moduleFilter == null) {
       interestFiltered = interestFiltered.where(_matchesForYou).toList();
     }
     final visibleListings = interestFiltered
@@ -420,12 +444,15 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   }
 
   bool _matchesForYou(MarketplaceItem item) {
-    if (item.module == MarketplaceModule.loan) return _iLend;
-    if (_forYouInterestSlugs.isEmpty) {
-      return true;
+    if (item.loan != null) {
+      return _iLend ||
+          _providerCategorySlugs.contains('financial_services') ||
+          _forYouInterestSlugs.contains('financial_services');
     }
-    if (item.module == MarketplaceModule.forex) {
-      return _forYouInterestSlugs.contains('forex');
+    if (item.forex != null) {
+      return _forYouInterestSlugs.contains('forex') ||
+          _forYouInterestSlugs.contains('financial_services') ||
+          _providerCategorySlugs.contains('financial_services');
     }
     final slug = item.needs!.categorySlug;
     return _forYouInterestSlugs.contains(slug) ||
