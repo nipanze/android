@@ -266,6 +266,7 @@ values
   ('fleet_operations_manager', 'transport_logistics', null, 'Fleet / Operations Manager', 'What fleet?', true),
   ('dispatcher_coordinator', 'transport_logistics', null, 'Dispatcher / Coordinator', 'What area?', true),
   ('loader_mover', 'transport_logistics', null, 'Loader / Mover', 'What work?', true),
+  ('driving_instructor', 'transport_logistics', null, 'Driving Instructor', 'What do you teach?', true),
   ('machine_operator', 'machinery_equipment', null, 'Machine Operator', 'Which machine do you operate?', true),
   ('equipment_mechanic', 'machinery_equipment', null, 'Equipment Mechanic', 'What do you service?', true),
   ('fleet_equipment_manager', 'machinery_equipment', null, 'Fleet / Equipment Manager', 'What fleet?', true),
@@ -293,7 +294,7 @@ on conflict (slug) do update set
 update public.capability_roles
 set is_active = false
 where category_slug in ('agriculture_agribusiness', 'beauty_fashion_styling', 'construction_building', 'education_training', 'energy_utilities', 'events_production', 'machinery_equipment', 'marketing_promotion', 'photo_video_music_talent', 'professional_services', 'specialized_products', 'technology_digital', 'transport_logistics', 'travel_international')
-  and slug not in ('accountant_finance_officer', 'agronomist_extension_officer', 'architect_designer', 'audio_engineer_producer', 'borehole_water_technician', 'business_professional_services_project_manager', 'campaign_project_manager', 'caterer_chef', 'clearing_customs_agent', 'construction_building_project_manager', 'consultant', 'content_creator', 'developer', 'dispatcher_coordinator', 'driver', 'driver_guide', 'energy_engineer', 'energy_water_project_manager', 'engineer', 'equipment_mechanic', 'event_crew_technician', 'event_manager_planner', 'event_supervisor', 'farm_manager', 'farm_worker_operator', 'fleet_equipment_manager', 'fleet_operations_manager', 'foreman_supervisor', 'hair_stylist', 'hr_officer_manager', 'it_technician', 'lawyer_legal_officer', 'loader_mover', 'machine_operator', 'makeup_artist', 'marketer_specialist', 'marketing_manager', 'mc_dj', 'operations_manager', 'performer_talent', 'photographer_videographer', 'placement_coordinator', 'procurement_officer_manager', 'production_manager', 'programme_manager', 'project_manager', 'salon_studio_manager', 'security_specialist', 'site_manager', 'site_supervisor', 'skilled_tradesperson', 'solar_electrical_technician', 'sourcing_agent', 'stylist_designer', 'surveyor', 'teacher_tutor', 'team_lead_manager', 'tour_guide', 'trainer_instructor', 'travel_agent_consultant', 'veterinary_livestock_officer');
+  and slug not in ('accountant_finance_officer', 'agronomist_extension_officer', 'architect_designer', 'audio_engineer_producer', 'borehole_water_technician', 'business_professional_services_project_manager', 'campaign_project_manager', 'caterer_chef', 'clearing_customs_agent', 'construction_building_project_manager', 'consultant', 'content_creator', 'developer', 'dispatcher_coordinator', 'driver', 'driving_instructor', 'driver_guide', 'energy_engineer', 'energy_water_project_manager', 'engineer', 'equipment_mechanic', 'event_crew_technician', 'event_manager_planner', 'event_supervisor', 'farm_manager', 'farm_worker_operator', 'fleet_equipment_manager', 'fleet_operations_manager', 'foreman_supervisor', 'hair_stylist', 'hr_officer_manager', 'it_technician', 'lawyer_legal_officer', 'loader_mover', 'machine_operator', 'makeup_artist', 'marketer_specialist', 'marketing_manager', 'mc_dj', 'operations_manager', 'performer_talent', 'photographer_videographer', 'placement_coordinator', 'procurement_officer_manager', 'production_manager', 'programme_manager', 'project_manager', 'salon_studio_manager', 'security_specialist', 'site_manager', 'site_supervisor', 'skilled_tradesperson', 'solar_electrical_technician', 'sourcing_agent', 'stylist_designer', 'surveyor', 'teacher_tutor', 'team_lead_manager', 'tour_guide', 'trainer_instructor', 'travel_agent_consultant', 'veterinary_livestock_officer');
 
 insert into public.role_kinds (role_slug, slug, name, sort_order)
 values
@@ -469,6 +470,10 @@ values
   ('loader_mover', 'moving', 'Moving', 10),
   ('loader_mover', 'warehouse', 'Warehouse', 20),
   ('loader_mover', 'loading', 'Loading', 30),
+  ('driving_instructor', 'cars', 'Cars', 10),
+  ('driving_instructor', 'motorcycles', 'Motorcycles', 20),
+  ('driving_instructor', 'trucks', 'Trucks', 30),
+  ('driving_instructor', 'defensive_driving', 'Defensive driving', 40),
   ('machine_operator', 'excavator', 'Excavator', 10),
   ('machine_operator', 'loader', 'Loader', 20),
   ('machine_operator', 'grader', 'Grader', 30),
@@ -681,6 +686,9 @@ values
   ('dispatcher_coordinator', 'customs_clearing_licence', 'Customs clearing licence', true, 20),
   ('loader_mover', 'physical_fitness', 'Physical fitness', false, 10),
   ('loader_mover', 'experience_1_year', 'Experience 1+ year', false, 20),
+  ('driving_instructor', 'instructor_licence', 'Instructor licence', true, 10),
+  ('driving_instructor', 'valid_driving_licence', 'Valid driving licence', true, 20),
+  ('driving_instructor', 'teaching_experience', '2+ years teaching', false, 30),
   ('machine_operator', 'operator_licence_certificate', 'Operator licence / certificate', true, 10),
   ('machine_operator', 'safety_osha_certificate', 'Safety / OSHA certificate', true, 20),
   ('machine_operator', '3_years_experience', '3+ years experience', false, 30),

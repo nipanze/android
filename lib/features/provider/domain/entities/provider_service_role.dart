@@ -1559,6 +1559,35 @@ class ProviderServiceRole {
       ],
     ),
     ProviderServiceRole(
+      slug: 'driving_instructor',
+      name: 'Driving Instructor',
+      description: 'Teach safe driving and practical vehicle skills',
+      kindQuestion: 'What do you teach?',
+      categorySlug: 'transport_logistics',
+      capabilitySlug: 'work_driving_instructor',
+      kinds: [
+        ProviderRoleOption(slug: 'cars', name: 'Cars'),
+        ProviderRoleOption(slug: 'motorcycles', name: 'Motorcycles'),
+        ProviderRoleOption(slug: 'trucks', name: 'Trucks'),
+        ProviderRoleOption(
+            slug: 'defensive_driving', name: 'Defensive driving'),
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'instructor_licence',
+            name: 'Instructor licence',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'valid_driving_licence',
+            name: 'Valid driving licence',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'teaching_experience',
+            name: '2+ years teaching',
+            isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
       slug: 'machine_operator',
       name: 'Machine Operator',
       description: 'Drive or run heavy machines',

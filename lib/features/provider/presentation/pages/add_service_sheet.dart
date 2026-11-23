@@ -101,12 +101,53 @@ const _financialOrderedSlugs = [
   'incubator_accelerator',
 ];
 
+const _financialLoanGroupSlugs = <String, String>{
+  'personal_loan_services': 'personal_financing',
+  'emergency_loan_services': 'personal_financing',
+  'salary_loan_services': 'personal_financing',
+  'medical_financing': 'personal_financing',
+  'business_startup_financing': 'business_financing',
+  'working_capital_financing': 'business_financing',
+  'business_expansion_financing': 'business_financing',
+  'sme_financing': 'business_financing',
+  'boda_boda_financing': 'asset_financing',
+  'car_financing': 'asset_financing',
+  'tuk_tuk_financing': 'asset_financing',
+  'motorcycle_financing': 'asset_financing',
+  'smartphone_financing': 'asset_financing',
+  'laptop_financing': 'asset_financing',
+  'heavy_machinery_financing': 'asset_financing',
+  'equipment_financing': 'asset_financing',
+  'agricultural_loan_services': 'agricultural_financing',
+  'livestock_financing': 'agricultural_financing',
+  'crop_financing': 'agricultural_financing',
+  'farm_equipment_financing': 'agricultural_financing',
+  'mortgage_financing': 'property_financing',
+  'land_financing': 'property_financing',
+  'property_development_financing': 'property_financing',
+  'school_fees_financing': 'education_financing',
+  'university_financing': 'education_financing',
+  'education_loan_services': 'education_financing',
+  'travel_financing': 'lifestyle_financing',
+  'wedding_financing': 'lifestyle_financing',
+};
+
 const _financeUiGroupNames = <String, String>{
   'loans': 'Loans',
   'forex': 'Forex',
   'saccos_cooperatives': 'SACCOs & Cooperatives',
   'investment_opportunities': 'Investment Opportunities',
   'investment_services': 'Investment Services',
+};
+
+const _loanFinancingGroupSlugs = <String>{
+  'personal_financing',
+  'business_financing',
+  'asset_financing',
+  'agricultural_financing',
+  'property_financing',
+  'education_financing',
+  'lifestyle_financing',
 };
 
 const _directIdentityGateCategorySlugs = <String>{
@@ -120,22 +161,11 @@ const _directIdentityGateCategorySlugs = <String>{
 
 String _financeUiGroupSlug(NeedCapability capability) {
   final serviceGroup = capability.serviceGroupSlug?.trim();
-  if (const {
-    'personal_financing',
-    'business_financing',
-    'asset_financing',
-    'agricultural_financing',
-    'property_financing',
-    'education_financing',
-    'lifestyle_financing',
-  }.contains(serviceGroup)) {
-    return 'loans';
-  }
+  if (_loanFinancingGroupSlugs.contains(serviceGroup)) return 'loans';
   if (_financeUiGroupNames.containsKey(serviceGroup)) return serviceGroup!;
   final configured = capability.uiGroupSlug?.trim();
   if (_financeUiGroupNames.containsKey(configured)) return configured!;
-  final orderedIndex = _financialOrderedSlugs.indexOf(capability.slug);
-  if (orderedIndex >= 0 && orderedIndex < 28) return 'loans';
+  if (_financialLoanGroupSlugs.containsKey(capability.slug)) return 'loans';
   final slug = capability.slug;
   if (slug.contains('forex') || slug == 'money_transfer') return 'forex';
   if (slug.contains('sacco') ||
@@ -978,7 +1008,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
               ? 3
               : _directIdentityGateCategorySlugs.contains(cat.slug)
                   ? 4
-              : const {
+                  : const {
                       'traditional_cultural',
                       'property_real_estate',
                       'education_training',
@@ -997,7 +1027,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                       'domestic_household',
                     }.contains(cat.slug)
                       ? (providerType == null ? 4 : 1)
-                  : 8;
+                      : 8;
       final requestedRoleIndex = widget.initialProofRoleSlug == null
           ? -1
           : _selectedRoles.toList().indexOf(widget.initialProofRoleSlug!);
@@ -1020,7 +1050,21 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     setState(() {
       _selectedFinanceUiGroupSlug = groupSlug;
       _selectedServiceGroupSlug = groupSlug;
-      _step = groupSlug == 'loans' ? 9 : (_providerTypeRequired ? 4 : 1);
+      _step = _providerTypeRequired ? 4 : (groupSlug == 'loans' ? 9 : 1);
+    });
+  }
+
+  void _toggleLoanGroup(String groupSlug, List<NeedCapability> capabilities) {
+    setState(() {
+      final slugs = capabilities
+          .where((capability) => capability.serviceGroupSlug == groupSlug)
+          .map((capability) => capability.slug)
+          .toSet();
+      if (slugs.isNotEmpty && slugs.every(_selected.contains)) {
+        _selected.removeAll(slugs);
+      } else {
+        _selected.addAll(slugs);
+      }
     });
   }
 
@@ -1112,7 +1156,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
               }
             }
           }
-          _step = 1;
+          _step = _selectedFinanceUiGroupSlug == 'loans' ? 9 : 1;
           _savedProviderType = type;
           _savingProviderType = false;
         });
@@ -1456,41 +1500,11 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     if (role == null) return;
     final savedCapability = _savedRoleCapability(slug);
     if (!_selectedRoles.contains(slug)) {
-      if (savedCapability?.metadata['is_role_active'] == false) {
-        setState(() => _removingRoleSlugs.add(slug));
-        try {
-          final result = await widget.providerRepository.setWorkRoleActive(
-            providerCapabilityId: savedCapability!.id,
-            roleSlug: slug,
-            active: true,
-          );
-          if (result['changed'] != true) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Could not restore this role.')),
-              );
-            }
-            return;
-          }
-          final claims = (result['claim_states'] as List? ?? const [])
-              .whereType<Map>()
-              .map((claim) => claim.cast<String, dynamic>())
-              .toList();
-          _hydrateRoleDraft(slug, savedCapability.metadata);
-          _roleClaimStateOverrides[slug] = claims;
-          if (mounted) {
-            await context.read<CapabilitiesCubit>().loadWithOpportunities();
-          }
-        } catch (error) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(userFacingErrorMessage(error))),
-            );
-          }
-          return;
-        } finally {
-          if (mounted) setState(() => _removingRoleSlugs.remove(slug));
-        }
+      // Restore withdrawn roles as a draft selection. The normal save path
+      // writes is_role_active=true with the updated work metadata; requiring
+      // a separate RPC here left the checkbox unticked when that RPC failed.
+      if (savedCapability != null) {
+        _hydrateRoleDraft(slug, savedCapability.metadata);
       }
       if (mounted) setState(() => _selectedRoles.add(slug));
       return;
@@ -1869,6 +1883,36 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                               .toList(),
                                           localeCode: localeCode,
                                           onSelect: _selectServiceSubcategory,
+                                          groupSelectable: true,
+                                          isGroupSelected: (groupSlug) {
+                                            final slugs = _categoryCapabilities
+                                                .where((capability) =>
+                                                    capability
+                                                        .serviceGroupSlug ==
+                                                    groupSlug)
+                                                .map((capability) =>
+                                                    capability.slug)
+                                                .toList();
+                                            return slugs.isNotEmpty &&
+                                                slugs.every(_selected.contains);
+                                          },
+                                          providerType: _providerType,
+                                          onChangeProviderType: () =>
+                                              setState(() => _step = 4),
+                                          onContinueCompany:
+                                              _openCompanyDetails,
+                                          onGroupToggle: (groupSlug) =>
+                                              _toggleLoanGroup(
+                                            groupSlug,
+                                            _categoryCapabilities
+                                                .where(
+                                                  (capability) =>
+                                                      _financeUiGroupSlug(
+                                                          capability) ==
+                                                      'loans',
+                                                )
+                                                .toList(),
+                                          ),
                                         )
                                       : _step == 8
                                           ? _SubcategoryList(
@@ -3795,12 +3839,24 @@ class _SubcategoryList extends StatelessWidget {
     required this.localeCode,
     required this.onSelect,
     this.groupByUiGroup = false,
+    this.groupSelectable = false,
+    this.isGroupSelected,
+    this.onGroupToggle,
+    this.providerType,
+    this.onChangeProviderType,
+    this.onContinueCompany,
   });
 
   final List<NeedCapability> capabilities;
   final String? localeCode;
   final ValueChanged<String> onSelect;
   final bool groupByUiGroup;
+  final bool groupSelectable;
+  final bool Function(String groupSlug)? isGroupSelected;
+  final ValueChanged<String>? onGroupToggle;
+  final ProviderCategoryType? providerType;
+  final VoidCallback? onChangeProviderType;
+  final VoidCallback? onContinueCompany;
 
   @override
   Widget build(BuildContext context) {
@@ -3814,38 +3870,207 @@ class _SubcategoryList extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.bg3Dark : AppColors.bg3Light;
     final border = isDark ? AppColors.borderDark : AppColors.borderLight;
-    return ListView.separated(
-      itemCount: groups.length,
-      separatorBuilder: (_, __) => Divider(height: 1, color: border),
-      itemBuilder: (context, index) {
-        final entry = groups.entries.elementAt(index);
-        final first = entry.value.first;
-        final name = groupByUiGroup
-            ? _financeUiGroupNames[entry.key] ?? 'Other Financial Services'
-            : NeedCatalogLocalizations.serviceGroupName(
-                  localeCode,
-                  entry.key,
-                ) ??
-                first.serviceGroupName ??
-                'Services';
-        return ListTile(
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(10),
+    final groupOffset = groupSelectable && providerType != null ? 1 : 0;
+    return Stack(
+      children: [
+        ListView.separated(
+          padding: EdgeInsets.only(
+              bottom: groupSelectable &&
+                      providerType == ProviderCategoryType.company
+                  ? 84
+                  : 8),
+          itemCount: groups.length + groupOffset,
+          separatorBuilder: (_, __) => Divider(height: 1, color: border),
+          itemBuilder: (context, index) {
+            if (groupSelectable && providerType != null && index == 0) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Material(
+                  color: isDark ? AppColors.bg3Dark : const Color(0xFFF5F6F8),
+                  borderRadius: BorderRadius.circular(12),
+                  child: ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.badge_outlined,
+                        color: AppColors.proPurple),
+                    title: Text(
+                      'Offering as ${providerType == ProviderCategoryType.individual ? 'Individual' : 'Company'}',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : const Color(0xFF58657A),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: TextButton(
+                      onPressed: onChangeProviderType,
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.proPurple,
+                        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      child: const Text('Change'),
+                    ),
+                  ),
+                ),
+              );
+            }
+            final groupIndex = index - groupOffset;
+            final entry = groups.entries.elementAt(groupIndex);
+            final first = entry.value.first;
+            final name = groupByUiGroup
+                ? _financeUiGroupNames[entry.key] ?? 'Other Financial Services'
+                : NeedCatalogLocalizations.serviceGroupName(
+                      localeCode,
+                      entry.key,
+                    ) ??
+                    first.serviceGroupName ??
+                    'Services';
+            if (groupSelectable) {
+              final selected = isGroupSelected?.call(entry.key) ?? false;
+              final accent = providerType == ProviderCategoryType.company
+                  ? AppColors.accent
+                  : AppColors.proPurple;
+              final serviceLabels = entry.value
+                  .map((capability) {
+                    final fullName = NeedCatalogLocalizations.capabilityName(
+                          localeCode,
+                          capability.slug,
+                        ) ??
+                        capability.name;
+                    return fullName
+                        .replaceAll(
+                            RegExp(
+                                r'\s+(loan services|loan service|loans|financing)$',
+                                caseSensitive: false),
+                            '')
+                        .trim();
+                  })
+                  .where((name) => name.isNotEmpty)
+                  .toList();
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                child: Material(
+                  color: selected
+                      ? accent.withValues(alpha: 0.08)
+                      : Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => onGroupToggle?.call(entry.key),
+                    child: Container(
+                      constraints: const BoxConstraints(minHeight: 76),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: selected ? accent : border,
+                          width: selected ? 1.6 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            selected
+                                ? Icons.check_box_rounded
+                                : Icons.check_box_outline_blank_rounded,
+                            color: selected
+                                ? accent
+                                : (isDark
+                                    ? AppColors.borderDark
+                                    : const Color(0xFFD4DCE9)),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  name,
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF56647A),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.1,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  serviceLabels.join('  •  '),
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.white60
+                                        : const Color(0xFF66758D),
+                                    fontSize: 12,
+                                    height: 1.45,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }
+            return ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(Icons.grid_view_rounded, size: 20),
+              ),
+              title: Text(name,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: Text('${entry.value.length}'),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (groupSelectable)
+                    Checkbox(
+                      value: isGroupSelected?.call(entry.key) ?? false,
+                      onChanged: (_) => onGroupToggle?.call(entry.key),
+                    ),
+                  const Icon(Icons.chevron_right_rounded),
+                ],
+              ),
+              onTap: () => onSelect(entry.key),
+            );
+          },
+        ),
+        if (groupSelectable && providerType == ProviderCategoryType.company)
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 8,
+            child: ElevatedButton(
+              onPressed: capabilities.any((capability) =>
+                      isGroupSelected
+                          ?.call(capability.serviceGroupSlug ?? '') ==
+                      true)
+                  ? onContinueCompany
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accent,
+                foregroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(48),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Next: company details',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
             ),
-            alignment: Alignment.center,
-            child: const Icon(Icons.grid_view_rounded, size: 20),
           ),
-          title:
-              Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: Text('${entry.value.length}'),
-          trailing: const Icon(Icons.chevron_right_rounded),
-          onTap: () => onSelect(entry.key),
-        );
-      },
+      ],
     );
   }
 }
@@ -3958,7 +4183,9 @@ class _CategoryCapabilitiesView extends StatelessWidget {
       children: [
         ListView(
           controller: scrollController,
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+          // The sticky footer includes the role count and button. Reserve its
+          // full height so the last role card can scroll clear of the overlay.
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 148),
           children: [
             // Provider type is category scoped and can be changed from C/D.
             if (providerType != null)
@@ -5276,6 +5503,7 @@ class _KindsStepViewState extends State<_KindsStepView> {
     final text2 = dark ? AppColors.text2Dark : AppColors.text2Light;
     final ready = widget.roles.isNotEmpty &&
         widget.roles.every((r) =>
+            r.kinds.isEmpty ||
             (widget.selectedKindsByRole[r.slug] ?? const <String>{})
                 .isNotEmpty);
     return Stack(children: [
@@ -5318,29 +5546,34 @@ class _KindsStepViewState extends State<_KindsStepView> {
                       Text(_instruction(role),
                           style: TextStyle(fontSize: 11, color: text2)),
                       const SizedBox(height: 10),
-                      Wrap(spacing: 8, runSpacing: 8, children: [
-                        for (final kind in role.kinds)
-                          _KindChip(
-                            label: kind.name,
-                            selected:
-                                (widget.selectedKindsByRole[role.slug] ?? {})
-                                    .contains(kind.slug),
-                            onTap: () => setState(() {
-                              final values = widget.selectedKindsByRole
-                                  .putIfAbsent(role.slug, () => <String>{});
-                              if (!values.add(kind.slug)) {
-                                values.remove(kind.slug);
-                              }
-                            }),
-                          )
-                      ]),
+                      if (role.kinds.isEmpty)
+                        Text('No extra details needed for this role.',
+                            style: TextStyle(fontSize: 12, color: text2))
+                      else
+                        Wrap(spacing: 8, runSpacing: 8, children: [
+                          for (final kind in role.kinds)
+                            _KindChip(
+                              label: kind.name,
+                              selected:
+                                  (widget.selectedKindsByRole[role.slug] ?? {})
+                                      .contains(kind.slug),
+                              onTap: () => setState(() {
+                                final values = widget.selectedKindsByRole
+                                    .putIfAbsent(role.slug, () => <String>{});
+                                if (!values.add(kind.slug)) {
+                                  values.remove(kind.slug);
+                                }
+                              }),
+                            )
+                        ]),
                       const SizedBox(height: 8),
-                      Text(
-                          '${(widget.selectedKindsByRole[role.slug] ?? const <String>{}).length} selected',
-                          style: TextStyle(
-                              fontSize: 11,
-                              color: text2,
-                              fontWeight: FontWeight.w600)),
+                      if (role.kinds.isNotEmpty)
+                        Text(
+                            '${(widget.selectedKindsByRole[role.slug] ?? const <String>{}).length} selected',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: text2,
+                                fontWeight: FontWeight.w600)),
                     ]),
               ),
           ]),

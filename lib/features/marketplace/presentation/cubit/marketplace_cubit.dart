@@ -360,7 +360,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
         return 'You offer Finance';
       }
       if (_forYouInterestSlugs.contains('financial_services')) {
-        return 'Interested in Finance';
+        return 'Based on interests';
       }
       return _iLend ? 'You lend' : null;
     }
@@ -369,10 +369,10 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
         return 'You offer Finance';
       }
       if (_forYouInterestSlugs.contains('forex')) {
-        return 'Interested in Forex';
+        return 'Based on interests';
       }
       return _forYouInterestSlugs.contains('financial_services')
-          ? 'Interested in Finance'
+          ? 'Based on interests'
           : null;
     }
     final slug = item.needs!.categorySlug;
@@ -380,7 +380,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
       return 'You offer ${item.needs!.category}';
     }
     if (_forYouInterestSlugs.contains(slug)) {
-      return 'Interested in ${_interestName(slug)}';
+      return 'Based on interests';
     }
     return null;
   }
@@ -398,18 +398,6 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     if (categorySlug == null) return null;
     return _providerCategoryIdentityTypes[categorySlug];
   }
-
-  String _interestName(String slug) => switch (slug) {
-        'machinery_equipment' => 'Equipment',
-        'transport_logistics' => 'Logistics',
-        'professional_services' => 'Services',
-        'specialized_products' => 'Procurement',
-        'energy_utilities' => 'Solar',
-        'agriculture_agribusiness' => 'Farming',
-        'education_training' => 'Education',
-        'forex' => 'Forex',
-        _ => slug.replaceAll('_', ' '),
-      };
 
   // ── Private helpers ───────────────────────────────────────────────────────
 

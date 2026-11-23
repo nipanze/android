@@ -494,28 +494,26 @@ class _MainListingArea extends StatelessWidget {
         if (matchReason != null) ...[
           const SizedBox(height: 9),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(
-              color: isLoan ? const Color(0xFFECF7F0) : const Color(0xFFEEF3FF),
+              color: isDark
+                  ? AppColors.bg3Dark.withValues(alpha: 0.55)
+                  : AppColors.bg3Light.withValues(alpha: 0.75),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.info_outline_rounded,
-                    size: 12,
-                    color: isLoan
-                        ? const Color(0xFF15803D)
-                        : const Color(0xFF2563EB)),
-                const SizedBox(width: 5),
+                    size: 11,
+                    color: mutedColor),
+                const SizedBox(width: 4),
                 Text(
                   matchReason!,
                   style: TextStyle(
-                    color: isLoan
-                        ? const Color(0xFF15803D)
-                        : const Color(0xFF2563EB),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    color: mutedColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
