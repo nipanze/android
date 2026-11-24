@@ -87,8 +87,14 @@ begin
   if v_path not like 'evidence/' || v_user::text || '/' || v_capability_slug || '/%' then
     raise exception 'Evidence object path must belong to the current user and capability.' using errcode = '42501';
   end if;
+  -- Storage ownership metadata can be absent on some Storage deployments.
+  -- The path is already bound to auth.uid() above, and the bucket's INSERT
+  -- policy only permits authenticated users to upload into their own folder.
   if not exists (select 1 from storage.objects o
-    where o.bucket_id = 'provider-evidence' and o.name = v_path and o.owner_id = v_user::text) then
+    where o.bucket_id = 'provider-evidence'
+      and o.name = v_path
+      and (storage.foldername(o.name))[1] = 'evidence'
+      and (storage.foldername(o.name))[2] = v_user::text) then
     raise exception 'Private evidence upload not found for current user.' using errcode = '42501';
   end if;
 

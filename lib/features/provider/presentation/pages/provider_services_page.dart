@@ -658,6 +658,7 @@ class _ProviderServicesView extends StatelessWidget {
     required AppLocalizations l10n,
   }) async {
     final cubit = context.read<CapabilitiesCubit>();
+    var uploadStage = 'loading proof requirements';
     try {
       final client = getIt<supabase.SupabaseClient>();
       final rules = await client
@@ -763,11 +764,13 @@ class _ProviderServicesView extends StatelessWidget {
       final safeName = picked.name.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
       final path = 'evidence/$uid/${capability.capabilitySlug}/'
           '${DateTime.now().microsecondsSinceEpoch}_$safeName';
+      uploadStage = 'uploading the file';
       await client.storage.from('provider-evidence').uploadBinary(
             path,
             bytes,
             fileOptions: supabase.FileOptions(contentType: mime),
           );
+      uploadStage = 'saving the proof submission';
       await getIt<IProviderRepository>().submitCapabilityEvidence(
         providerCapabilityId: capability.id,
         requirementKey: key,
@@ -780,6 +783,7 @@ class _ProviderServicesView extends StatelessWidget {
         );
       }
     } catch (e) {
+      debugPrint('Provider proof failed while $uploadStage: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(userFacingErrorMessage(e))),
