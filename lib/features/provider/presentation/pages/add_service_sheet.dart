@@ -150,6 +150,45 @@ const _loanFinancingGroupSlugs = <String>{
   'lifestyle_financing',
 };
 
+const _loanMainGroupNames = <String, String>{
+  'personal_financing': 'Personal Financing',
+  'business_financing': 'Business Financing',
+  'asset_financing': 'Asset Financing',
+  'property_financing': 'Property Financing',
+  'other_financing': 'Other Financing',
+};
+
+List<(String?, String?, List<NeedCapability>)> _loanMainGroups(
+  List<(String?, String?, List<NeedCapability>)> groups,
+) {
+  final merged = <String, List<NeedCapability>>{};
+  for (final (slug, _, capabilities) in groups) {
+    final mainSlug = switch (slug) {
+      'agricultural_financing' ||
+      'education_financing' ||
+      'lifestyle_financing' =>
+        'other_financing',
+      _ => slug ?? 'other_financing',
+    };
+    merged.putIfAbsent(mainSlug, () => []).addAll(capabilities);
+  }
+  const order = [
+    'personal_financing',
+    'business_financing',
+    'asset_financing',
+    'property_financing',
+    'other_financing',
+  ];
+  return order
+      .where(merged.containsKey)
+      .map((slug) => (
+            slug,
+            _loanMainGroupNames[slug] ?? 'Other Financing',
+            merged[slug]!,
+          ))
+      .toList();
+}
+
 const _directIdentityGateCategorySlugs = <String>{
   'construction_building',
   'machinery_equipment',
@@ -1006,28 +1045,30 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
           ? 5
           : widget.initialProofRoleSlug != null && _selectedRoles.isNotEmpty
               ? 3
-              : _directIdentityGateCategorySlugs.contains(cat.slug)
-                  ? 4
-                  : const {
-                      'traditional_cultural',
-                      'property_real_estate',
-                      'education_training',
-                      'agriculture_agribusiness',
-                      'photo_video_music_talent',
-                      'photo_video_talent',
-                      'music_video',
-                      'events_production',
-                      'events_celebrations',
-                      'weddings_celebrations',
-                      'energy_utilities',
-                      'beauty_fashion_styling',
-                      'transport_logistics',
-                      'specialized_products',
-                      'travel_international',
-                      'domestic_household',
-                    }.contains(cat.slug)
-                      ? (providerType == null ? 4 : 1)
-                      : 8;
+              : cat.slug == _financialCategorySlug
+                  ? (providerType == null ? 4 : 1)
+                  : _directIdentityGateCategorySlugs.contains(cat.slug)
+                      ? 4
+                      : const {
+                          'traditional_cultural',
+                          'property_real_estate',
+                          'education_training',
+                          'agriculture_agribusiness',
+                          'photo_video_music_talent',
+                          'photo_video_talent',
+                          'music_video',
+                          'events_production',
+                          'events_celebrations',
+                          'weddings_celebrations',
+                          'energy_utilities',
+                          'beauty_fashion_styling',
+                          'transport_logistics',
+                          'specialized_products',
+                          'travel_international',
+                          'domestic_household',
+                        }.contains(cat.slug)
+                          ? (providerType == null ? 4 : 1)
+                          : 8;
       final requestedRoleIndex = widget.initialProofRoleSlug == null
           ? -1
           : _selectedRoles.toList().indexOf(widget.initialProofRoleSlug!);
@@ -1685,7 +1726,6 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     final localeCode = Localizations.localeOf(context).languageCode;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
-    final financialCategory = _selectedCategory?.slug == _financialCategorySlug;
     final identityAccent = _providerType == ProviderCategoryType.individual
         ? AppColors.proPurple
         : AppColors.accent;
@@ -1707,7 +1747,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         maxChildSize: 0.95,
         builder: (_, scrollController) {
           return Material(
-            color: financialCategory && !isDark ? const Color(0xFFF6F8FC) : bg,
+            color: isDark ? AppColors.bg2Dark : Colors.white,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(20),
             ),
@@ -1728,9 +1768,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                 ),
                 // Header
                 Container(
-                  color: financialCategory && !isDark
-                      ? Colors.white
-                      : (isDark ? AppColors.bg2Dark : Colors.transparent),
+                  color: isDark ? AppColors.bg2Dark : Colors.transparent,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 14),
@@ -3883,6 +3921,9 @@ class _SubcategoryList extends StatelessWidget {
           separatorBuilder: (_, __) => Divider(height: 1, color: border),
           itemBuilder: (context, index) {
             if (groupSelectable && providerType != null && index == 0) {
+              final identityColor = providerType == ProviderCategoryType.company
+                  ? AppColors.accent
+                  : AppColors.proPurple;
               return Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 child: Material(
@@ -3890,8 +3931,7 @@ class _SubcategoryList extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   child: ListTile(
                     dense: true,
-                    leading: const Icon(Icons.badge_outlined,
-                        color: AppColors.proPurple),
+                    leading: Icon(Icons.badge_outlined, color: identityColor),
                     title: Text(
                       'Offering as ${providerType == ProviderCategoryType.individual ? 'Individual' : 'Company'}',
                       style: TextStyle(
@@ -3903,7 +3943,7 @@ class _SubcategoryList extends StatelessWidget {
                     trailing: TextButton(
                       onPressed: onChangeProviderType,
                       style: TextButton.styleFrom(
-                        foregroundColor: AppColors.proPurple,
+                        foregroundColor: identityColor,
                         textStyle: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       child: const Text('Change'),
@@ -4183,9 +4223,9 @@ class _CategoryCapabilitiesView extends StatelessWidget {
       children: [
         ListView(
           controller: scrollController,
-          // The sticky footer includes the role count and button. Reserve its
-          // full height so the last role card can scroll clear of the overlay.
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 148),
+          // Leave enough room for the sticky count and action button without
+          // adding a large blank tail after the last service group.
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 75),
           children: [
             // Provider type is category scoped and can be changed from C/D.
             if (providerType != null)
@@ -4203,61 +4243,45 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(
-                        financialServicePath
-                            ? Icons.person_outline_rounded
-                            : Icons.badge_outlined,
+                        companyMode
+                            ? Icons.badge_outlined
+                            : Icons.person_outline_rounded,
                         size: 18,
                         color: serviceAccent,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: financialServicePath
-                            ? RichText(
-                                text: TextSpan(
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
-                                      ),
-                                  children: [
-                                    TextSpan(
-                                      text: '${l10n.providerTypeOfferingAs} ',
-                                    ),
-                                    TextSpan(
-                                      text: individualType
-                                          ? l10n.providerTypeIndividual
-                                          : l10n.providerTypeCompany,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w700),
-                                    ),
-                                  ],
+                        child: RichText(
+                          text: TextSpan(
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                                 ),
-                              )
-                            : Text(
-                                '${l10n.providerTypeOfferingAs} ${companyType ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
-                                    ),
+                            children: [
+                              TextSpan(
+                                text: '${l10n.providerTypeOfferingAs} ',
                               ),
+                              TextSpan(
+                                text: individualType
+                                    ? l10n.providerTypeIndividual
+                                    : l10n.providerTypeCompany,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w700),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                       TextButton(
                         onPressed: onChangeProviderType,
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
-                          minimumSize: financialServicePath
-                              ? const Size(44, 44)
-                              : Size.zero,
-                          tapTargetSize: financialServicePath
-                              ? MaterialTapTargetSize.padded
-                              : MaterialTapTargetSize.shrinkWrap,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: Text(
                           l10n.providerTypeChange,
@@ -4359,19 +4383,14 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                   style: TextStyle(fontSize: 12, color: text2)),
             if (companyType) const SizedBox(height: 10),
 
-            if (financialServicePath)
-              _FinancialCapabilityGroupTile(
-                title: capabilities.isEmpty
-                    ? 'Finance & Investments'
-                    : NeedCatalogLocalizations.serviceGroupName(
-                          localeCode,
-                          capabilities.first.serviceGroupSlug ?? '',
-                        ) ??
-                        capabilities.first.serviceGroupName ??
-                        _financeUiGroupNames[capabilities.first.uiGroupSlug ??
-                            _financeUiGroupSlug(capabilities.first)] ??
-                        'Finance & Investments',
-                capabilities: capabilities,
+            if (financialServicePath) ...[
+              _FinancialLoanGroupsTile(
+                groups: _loanMainGroups(
+                  orderedGroups
+                      .where((group) =>
+                          _loanFinancingGroupSlugs.contains(group.$1))
+                      .toList(),
+                ),
                 localeCode: localeCode,
                 selected: selected,
                 companyMode: companyMode,
@@ -4379,10 +4398,21 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                 border: border,
                 text2: text2,
                 onToggleCapability: onToggleCapability,
-                onAudienceTap: onAudienceTap,
-                audiencePlatforms: audiencePlatforms,
-                audienceFollowersCount: audienceFollowersCount,
               ),
+              for (final (_, groupName, groupCaps) in orderedGroups.where(
+                (group) => !_loanFinancingGroupSlugs.contains(group.$1),
+              ))
+                _FinancialCompanyGroupSection(
+                  title: groupName ?? 'Other Financial Services',
+                  capabilities: groupCaps,
+                  localeCode: localeCode,
+                  selected: selected,
+                  accentColor: serviceAccent,
+                  border: border,
+                  text2: text2,
+                  onToggleCapability: onToggleCapability,
+                ),
+            ],
 
             if (companyType && !financialServicePath)
               for (final (groupSlug, groupName, caps) in orderedGroups) ...[
@@ -4986,6 +5016,241 @@ class _LoadingDotsState extends State<_LoadingDots>
 // ---------------------------------------------------------------------------
 // Helper widgets for the category capabilities view
 // ---------------------------------------------------------------------------
+
+class _FinancialLoanGroupsTile extends StatelessWidget {
+  const _FinancialLoanGroupsTile({
+    required this.groups,
+    required this.localeCode,
+    required this.selected,
+    required this.companyMode,
+    required this.accentColor,
+    required this.border,
+    required this.text2,
+    required this.onToggleCapability,
+  });
+
+  final List<(String?, String?, List<NeedCapability>)> groups;
+  final String localeCode;
+  final Set<String> selected;
+  final bool companyMode;
+  final Color accentColor;
+  final Color border;
+  final Color text2;
+  final ValueChanged<String> onToggleCapability;
+
+  @override
+  Widget build(BuildContext context) {
+    if (groups.isEmpty) return const SizedBox.shrink();
+    final selectedCount = groups
+        .where((group) =>
+            group.$3.isNotEmpty &&
+            group.$3.every((service) => selected.contains(service.slug)))
+        .length;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.bg2Dark : Colors.white;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(2, 14, 2, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text('Loans',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: accentColor,
+                            letterSpacing: 0.2,
+                          )),
+                ),
+                Text('$selectedCount of ${groups.length}',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: text2,
+                          fontWeight: FontWeight.w600,
+                        )),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: surface,
+              border: Border.all(color: border),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              children: [
+                for (var index = 0; index < groups.length; index++)
+                  Builder(builder: (context) {
+                    final (slug, name, capabilities) = groups[index];
+                    final allSelected = capabilities.isNotEmpty &&
+                        capabilities.every(
+                            (service) => selected.contains(service.slug));
+                    return Column(
+                      children: [
+                        if (index > 0) Divider(height: 1, color: border),
+                        Material(
+                          color: allSelected
+                              ? accentColor.withValues(
+                                  alpha: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? 0.22
+                                      : 0.09,
+                                )
+                              : Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              for (final service in capabilities) {
+                                if (allSelected) {
+                                  if (selected.contains(service.slug)) {
+                                    onToggleCapability(service.slug);
+                                  }
+                                } else if (!selected.contains(service.slug)) {
+                                  onToggleCapability(service.slug);
+                                }
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 9),
+                              child: Row(
+                                children: [
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 150),
+                                    width: 20,
+                                    height: 20,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(4),
+                                      color: allSelected
+                                          ? accentColor
+                                          : Colors.transparent,
+                                      border: Border.all(
+                                        color:
+                                            allSelected ? accentColor : border,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: allSelected
+                                        ? const Icon(Icons.check_rounded,
+                                            size: 13, color: Colors.white)
+                                        : null,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      name ??
+                                          NeedCatalogLocalizations
+                                              .serviceGroupName(
+                                                  localeCode, slug ?? '') ??
+                                          'Financing',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: allSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FinancialCompanyGroupSection extends StatelessWidget {
+  const _FinancialCompanyGroupSection({
+    required this.title,
+    required this.capabilities,
+    required this.localeCode,
+    required this.selected,
+    required this.accentColor,
+    required this.border,
+    required this.text2,
+    required this.onToggleCapability,
+  });
+
+  final String title;
+  final List<NeedCapability> capabilities;
+  final String localeCode;
+  final Set<String> selected;
+  final Color accentColor;
+  final Color border;
+  final Color text2;
+  final ValueChanged<String> onToggleCapability;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final selectedCount = capabilities
+        .where((capability) => selected.contains(capability.slug))
+        .length;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(title,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: accentColor,
+                            fontWeight: FontWeight.w700,
+                          )),
+                ),
+                Text('$selectedCount of ${capabilities.length}',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: text2,
+                          fontWeight: FontWeight.w600,
+                        )),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.bg2Dark : Colors.white,
+              border: Border.all(color: border),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              children: [
+                for (var index = 0; index < capabilities.length; index++) ...[
+                  if (index > 0) Divider(height: 1, color: border),
+                  _CapabilityRow(
+                    cap: capabilities[index],
+                    localeCode: localeCode,
+                    isSelected: selected.contains(capabilities[index].slug),
+                    alreadyOwned: false,
+                    border: border,
+                    text2: text2,
+                    companyStyle: true,
+                    accentColor: accentColor,
+                    showDivider: false,
+                    onTap: () => onToggleCapability(capabilities[index].slug),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _FinancialCapabilityGroupTile extends StatelessWidget {
   const _FinancialCapabilityGroupTile({

@@ -454,6 +454,14 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardColor = isDark ? theme.colorScheme.surface : Colors.white;
+    final cardBorder =
+        isDark ? theme.colorScheme.outlineVariant : const Color(0xFFDCE4EF);
+    final cardText =
+        isDark ? theme.colorScheme.onSurface : const Color(0xFF1B2638);
+    final cardMuted =
+        isDark ? theme.colorScheme.onSurfaceVariant : const Color(0xFF5B6470);
     final text2 = theme.colorScheme.onSurfaceVariant;
     final allCount = widget.serviceCount + widget.roleCount;
     final representativeName = widget.representativeName.trim();
@@ -495,7 +503,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                       ?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 10),
               Material(
-                color: Colors.white,
+                color: cardColor,
                 borderRadius: BorderRadius.circular(15),
                 child: InkWell(
                   onTap: _uploadingLogo ? null : _pickCompanyLogo,
@@ -503,7 +511,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFFDCE4EF)),
+                      border: Border.all(color: cardBorder),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Row(
@@ -550,14 +558,16 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                                 _companyLogoUrl == null
                                     ? 'Company logo'
                                     : 'Change company logo',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w700),
+                                style: TextStyle(
+                                  color: cardText,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                               const SizedBox(height: 3),
                               Text(
                                 'Optional. JPG or PNG, up to 2 MB. A square image works best.',
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: text2,
+                                  color: cardMuted,
                                   height: 1.3,
                                 ),
                               ),
@@ -595,23 +605,25 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: const Color(0xFFDCE4EF)),
+                  color: cardColor,
+                  border: Border.all(color: cardBorder),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Also show me as representative',
-                              style: TextStyle(fontWeight: FontWeight.w700)),
+                              style: TextStyle(
+                                color: cardText,
+                                fontWeight: FontWeight.w700,
+                              )),
                           SizedBox(height: 3),
                           Text(
                             'Only if you are allowed to act for this business.',
-                            style: TextStyle(
-                                color: Color(0xFF5B6470), height: 1.3),
+                            style: TextStyle(color: cardMuted, height: 1.3),
                           ),
                         ],
                       ),
@@ -754,8 +766,8 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
               Container(
                 padding: const EdgeInsets.all(11),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: const Color(0xFFDCE4EF)),
+                  color: cardColor,
+                  border: Border.all(color: cardBorder),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Row(
@@ -779,17 +791,19 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(widget.companyName,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w700)),
+                              style: TextStyle(
+                                color: cardText,
+                                fontWeight: FontWeight.w700,
+                              )),
                           if (widget.representativeAuthorized &&
                               widget.representativeName.trim().isNotEmpty)
                             Text('Represented by ${widget.representativeName}',
                                 style: theme.textTheme.bodySmall
-                                    ?.copyWith(color: text2)),
+                                    ?.copyWith(color: cardMuted)),
                           if (widget.categoryName.isNotEmpty)
                             Text(widget.categoryName,
                                 style: theme.textTheme.bodySmall
-                                    ?.copyWith(color: text2)),
+                                    ?.copyWith(color: cardMuted)),
                         ],
                       ),
                     ),
@@ -896,8 +910,8 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
               const SizedBox(height: 12),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: const Color(0xFFDCE4EF)),
+                  color: cardColor,
+                  border: Border.all(color: cardBorder),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Column(
@@ -966,9 +980,9 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
         SafeArea(
           top: false,
           child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: Color(0xFFE1E7EF))),
+            decoration: BoxDecoration(
+              color: cardColor,
+              border: Border(top: BorderSide(color: cardBorder)),
             ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
