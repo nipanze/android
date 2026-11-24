@@ -455,13 +455,19 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final cardColor = isDark ? theme.colorScheme.surface : Colors.white;
-    final cardBorder =
-        isDark ? theme.colorScheme.outlineVariant : const Color(0xFFDCE4EF);
-    final cardText =
-        isDark ? theme.colorScheme.onSurface : const Color(0xFF1B2638);
-    final cardMuted =
-        isDark ? theme.colorScheme.onSurfaceVariant : const Color(0xFF5B6470);
+    final cardColor = theme.colorScheme.surface;
+    final cardBorder = theme.colorScheme.outlineVariant;
+    final cardText = theme.colorScheme.onSurface;
+    final cardMuted = theme.colorScheme.onSurfaceVariant;
+    final nestedSurface = theme.colorScheme.surfaceContainerHighest;
+    final successSurface =
+        isDark ? const Color(0xFF173525) : const Color(0xFFDCF4E5);
+    final successText =
+        isDark ? const Color(0xFF9AD6A8) : const Color(0xFF168044);
+    final warningSurface =
+        isDark ? const Color(0xFF3A2B14) : const Color(0xFFFFF0D6);
+    final warningText =
+        isDark ? const Color(0xFFFFC66D) : const Color(0xFFAA6500);
     final text2 = theme.colorScheme.onSurfaceVariant;
     final allCount = widget.serviceCount + widget.roleCount;
     final representativeName = widget.representativeName.trim();
@@ -521,7 +527,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                           height: 62,
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF2F6FC),
+                            color: nestedSurface,
                             border:
                                 Border.all(color: theme.colorScheme.primary),
                             borderRadius: BorderRadius.circular(12),
@@ -620,7 +626,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                                 color: cardText,
                                 fontWeight: FontWeight.w700,
                               )),
-                          SizedBox(height: 3),
+                          const SizedBox(height: 3),
                           Text(
                             'Only if you are allowed to act for this business.',
                             style: TextStyle(color: cardMuted, height: 1.3),
@@ -628,8 +634,22 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                         ],
                       ),
                     ),
-                    Switch.adaptive(
+                    Switch(
                       value: widget.representativeAuthorized,
+                      thumbColor: WidgetStateProperty.resolveWith((states) =>
+                          states.contains(WidgetState.selected)
+                              ? theme.colorScheme.onPrimary
+                              : theme.colorScheme.onSurfaceVariant),
+                      trackColor: WidgetStateProperty.resolveWith(
+                          (states) => states.contains(WidgetState.selected)
+                              ? theme.colorScheme.primary
+                              : isDark
+                                  ? theme.colorScheme.surfaceContainerHighest
+                                  : theme.colorScheme.outlineVariant),
+                      trackOutlineColor: WidgetStateProperty.resolveWith(
+                          (states) => states.contains(WidgetState.selected)
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.outlineVariant),
                       onChanged: (value) => widget.onPresentationChanged?.call({
                         'representative_authorized': value,
                         'display_mode':
@@ -644,8 +664,8 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF3F6FA),
-                    border: Border.all(color: const Color(0xFFDCE4EF)),
+                    color: nestedSurface,
+                    border: Border.all(color: cardBorder),
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: Row(
@@ -654,8 +674,8 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                         width: 46,
                         height: 46,
                         clipBehavior: Clip.antiAlias,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE2E7EF),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
                           shape: BoxShape.circle,
                         ),
                         child: representativePhoto?.isNotEmpty == true
@@ -708,8 +728,8 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                             horizontal: 8, vertical: 5),
                         decoration: BoxDecoration(
                           color: representativeName.isEmpty
-                              ? const Color(0xFFFFF0D6)
-                              : const Color(0xFFDCF4E5),
+                              ? warningSurface
+                              : successSurface,
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Row(
@@ -721,8 +741,8 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                                   : Icons.check_rounded,
                               size: 13,
                               color: representativeName.isEmpty
-                                  ? const Color(0xFFAA6500)
-                                  : const Color(0xFF168044),
+                                  ? warningText
+                                  : successText,
                             ),
                             const SizedBox(width: 3),
                             Text(
@@ -731,8 +751,8 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                                   : 'Synced',
                               style: TextStyle(
                                 color: representativeName.isEmpty
-                                    ? const Color(0xFFAA6500)
-                                    : const Color(0xFF168044),
+                                    ? warningText
+                                    : successText,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -759,7 +779,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
               const SizedBox(height: 18),
               Text('PREVIEW',
                   style: theme.textTheme.labelSmall?.copyWith(
-                      color: const Color(0xFF596579),
+                      color: cardMuted,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.8)),
               const SizedBox(height: 7),
@@ -777,7 +797,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                       height: 44,
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE9F0FF),
+                        color: nestedSurface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: _companyLogoUrl == null
@@ -893,7 +913,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEEF1F5),
+                      color: nestedSurface,
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: Text(_companyStatusLabel(l10n),
@@ -923,7 +943,6 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
                       theme: theme,
                       text2: text2,
                     ),
-                    const Divider(height: 1, indent: 12, endIndent: 12),
                     _companyDocumentRow(
                       documentType: 'business_licence',
                       title: l10n.companyVerificationLicence,
@@ -938,7 +957,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF4F6F8),
+                  color: nestedSurface,
                   borderRadius: BorderRadius.circular(13),
                 ),
                 child: Row(
@@ -1046,28 +1065,47 @@ class _ChoiceChips extends StatelessWidget {
   final List<String> labels;
 
   @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 7),
-          Wrap(
-            spacing: 7,
-            runSpacing: 7,
-            children: [
-              for (var i = 0; i < values.length; i++)
-                ChoiceChip(
-                  label: Text(labels[i]),
-                  selected: selected == values[i],
-                  onSelected: (_) => onSelected(values[i]),
-                  materialTapTargetSize: MaterialTapTargetSize.padded,
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colors = theme.colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: theme.textTheme.labelLarge
+                ?.copyWith(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 7),
+        Wrap(
+          spacing: 7,
+          runSpacing: 7,
+          children: [
+            for (var i = 0; i < values.length; i++)
+              ChoiceChip(
+                label: Text(labels[i]),
+                selected: selected == values[i],
+                onSelected: (_) => onSelected(values[i]),
+                selectedColor:
+                    colors.primary.withValues(alpha: isDark ? 0.2 : 0.1),
+                backgroundColor:
+                    isDark ? colors.surfaceContainerHighest : colors.surface,
+                side: BorderSide(
+                  color: selected == values[i]
+                      ? colors.primary
+                      : colors.outlineVariant,
                 ),
-            ],
-          ),
-        ],
-      );
+                checkmarkColor: colors.primary,
+                labelStyle: TextStyle(
+                  color: selected == values[i]
+                      ? colors.primary
+                      : colors.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+                materialTapTargetSize: MaterialTapTargetSize.padded,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
 }

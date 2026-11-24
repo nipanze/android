@@ -22,7 +22,7 @@ class AppColors {
   static const Color bgDark = Color(0xFF0F172A);
   static const Color bg2Dark = Color(0xFF172033);
   static const Color bg3Dark = Color(0xFF24314B);
-  static const Color borderDark = Color(0xFF3D4A62);
+  static const Color borderDark = Color(0xFF263147);
   static const Color textDark = Color(0xFFF8FAFC);
   static const Color text2Dark = Color(0xFFD6E1F2);
   static const Color text3Dark = Color(0xFF9AA9C0);
@@ -31,7 +31,7 @@ class AppColors {
   static const Color bgLight = Color(0xFFF8F9FC);
   static const Color bg2Light = Color(0xFFFFFFFF);
   static const Color bg3Light = Color(0xFFF0F2F7);
-  static const Color borderLight = Color(0xFFE2E6EF);
+  static const Color borderLight = Color(0xFFEDF0F5);
   static const Color textLight = Color(0xFF0F1623);
   static const Color text2Light = Color(0xFF5A657A);
   static const Color text3Light = Color(0xFF9BA6B8);
@@ -70,6 +70,8 @@ class AppTheme {
       surface: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
       onSurface: isDark ? AppColors.textDark : AppColors.textLight,
       surfaceContainerHighest: isDark ? AppColors.bg3Dark : AppColors.bg3Light,
+      outline: isDark ? AppColors.borderDark : AppColors.borderLight,
+      outlineVariant: isDark ? AppColors.borderDark : AppColors.borderLight,
     );
 
     return ThemeData(
@@ -77,6 +79,7 @@ class AppTheme {
       brightness: brightness,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
+      dividerColor: isDark ? AppColors.borderDark : AppColors.borderLight,
 
       // Inter as the default for all body/UI text
       fontFamily: AppFonts.body,
