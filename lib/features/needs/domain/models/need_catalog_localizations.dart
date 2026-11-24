@@ -101,10 +101,34 @@ class NeedCatalogLocalizations {
       'ar': 'حفلات الزفاف والاحتفالات',
     },
     'financial_services': {
-      'rw': 'Serivisi z\'imari',
-      'fr': 'Services financiers',
-      'sw': 'Huduma za kifedha',
-      'ar': 'الخدمات المالية',
+      'rw': 'Inguzanyo n\'inkunga',
+      'fr': 'Prêts et financement',
+      'sw': 'Mikopo na ufadhili',
+      'ar': 'القروض والتمويل',
+    },
+    'investment_services': {
+      'rw': 'Serivisi z\'ishoramari',
+      'fr': 'Services d’investissement',
+      'sw': 'Huduma za uwekezaji',
+      'ar': 'خدمات الاستثمار',
+    },
+    'investment_opportunities': {
+      'rw': 'Amahirwe y\'ishoramari',
+      'fr': 'Opportunités d’investissement',
+      'sw': 'Fursa za uwekezaji',
+      'ar': 'فرص الاستثمار',
+    },
+    'forex_money_services': {
+      'rw': 'Forex na serivisi z\'imari',
+      'fr': 'Forex et services financiers',
+      'sw': 'Forex na huduma za fedha',
+      'ar': 'الفوركس والخدمات المالية',
+    },
+    'savings_cooperatives': {
+      'rw': 'Kuzigama n\'amakoperative',
+      'fr': 'Épargne et coopératives',
+      'sw': 'Akiba na vyama vya ushirika',
+      'ar': 'الادخار والتعاونيات',
     },
   };
 
@@ -114,6 +138,30 @@ class NeedCatalogLocalizations {
       'fr': 'Prêts et financements que vous proposez.',
       'sw': 'Mikopo na ufadhili unaotoa.',
       'ar': 'القروض والتمويل الذي تقدمه.',
+    },
+    'investment_services': {
+      'rw': 'Serivisi zijyanye n’ishoramari.',
+      'fr': 'Services liés aux investissements.',
+      'sw': 'Huduma zinazohusiana na uwekezaji.',
+      'ar': 'خدمات متعلقة بالاستثمار.',
+    },
+    'investment_opportunities': {
+      'rw': 'Imiyoboro y’abashoramari n’inkunga ku mishinga mishya.',
+      'fr': 'Réseaux d’investisseurs et soutien aux jeunes entreprises.',
+      'sw': 'Mitandao ya wawekezaji na msaada kwa biashara changa.',
+      'ar': 'شبكات المستثمرين ودعم الشركات الناشئة.',
+    },
+    'forex_money_services': {
+      'rw': 'Guhana amafaranga, forex no kohereza amafaranga.',
+      'fr': 'Change de devises, forex et transfert d’argent.',
+      'sw': 'Kubadilisha fedha, forex na kutuma pesa.',
+      'ar': 'تبديل العملات والفوركس وتحويل الأموال.',
+    },
+    'savings_cooperatives': {
+      'rw': 'SACCO, amatsinda yo kuzigama n’amakoperative.',
+      'fr': 'SACCO, groupes d’épargne et coopératives.',
+      'sw': 'SACCO, vikundi vya akiba na vyama vya ushirika.',
+      'ar': 'جمعيات الادخار التعاونية ومجموعات التوفير.',
     },
     'machinery_equipment': {
       'rw':
@@ -1442,6 +1490,30 @@ class NeedCatalogLocalizations {
       'fr': 'Financement du mode de vie',
       'sw': 'Ufadhili wa maisha',
       'ar': 'تمويل نمط الحياة',
+    },
+    'investment_services': {
+      'rw': 'Ubuhuza n’inama ku ishoramari',
+      'fr': 'Courtage et conseil en investissement',
+      'sw': 'Udalali na ushauri wa uwekezaji',
+      'ar': 'الوساطة والاستشارات الاستثمارية',
+    },
+    'investment_opportunities': {
+      'rw': 'Imiyoboro y’abashoramari n’inkunga ku mishinga mishya',
+      'fr': 'Réseaux d’investisseurs et soutien aux jeunes entreprises',
+      'sw': 'Mitandao ya wawekezaji na msaada kwa biashara changa',
+      'ar': 'شبكات المستثمرين ودعم الشركات الناشئة',
+    },
+    'forex': {
+      'rw': 'Guhana amafaranga no kuyohereza',
+      'fr': 'Change de devises et transferts',
+      'sw': 'Kubadilisha na kutuma fedha',
+      'ar': 'صرف العملات والتحويلات',
+    },
+    'saccos_cooperatives': {
+      'rw': 'Amatsinda yo kuzigama n’amakoperative',
+      'fr': 'Groupes d’épargne et coopératives',
+      'sw': 'Vikundi vya akiba na vyama vya ushirika',
+      'ar': 'مجموعات الادخار والتعاونيات',
     },
   };
 

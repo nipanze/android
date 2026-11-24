@@ -5,12 +5,12 @@
       {
         "id": "individual",
         "name": "Individual profile",
-        "description": "Select work roles you personally do. Individuals do not list company services."
+        "description": "Select work roles you personally do. Finance categories also support Individual service capabilities."
       },
       {
         "id": "company",
         "name": "Company / Organization",
-        "description": "Select the services your organization offers. Company settings do not include work roles."
+        "description": "Select the services your organization offers. Finance categories also support Individual providers; work roles are not shown in company settings."
       }
     ],
     "common_qualifications": [
@@ -94,12 +94,19 @@
       "Verification and category rollout policies are enforced by the catalog and database configuration."
     ],
     "catalog_rules": {
-      "service_owner": "company_except_financial_services",
+      "service_owner": "company_except_financial_categories",
       "work_role_owner": "individual",
       "policy_values": [
         "open",
         "optional_proof",
         "required_proof"
+      ],
+      "individual_finance_categories": [
+        "financial_services",
+        "investment_services",
+        "investment_opportunities",
+        "forex_money_services",
+        "savings_cooperatives"
       ]
     }
   },
@@ -5749,9 +5756,9 @@
     },
     {
       "id": "financial_services",
-      "name": "Finance & Investments",
+      "name": "Loans & Financing",
       "icon": "💰",
-      "description": "Loans, Forex, SACCOs, investments, and other financial services.",
+      "description": "Personal, business, asset and other loan financing services.",
       "provider_verification_required": true,
       "provider_types": [
         "individual",
@@ -5959,78 +5966,25 @@
               "verification_policy": "required_proof"
             }
           ]
-        },
-        {
-          "id": "forex",
-          "name": "Forex",
-          "services": [
-            {
-              "id": "forex_currency_exchange",
-              "database_slug": "forex_currency_exchange",
-              "name": "Currency Exchange / Forex Bureau",
-              "is_active": true,
-              "verification_policy": "required_proof"
-            },
-            {
-              "id": "forex_trading_training",
-              "database_slug": "forex_trading_training",
-              "name": "Forex Trading Training",
-              "is_active": true,
-              "verification_policy": "required_proof"
-            },
-            {
-              "id": "forex_trading_brokerage",
-              "database_slug": "forex_trading_brokerage",
-              "name": "Forex Trading Brokerage",
-              "is_active": true,
-              "verification_policy": "required_proof"
-            },
-            {
-              "id": "money_transfer",
-              "database_slug": "money_transfer",
-              "name": "Money Transfer",
-              "is_active": true,
-              "verification_policy": "required_proof"
-            }
-          ]
-        },
-        {
-          "id": "saccos_cooperatives",
-          "name": "SACCOs & Cooperatives",
-          "services": [
-            {
-              "id": "sacco_services",
-              "database_slug": "sacco_services",
-              "name": "SACCOs",
-              "is_active": true,
-              "verification_policy": "required_proof"
-            },
-            {
-              "id": "vsla_groups",
-              "database_slug": "vsla_groups",
-              "name": "Village Savings Groups (VSLA)",
-              "is_active": true,
-              "verification_policy": "required_proof"
-            },
-            {
-              "id": "cooperative_societies",
-              "database_slug": "cooperative_societies",
-              "name": "Cooperative Societies",
-              "is_active": true,
-              "verification_policy": "required_proof"
-            },
-            {
-              "id": "group_savings_chamas",
-              "database_slug": "group_savings_chamas",
-              "name": "Group Savings & Chamas",
-              "is_active": true,
-              "verification_policy": "required_proof"
-            }
-          ]
-        },
+        }
+      ],
+      "is_active": true,
+      "database_slug": "financial_services"
+    },
+    {
+      "id": "investment_services",
+      "name": "Investment Services",
+      "icon": "📈",
+      "description": "Investment brokerage, investment guidance and related services.",
+      "provider_verification_required": true,
+      "provider_types": [
+        "individual",
+        "company"
+      ],
+      "service_groups": [
         {
           "id": "investment_services",
-          "name": "Investment Services",
+          "name": "Brokerage & Advisory",
           "services": [
             {
               "id": "investment_stocks_shares",
@@ -6068,10 +6022,25 @@
               "verification_policy": "required_proof"
             }
           ]
-        },
+        }
+      ],
+      "is_active": true,
+      "database_slug": "investment_services"
+    },
+    {
+      "id": "investment_opportunities",
+      "name": "Investment Opportunities",
+      "icon": "🤝",
+      "description": "Investor networks, introductions and startup support services.",
+      "provider_verification_required": true,
+      "provider_types": [
+        "individual",
+        "company"
+      ],
+      "service_groups": [
         {
           "id": "investment_opportunities",
-          "name": "Investment Opportunities",
+          "name": "Investor Networks & Startup Support",
           "services": [
             {
               "id": "angel_investor_network",
@@ -6121,7 +6090,7 @@
         }
       ],
       "is_active": true,
-      "database_slug": "financial_services",
+      "database_slug": "investment_opportunities",
       "work_roles": [
         {
           "id": "angel_investor",
@@ -6238,14 +6207,289 @@
           "database_slug": "work_business_mentor"
         }
       ]
+    },
+    {
+      "id": "forex_money_services",
+      "name": "Forex & Money Services",
+      "icon": "💱",
+      "description": "Currency exchange, forex services and money transfer.",
+      "provider_verification_required": true,
+      "provider_types": [
+        "individual",
+        "company"
+      ],
+      "service_groups": [
+        {
+          "id": "forex",
+          "name": "Currency Exchange & Transfers",
+          "services": [
+            {
+              "id": "forex_currency_exchange",
+              "database_slug": "forex_currency_exchange",
+              "name": "Currency Exchange / Forex Bureau",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "forex_trading_training",
+              "database_slug": "forex_trading_training",
+              "name": "Forex Trading Training",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "forex_trading_brokerage",
+              "database_slug": "forex_trading_brokerage",
+              "name": "Forex Trading Brokerage",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "money_transfer",
+              "database_slug": "money_transfer",
+              "name": "Money Transfer",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            }
+          ]
+        }
+      ],
+      "is_active": true,
+      "database_slug": "forex_money_services",
+      "work_roles": [
+        {
+          "id": "forex_bureau_operator",
+          "name": "Currency Exchange / Forex Bureau Operator",
+          "kind_question": "Which currency services do you provide?",
+          "kinds": [
+            {
+              "id": "cash_exchange",
+              "name": "Cash currency exchange"
+            },
+            {
+              "id": "business_exchange",
+              "name": "Business currency exchange"
+            },
+            {
+              "id": "rate_quotations",
+              "name": "Rate quotations"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "exchange_authorisation",
+              "name": "Forex bureau or dealer authorisation",
+              "is_evidence": true,
+              "is_required_proof": true
+            },
+            {
+              "id": "aml_training",
+              "name": "AML / financial crime training",
+              "is_evidence": true
+            },
+            {
+              "id": "cash_handling_experience",
+              "name": "Cash handling experience",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "required_proof",
+          "aliases": [
+            "forex bureau",
+            "currency exchange"
+          ],
+          "database_slug": "work_forex_bureau_operator"
+        },
+        {
+          "id": "forex_trainer",
+          "name": "Forex Trading Trainer",
+          "kind_question": "What do you teach?",
+          "kinds": [
+            {
+              "id": "forex_basics",
+              "name": "Forex basics"
+            },
+            {
+              "id": "technical_analysis",
+              "name": "Technical analysis"
+            },
+            {
+              "id": "risk_management",
+              "name": "Risk management"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "forex_training_experience",
+              "name": "Forex teaching experience",
+              "is_evidence": false
+            },
+            {
+              "id": "training_materials",
+              "name": "Training materials or course outline",
+              "is_evidence": false
+            },
+            {
+              "id": "trading_track_record",
+              "name": "Trading track record",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "optional_proof",
+          "aliases": [
+            "forex instructor"
+          ],
+          "database_slug": "work_forex_trainer"
+        },
+        {
+          "id": "forex_broker",
+          "name": "Forex Broker / Dealer",
+          "kind_question": "Which brokerage services do you provide?",
+          "kinds": [
+            {
+              "id": "trade_execution",
+              "name": "Trade execution"
+            },
+            {
+              "id": "client_onboarding",
+              "name": "Client onboarding"
+            },
+            {
+              "id": "account_support",
+              "name": "Account support"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "broker_authorisation",
+              "name": "Broker or dealer authorisation",
+              "is_evidence": true,
+              "is_required_proof": true
+            },
+            {
+              "id": "aml_training",
+              "name": "AML / financial crime training",
+              "is_evidence": true
+            },
+            {
+              "id": "brokerage_experience",
+              "name": "Brokerage experience",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "required_proof",
+          "aliases": [
+            "forex dealer"
+          ],
+          "database_slug": "work_forex_broker"
+        },
+        {
+          "id": "money_transfer_agent",
+          "name": "Money Transfer Agent",
+          "kind_question": "Which transfer services do you handle?",
+          "kinds": [
+            {
+              "id": "domestic_transfers",
+              "name": "Domestic transfers"
+            },
+            {
+              "id": "international_transfers",
+              "name": "International transfers"
+            },
+            {
+              "id": "mobile_money_transfers",
+              "name": "Mobile money transfers"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "agent_authorisation",
+              "name": "Money transfer agent authorisation",
+              "is_evidence": true,
+              "is_required_proof": true
+            },
+            {
+              "id": "aml_training",
+              "name": "AML / financial crime training",
+              "is_evidence": true
+            },
+            {
+              "id": "customer_service_experience",
+              "name": "Customer service experience",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "policy": "required_proof",
+          "aliases": [
+            "remittance agent",
+            "transfer agent"
+          ],
+          "database_slug": "work_money_transfer_agent"
+        }
+      ]
+    },
+    {
+      "id": "savings_cooperatives",
+      "name": "Savings & Cooperatives",
+      "icon": "🏦",
+      "description": "SACCOs, savings groups, VSLAs and cooperatives.",
+      "provider_verification_required": true,
+      "provider_types": [
+        "individual",
+        "company"
+      ],
+      "service_groups": [
+        {
+          "id": "saccos_cooperatives",
+          "name": "Savings Groups & Cooperatives",
+          "services": [
+            {
+              "id": "sacco_services",
+              "database_slug": "sacco_services",
+              "name": "SACCOs",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "vsla_groups",
+              "database_slug": "vsla_groups",
+              "name": "Village Savings Groups (VSLA)",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "cooperative_societies",
+              "database_slug": "cooperative_societies",
+              "name": "Cooperative Societies",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            },
+            {
+              "id": "group_savings_chamas",
+              "database_slug": "group_savings_chamas",
+              "name": "Group Savings & Chamas",
+              "is_active": true,
+              "verification_policy": "required_proof"
+            }
+          ]
+        }
+      ],
+      "is_active": true,
+      "database_slug": "savings_cooperatives"
     }
   ],
   "catalog_safety": {
     "beauty_fashion_styling": "Massage and spa listings are therapeutic and wellness services only; sexual services are prohibited.",
     "domestic_household": "Inactive pending rollout. Never expose exact home addresses; an ID-checked badge requires admin approval.",
     "health_medical": "Inactive pending legal and country licensing review. Do not collect or store HIV results; sensitive Needs must remain private.",
-    "business_investment": "Inactive pending legal review. Nipanze does not hold funds, provide investment advice, or guarantee returns.",
     "traditional_cultural": "Inactive pending regulation review. Listings must not claim to cure illness or guarantee outcomes.",
-    "education_training": "Academic services are guidance, tutoring, mentoring, editing, and analysis only; ghost-writing/submitting work as a student is prohibited."
+    "education_training": "Academic services are guidance, tutoring, mentoring, editing, and analysis only; ghost-writing/submitting work as a student is prohibited.",
+    "investment_services": "Investment services are capability listings only. Regulated services require applicable licensing evidence.",
+    "investment_opportunities": "Capability listings only. Do not collect investments, promise returns, or imply Nipanze endorses an opportunity.",
+    "business_investment": "Retired category. Investment services and opportunities are organized under separate categories. Nipanze does not hold funds, provide investment advice, or guarantee returns."
   }
 }

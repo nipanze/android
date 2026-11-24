@@ -289,9 +289,9 @@ Merge note: the old "Business & Investment" category is now folded into **Financ
 **Healing**
 - Herbal & Traditional Healing — `traditional_healing_herbal`
 
-## 18. Finance  `financial_services`
+## 18. Loans & Financing  `financial_services`
 
-### Loans
+### Loan services
 *Personal*
 - Personal Loan Services — `personal_loan_services`
 - Emergency Loan Services — `emergency_loan_services`
@@ -314,55 +314,31 @@ Merge note: the old "Business & Investment" category is now folded into **Financ
 - Heavy Machinery Financing — `heavy_machinery_financing`
 - Equipment Financing — `equipment_financing`
 
-*Agricultural*
-- Agricultural Loans — `agricultural_loan_services`
-- Livestock Financing — `livestock_financing`
-- Crop Financing — `crop_financing`
-- Farm Equipment Financing — `farm_equipment_financing`
+*Agricultural, property, education and lifestyle financing* remain under this category.
 
-*Property*
-- Mortgage Financing — `mortgage_financing`
-- Land Financing — `land_financing`
-- Property Development Financing — `property_development_financing`
-
-*Education*
-- School Fees Financing — `school_fees_financing`
-- University Financing — `university_financing`
-- Education Loans — `education_loan_services`
-
-*Lifestyle*
-- Travel Financing — `travel_financing`
-- Wedding Financing — `wedding_financing`
-
-### Forex  **(new subcategory)**
-- Currency Exchange / Forex Bureau — **(new)**
-- Forex Trading Training — **(new)**
-- Forex Trading Brokerage — **(new)**
-- Money Transfer — **(new)**
-
-### SACCOs & Cooperatives  **(new subcategory)**
-- SACCOs — **(new)**
-- Village Savings Groups (VSLA) — **(new)**
-- Cooperative Societies — **(new)**
-- Group Savings & Chamas — **(new)**
-
-### Investment Services
+## 19. Investment Services  `investment_services`
 - Stocks & Shares — `investment_stocks_shares`
 - Bonds & Treasury Bills — `investment_bonds_treasury_bills`
 - Gold & Precious Metals — `investment_precious_metals`
 - Investment Brokerage — `investment_brokerage`
 - Investment Advisory — `investment_advisory`
 
-### Investment Opportunities  *(moved from the old Business & Investment category)*
+## 20. Investment Opportunities  `investment_opportunities`
 - Angel Investor Networks — `angel_investor_network`
 - Startup Advisory — `startup_advisory`
 - Investor Introductions — `investor_introductions`
 - Incubators & Accelerators — `incubator_accelerator`
 
----
+## 21. Forex & Money Services  `forex_money_services`
+- Currency Exchange / Forex Bureau — `forex_currency_exchange`
+- Forex Trading Training — `forex_trading_training`
+- Forex Trading Brokerage — `forex_trading_brokerage`
+- Money Transfer — `money_transfer`
 
-## Notes
-- Individual roles are unchanged, except the two old Business & Investment roles (Angel Investor, Business Mentor). They would sit under Finance → Investment Opportunities.
-- All Finance subcategories should keep `required_proof` as the default. Forex and SACCOs especially need licence or registration checks. Confirm the rules for each in your country before launch.
-- Finance also keeps its provider identity rule: both Individual and Company profiles can offer it.
-- The Forex and SACCOs service names are placeholders for you to edit. No slugs exist for them yet.
+Individual work roles: Forex Bureau Operator, Forex Trading Trainer, Forex Broker / Dealer, and Money Transfer Agent. Each role has service specialisms and relevant experience or authorisation details. Company providers continue to select the service offerings above.
+
+## 22. Savings & Cooperatives  `savings_cooperatives`
+- SACCOs — `sacco_services`
+- Village Savings Groups (VSLA) — `vsla_groups`
+- Cooperative Societies — `cooperative_societies`
+- Group Savings & Chamas — `group_savings_chamas`

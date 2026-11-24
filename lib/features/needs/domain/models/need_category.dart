@@ -74,7 +74,7 @@ class NeedCategory {
       return 'Events & Celebrations';
     }
     if (slug == 'financial_services' && (code == null || code == 'en')) {
-      return 'Finance & Investments';
+      return 'Loans & Financing';
     }
     final map = switch (code) {
       'rw' => {

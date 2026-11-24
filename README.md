@@ -404,7 +404,7 @@ is not persisted as an offline-first store.
 
 ## 4.1 Single Source for Provider Capabilities
 Provider Services is the single place where a user declares what they provide across all marketplace modules (Needs, Loans, Forex):
-- **Provider Services financial capabilities** remain in Provider Services only; `financial_services` is not an active Needs category. Loans and Forex continue as standalone modules.
+- **Provider Services finance categories** remain in Provider Services only; Loans & Financing, Investment Services, Investment Opportunities, Forex & Money Services, and Savings & Cooperatives are not Needs categories. Loans and Forex marketplace modules continue as standalone modules.
 - **Multi-Category Capabilities**: Users can hold capabilities across multiple categories simultaneously (e.g. Loan Services + Forex / Currency Exchange + Business Consulting + Excavator Hire).
 - **Service vs Professional Identity Separation**:
   - **Service**: What the provider offers (e.g., Loan Services, Forex / Currency Exchange).
@@ -414,7 +414,7 @@ Provider Services is the single place where a user declares what they provide ac
 
 ## 4.2 Loan-only borrower information
 
-- The Needs picker contains only active non-financial categories. Historical `financial_services` category and capability rows are retained but disabled; inserts or category changes cannot create financial Needs requests.
+- The Needs picker contains only active non-financial categories. Finance provider categories are filtered from Needs and rejected by the server; finance requests cannot be created as Needs.
 - Nipanze does not add a Financial Profile, Income Profile, or Banking Profile to Account, onboarding, or general profile editing.
 - Employment status, employer/business name, government employee status, monthly income range and its currency, other income source, and preferred bank are collected inside Post → Loan only. Reusable values live in `public.borrower_information`, separate from `profiles` and all request/listing tables.
 - The table grants access only to the authenticated owner through RLS. It is not joined into public marketplace views or included in a Loan, Forex, Needs, Offer, or public-profile payload.
@@ -524,9 +524,11 @@ The new patch adds owner-private `job_profiles`, `job_profile_roles`, `job_profi
 
 The `/account/services` screen now shows a separate Work Profile section behind the public `job_profiles_enabled` setting. Job matching is intentionally shown as unavailable until a real jobs/opportunity source exists; no fake listings or match percentages are generated.
 
-### Financial Services provider capabilities
+### Finance provider categories
 
-The existing Financial Services category is available in Provider Services when `capability_profiles_enabled` is enabled. Its 29 financing capabilities are grouped by personal, business, asset, agricultural, property, education, and lifestyle financing. Both Individual and Company identities can maintain separate capability selections. Capabilities use the existing required-proof review flow and remain hidden until approved. Financial Services remains excluded from Needs. Apply `sql/patch_financial_services_provider_capabilities.sql` after the v2 catalog, provider work-profile, verification-policy, provider-type verification matrix, company provider path, category-type, and identity-switch patches; do not run it against production without deployment approval.
+Finance & Investments is split into five top-level Provider Services categories: Loans & Financing (`financial_services`), Investment Services, Investment Opportunities, Forex & Money Services, and Savings & Cooperatives. Loan financing choices remain grouped within Loans & Financing. Individuals and Companies can maintain their own identity and capability selections in each category. These categories stay out of borrower Needs.
+
+Apply `sql/patch_financial_services_provider_capabilities.sql` after the v2 catalog, provider work-profile, verification-policy, provider-type verification matrix, company provider path, category-type, and identity-switch patches. Then apply `sql/patch_provider_catalog_one_word_hierarchy.sql`, followed by `sql/patch_finance_provider_top_level_categories.sql` to split existing catalog rows and copy provider identity/company presentation data into each new category. The new patch has not been run; review it in staging before production.
 
 Apply order:
 
@@ -537,6 +539,6 @@ Apply order:
 
 ### Provider loan products
 
-Loan Products are provider offers, separate from borrower loan requests and lender loan offers. Providers with an identity-matched Financial Services capability can save drafts, publish products, manage status, and view plan quotas. Individual providers do not need capability proof; Companies need approved proof, and both identity types pass the existing account posting checks. Matching uses the capability-to-purpose catalogue, amount range, currency, repayment, eligibility and location. Matching requests appear in provider Activity and trigger notifications. Borrowers see matching products on their own request detail; enquiries notify providers and appear in Activity.
+Loan Products are provider offers, separate from borrower loan requests and lender loan offers. Providers with an identity-matched Loans & Financing capability can save drafts, publish products, manage status, and view plan quotas. Individual providers do not need capability proof; Companies need approved proof, and both identity types pass the existing account posting checks. Matching uses the capability-to-purpose catalogue, amount range, currency, repayment, eligibility and location. Matching requests appear in provider Activity and trigger notifications. Borrowers see matching products on their own request detail; enquiries notify providers and appear in Activity.
 
 Apply `sql/patch_loan_products.sql` after the base schema and Financial Services provider capability patch. Apply `sql/patch_loan_products_part_b_hardening.sql` after `sql/patch_provider_verification_policies.sql`, `sql/patch_company_provider_path.sql`, and `sql/patch_provider_company_logo.sql`. Apply `sql/patch_loan_products_part_c_matching.sql` after those patches and `sql/patch_loan_classification.sql`, then apply `sql/patch_loan_request_purpose_picker_catalog.sql`. These standalone patches have not been run. Review and validate them in staging before production. When enabled, the existing single Purpose field opens a searchable category and purpose sheet; the selected pair is saved for matching while the legacy free-text purpose remains intact.

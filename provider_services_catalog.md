@@ -1,10 +1,10 @@
 # Nipanze Provider Services Catalog
 
-> Catalog source: [`provider_services_v2.json`](./provider_services_v2.json). Database updates are in [`sql/patch_provider_catalog_one_word_hierarchy.sql`](./sql/patch_provider_catalog_one_word_hierarchy.sql). Apply that migration after its prerequisite catalog and verification patches.
+> Catalog source: [`provider_services_v2.json`](./provider_services_v2.json). Database updates are in [`sql/patch_provider_catalog_one_word_hierarchy.sql`](./sql/patch_provider_catalog_one_word_hierarchy.sql). Apply that migration after its prerequisite catalog and verification patches, then apply [`sql/patch_finance_provider_top_level_categories.sql`](./sql/patch_finance_provider_top_level_categories.sql) after `patch_financial_services_provider_capabilities.sql`.
 > The Tourism Services group is added by [`sql/patch_travel_tourism_services.sql`](./sql/patch_travel_tourism_services.sql), after `patch_provider_services_v2_catalog.sql`.
 > Full category names in the backend are set by [`sql/patch_provider_category_full_names.sql`](./sql/patch_provider_category_full_names.sql), after `patch_provider_services_v2_catalog.sql`.
 
-**Catalog size:** 18 categories · 204 services · 90 Individual roles.
+**Catalog size:** 22 categories · 211 services · 94 Individual roles.
 
 The picker flow is **Category → Subcategory → Individual or Company / Organization → Services**. Category and subcategory labels are display values; existing database slugs are preserved. Finance supports both identity types. Individual profiles select work roles; company profiles select services.
 
@@ -29,7 +29,11 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | 15 | Domestic | `domestic_household` | 2 | 7 | 5 |
 | 16 | Health | `health_medical` | 4 | 15 | 12 |
 | 17 | Cultural | `traditional_cultural` | 2 | 5 | 4 |
-| 18 | Finance & Investments | `financial_services` | 5 | 45 | 2 |
+| 18 | Loans & Financing | `financial_services` | 1 | 28 | 0 |
+| 19 | Investment Services | `investment_services` | 1 | 5 | 0 |
+| 20 | Investment Opportunities | `investment_opportunities` | 1 | 4 | 2 |
+| 21 | Forex & Money Services | `forex_money_services` | 1 | 4 | 4 |
+| 22 | Savings & Cooperatives | `savings_cooperatives` | 1 | 4 | 0 |
 
 ## Full catalog
 
@@ -1736,106 +1740,245 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Registration with relevant association or local authority | Yes |
 | Referees | No |
 
-## 18. 💰 Finance & Investments
+## 18. 💰 Loans & Financing
 
 **Database slug:** `financial_services`
-**Description:** Loans, Forex, SACCOs, investments, and other financial services.
+**Description:** Personal, business, asset and other loan financing services.
+
 
 ### Loans
 
 | Service | Database slug | Status | Verification policy |
 |---|---|---|---|
+
 | Personal Loan Services | `personal_loan_services` | Available | `required_proof` |
+
 | Emergency Loan Services | `emergency_loan_services` | Available | `required_proof` |
+
 | Salary Loan Services | `salary_loan_services` | Available | `required_proof` |
+
 | Medical Financing | `medical_financing` | Available | `required_proof` |
+
 | Business Startup Financing | `business_startup_financing` | Available | `required_proof` |
+
 | Working Capital Financing | `working_capital_financing` | Available | `required_proof` |
+
 | Business Expansion Financing | `business_expansion_financing` | Available | `required_proof` |
+
 | SME Financing | `sme_financing` | Available | `required_proof` |
+
 | Boda Boda Financing | `boda_boda_financing` | Available | `required_proof` |
+
 | Car Financing | `car_financing` | Available | `required_proof` |
+
 | Tuk-tuk Financing | `tuk_tuk_financing` | Available | `required_proof` |
+
 | Motorcycle Financing | `motorcycle_financing` | Available | `required_proof` |
+
 | Smartphone Financing | `smartphone_financing` | Available | `required_proof` |
+
 | Laptop Financing | `laptop_financing` | Available | `required_proof` |
+
 | Heavy Machinery Financing | `heavy_machinery_financing` | Available | `required_proof` |
+
 | Equipment Financing | `equipment_financing` | Available | `required_proof` |
+
 | Agricultural Loans | `agricultural_loan_services` | Available | `required_proof` |
+
 | Livestock Financing | `livestock_financing` | Available | `required_proof` |
+
 | Crop Financing | `crop_financing` | Available | `required_proof` |
+
 | Farm Equipment Financing | `farm_equipment_financing` | Available | `required_proof` |
+
 | Mortgage Financing | `mortgage_financing` | Available | `required_proof` |
+
 | Land Financing | `land_financing` | Available | `required_proof` |
+
 | Property Development Financing | `property_development_financing` | Available | `required_proof` |
+
 | School Fees Financing | `school_fees_financing` | Available | `required_proof` |
+
 | University Financing | `university_financing` | Available | `required_proof` |
+
 | Education Loans | `education_loan_services` | Available | `required_proof` |
+
 | Travel Financing | `travel_financing` | Available | `required_proof` |
+
 | Wedding Financing | `wedding_financing` | Available | `required_proof` |
 
-### Forex
+## 19. 📈 Investment Services
+
+**Database slug:** `investment_services`
+**Description:** Investment brokerage, investment guidance and related services.
+
+
+### Brokerage & Advisory
 
 | Service | Database slug | Status | Verification policy |
 |---|---|---|---|
-| Currency Exchange / Forex Bureau | `forex_currency_exchange` | Available | `required_proof` |
-| Forex Trading Training | `forex_trading_training` | Available | `required_proof` |
-| Forex Trading Brokerage | `forex_trading_brokerage` | Available | `required_proof` |
-| Money Transfer | `money_transfer` | Available | `required_proof` |
 
-### SACCOs & Cooperatives
-
-| Service | Database slug | Status | Verification policy |
-|---|---|---|---|
-| SACCOs | `sacco_services` | Available | `required_proof` |
-| Village Savings Groups (VSLA) | `vsla_groups` | Available | `required_proof` |
-| Cooperative Societies | `cooperative_societies` | Available | `required_proof` |
-| Group Savings & Chamas | `group_savings_chamas` | Available | `required_proof` |
-
-### Investment Services
-
-| Service | Database slug | Status | Verification policy |
-|---|---|---|---|
 | Stocks & Shares | `investment_stocks_shares` | Available | `required_proof` |
+
 | Bonds & Treasury Bills | `investment_bonds_treasury_bills` | Available | `required_proof` |
+
 | Gold & Precious Metals | `investment_precious_metals` | Available | `required_proof` |
+
 | Investment Brokerage | `investment_brokerage` | Available | `required_proof` |
+
 | Investment Advisory | `investment_advisory` | Available | `required_proof` |
 
-### Investment Opportunities
+## 20. 🤝 Investment Opportunities
+
+**Database slug:** `investment_opportunities`
+**Description:** Investor networks, introductions and startup support services.
+
+
+### Investor Networks & Startup Support
 
 | Service | Database slug | Status | Verification policy |
 |---|---|---|---|
+
 | Angel Investor Networks | `angel_investor_network` | Available | `required_proof` |
+
 | Startup Advisory | `startup_advisory` | Available | `optional_proof` |
+
 | Investor Introductions | `investor_introductions` | Available | `required_proof` |
+
 | Incubators & Accelerators | `incubator_accelerator` | Available | `required_proof` |
 
+
 ### Individual roles
+
 
 #### Angel Investor
 
 **Database slug:** `work_angel_investor`
 **Status:** Available
 **Question:** Which sectors?
+
 **Kinds:** Technology · Agriculture · Retail & trade · Health · Energy · Real estate · Creative · General
+
 
 | Qualification | Evidence required |
 |---|---|
+
 | Identity verification | Yes |
+
 | Proof of investment track record or portfolio | Yes |
+
 | Ticket size range | No |
+
 | Stage focus | No |
+
 
 #### Business Mentor
 
 **Database slug:** `work_business_mentor`
 **Status:** Available
 **Question:** What do you help with?
+
 **Kinds:** Startup · SME growth · Export · Agribusiness
+
 
 | Qualification | Evidence required |
 |---|---|
+
 | Experience 5+ years | No |
+
 | Case studies | No |
+
 | Referees | No |
+
+## 21. 💱 Forex & Money Services
+
+**Database slug:** `forex_money_services`
+**Description:** Currency exchange, forex services and money transfer.
+
+
+### Currency Exchange & Transfers
+
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+
+| Currency Exchange / Forex Bureau | `forex_currency_exchange` | Available | `required_proof` |
+
+| Forex Trading Training | `forex_trading_training` | Available | `required_proof` |
+
+| Forex Trading Brokerage | `forex_trading_brokerage` | Available | `required_proof` |
+
+| Money Transfer | `money_transfer` | Available | `required_proof` |
+
+
+### Individual roles
+
+#### Currency Exchange / Forex Bureau Operator
+
+**Database slug:** `work_forex_bureau_operator`
+**Status:** Available
+**Question:** Which currency services do you provide?
+**Kinds:** Cash currency exchange · Business currency exchange · Rate quotations
+
+| Qualification | Evidence required |
+|---|---|
+| Forex bureau or dealer authorisation | Yes |
+| AML / financial crime training | Yes |
+| Cash handling experience | No |
+
+#### Forex Trading Trainer
+
+**Database slug:** `work_forex_trainer`
+**Status:** Available
+**Question:** What do you teach?
+**Kinds:** Forex basics · Technical analysis · Risk management
+
+| Qualification | Evidence required |
+|---|---|
+| Forex teaching experience | No |
+| Training materials or course outline | No |
+| Trading track record | No |
+
+#### Forex Broker / Dealer
+
+**Database slug:** `work_forex_broker`
+**Status:** Available
+**Question:** Which brokerage services do you provide?
+**Kinds:** Trade execution · Client onboarding · Account support
+
+| Qualification | Evidence required |
+|---|---|
+| Broker or dealer authorisation | Yes |
+| AML / financial crime training | Yes |
+| Brokerage experience | No |
+
+#### Money Transfer Agent
+
+**Database slug:** `work_money_transfer_agent`
+**Status:** Available
+**Question:** Which transfer services do you handle?
+**Kinds:** Domestic transfers · International transfers · Mobile money transfers
+
+| Qualification | Evidence required |
+|---|---|
+| Money transfer agent authorisation | Yes |
+| AML / financial crime training | Yes |
+| Customer service experience | No |
+
+## 22. 🏦 Savings & Cooperatives
+
+**Database slug:** `savings_cooperatives`
+**Description:** SACCOs, savings groups, VSLAs and cooperatives.
+
+
+### Savings Groups & Cooperatives
+
+| Service | Database slug | Status | Verification policy |
+|---|---|---|---|
+
+| SACCOs | `sacco_services` | Available | `required_proof` |
+
+| Village Savings Groups (VSLA) | `vsla_groups` | Available | `required_proof` |
+
+| Cooperative Societies | `cooperative_societies` | Available | `required_proof` |
+
+| Group Savings & Chamas | `group_savings_chamas` | Available | `required_proof` |

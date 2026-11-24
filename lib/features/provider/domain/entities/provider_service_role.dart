@@ -655,6 +655,124 @@ class ProviderServiceRole {
       ],
     ),
     ProviderServiceRole(
+      slug: 'forex_bureau_operator',
+      name: 'Currency Exchange / Forex Bureau Operator',
+      description: 'Provide currency exchange and forex bureau services',
+      kindQuestion: 'Which currency services do you provide?',
+      categorySlug: 'forex_money_services',
+      capabilitySlug: 'work_forex_bureau_operator',
+      kinds: [
+        ProviderRoleOption(
+            slug: 'cash_exchange', name: 'Cash currency exchange'),
+        ProviderRoleOption(
+            slug: 'business_exchange', name: 'Business currency exchange'),
+        ProviderRoleOption(slug: 'rate_quotations', name: 'Rate quotations'),
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'exchange_authorisation',
+            name: 'Forex bureau or dealer authorisation',
+            isEvidence: true,
+            isRequiredProof: true),
+        ProviderRoleQualification(
+            slug: 'aml_training',
+            name: 'AML / financial crime training',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'cash_handling_experience',
+            name: 'Cash handling experience',
+            isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'forex_trainer',
+      name: 'Forex Trading Trainer',
+      description: 'Teach forex trading concepts and risk management',
+      kindQuestion: 'What do you teach?',
+      categorySlug: 'forex_money_services',
+      capabilitySlug: 'work_forex_trainer',
+      kinds: [
+        ProviderRoleOption(slug: 'forex_basics', name: 'Forex basics'),
+        ProviderRoleOption(
+            slug: 'technical_analysis', name: 'Technical analysis'),
+        ProviderRoleOption(slug: 'risk_management', name: 'Risk management'),
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'forex_training_experience',
+            name: 'Forex teaching experience',
+            isEvidence: false),
+        ProviderRoleQualification(
+            slug: 'training_materials',
+            name: 'Training materials or course outline',
+            isEvidence: false),
+        ProviderRoleQualification(
+            slug: 'trading_track_record',
+            name: 'Trading track record',
+            isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'forex_broker',
+      name: 'Forex Broker / Dealer',
+      description: 'Support forex trade execution and client accounts',
+      kindQuestion: 'Which brokerage services do you provide?',
+      categorySlug: 'forex_money_services',
+      capabilitySlug: 'work_forex_broker',
+      kinds: [
+        ProviderRoleOption(slug: 'trade_execution', name: 'Trade execution'),
+        ProviderRoleOption(
+            slug: 'client_onboarding', name: 'Client onboarding'),
+        ProviderRoleOption(slug: 'account_support', name: 'Account support'),
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'broker_authorisation',
+            name: 'Broker or dealer authorisation',
+            isEvidence: true,
+            isRequiredProof: true),
+        ProviderRoleQualification(
+            slug: 'aml_training',
+            name: 'AML / financial crime training',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'brokerage_experience',
+            name: 'Brokerage experience',
+            isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'money_transfer_agent',
+      name: 'Money Transfer Agent',
+      description: 'Handle domestic, international, and mobile money transfers',
+      kindQuestion: 'Which transfer services do you handle?',
+      categorySlug: 'forex_money_services',
+      capabilitySlug: 'work_money_transfer_agent',
+      kinds: [
+        ProviderRoleOption(
+            slug: 'domestic_transfers', name: 'Domestic transfers'),
+        ProviderRoleOption(
+            slug: 'international_transfers', name: 'International transfers'),
+        ProviderRoleOption(
+            slug: 'mobile_money_transfers', name: 'Mobile money transfers'),
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'agent_authorisation',
+            name: 'Money transfer agent authorisation',
+            isEvidence: true,
+            isRequiredProof: true),
+        ProviderRoleQualification(
+            slug: 'aml_training',
+            name: 'AML / financial crime training',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'customer_service_experience',
+            name: 'Customer service experience',
+            isEvidence: false),
+      ],
+    ),
+    ProviderServiceRole(
       slug: 'private_tutor',
       name: 'Private Tutor / Exam Coach',
       description: 'Private lessons, language learning, and exam preparation',

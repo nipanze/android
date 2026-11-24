@@ -17,15 +17,16 @@ import '../../../account/presentation/cubit/profile_cubit.dart';
 import '../../../job_profile/data/job_profile_repository.dart';
 import '../../../job_profile/domain/models/job_profile.dart';
 import '../../../needs/data/needs_repository.dart';
+import '../../../needs/domain/models/need_capability.dart';
+import '../../../needs/domain/models/need_category.dart';
 import '../../domain/entities/provider_capability.dart';
 import '../../domain/entities/provider_category_type.dart';
 import '../../domain/entities/provider_opportunity.dart';
 import '../../domain/repositories/provider_repository_interface.dart';
 import '../cubit/capabilities_cubit.dart';
 import '../cubit/capabilities_state.dart';
-import '../widgets/capability_badge.dart';
+import '../widgets/provider_verification_chip.dart';
 import 'add_service_sheet.dart';
-import 'capability_detail_sheet.dart';
 
 class ProviderServicesPage extends StatelessWidget {
   const ProviderServicesPage({super.key});
@@ -46,6 +47,14 @@ class ProviderServicesPage extends StatelessWidget {
 
 class _ProviderServicesView extends StatelessWidget {
   const _ProviderServicesView();
+
+  static const _financeProviderCategorySlugs = <String>{
+    'financial_services',
+    'investment_services',
+    'investment_opportunities',
+    'forex_money_services',
+    'savings_cooperatives',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +96,6 @@ class _ProviderServicesView extends StatelessWidget {
         final loaded = state as CapabilitiesLoaded;
         final caps = loaded.capabilities;
         final opps = loaded.opportunities;
-        final needsRepo = getIt<NeedsRepository>();
 
         // ── Always show Screen A (unified summary view) ──
         return Scaffold(
@@ -102,24 +110,17 @@ class _ProviderServicesView extends StatelessWidget {
               capabilities: caps,
               categoryTypes: loaded.categoryTypes,
               opportunities: opps,
-              needsRepository: needsRepo,
               isDark: isDark,
               l10n: l10n,
               onAddService: () => _showAddSheet(context),
-              onTapCapability: (cap) => _showCapabilityDetail(
-                context,
-                capability: cap,
-                opps: opps,
-                l10n: l10n,
-              ),
               onAddProof: (cap) => _openCapabilityProofDestination(
                 context,
                 capability: cap,
                 l10n: l10n,
               ),
-              onEditCompanyDetails: (cap) => _showAddSheet(
+              onEditCategory: (categorySlug) => _showAddSheet(
                 context,
-                preselectedCategorySlug: cap.categorySlug,
+                preselectedCategorySlug: categorySlug,
               ),
               onRemoveCapability: (cap) => _confirmRemove(context, cap, l10n),
             ),
@@ -254,17 +255,18 @@ class _ProviderServicesView extends StatelessWidget {
     var capabilitiesSaved = selection?.capabilitiesSaved ?? false;
     if (selection != null &&
         !capabilitiesSaved &&
-        (selection.slugs.isNotEmpty || selection.metadataBySlug.isNotEmpty)) {
+        (selection.slugs.isNotEmpty ||
+            selection.metadataBySlug.isNotEmpty ||
+            _financeProviderCategorySlugs.contains(selection.categorySlug))) {
       capabilitiesSaved = await cubit.addCapabilitiesAndReport(
         selection.slugs,
         categorySlug: selection.categorySlug,
         metadataBySlug: selection.metadataBySlug,
       );
     }
-    final isFinancialServiceSelection =
-        selection?.categorySlug == 'financial_services' &&
-            (selection?.slugs.isNotEmpty ?? false);
-    if (isFinancialServiceSelection) {
+    final isFinanceProviderCategorySelection =
+        _financeProviderCategorySlugs.contains(selection?.categorySlug);
+    if (isFinanceProviderCategorySelection) {
       if (!capabilitiesSaved && context.mounted) {
         final currentState = cubit.state;
         final message = currentState is CapabilitiesError
@@ -616,188 +618,6 @@ class _ProviderServicesView extends StatelessWidget {
         ),
       );
 
-  Future<void> _showCapabilityDetail(
-    BuildContext context, {
-    required ProviderCapability capability,
-    required List<ProviderOpportunity> opps,
-    required AppLocalizations l10n,
-  }) async {
-    final cubit = context.read<CapabilitiesCubit>();
-    final oppCount = opps
-        .where((o) => o.capabilitySlug == capability.capabilitySlug)
-        .fold<int>(0, (sum, o) => sum + o.opportunityCount);
-    await CapabilityDetailSheet.show(
-      context,
-      capability: capability,
-      opportunityCount: oppCount,
-      hiddenForCompanyOnly: !capability.isWork &&
-          capability.identityType == null &&
-          (cubit.state is CapabilitiesLoaded) &&
-          (cubit.state as CapabilitiesLoaded)
-                  .categoryTypes[capability.categorySlug] ==
-              ProviderCategoryType.individual,
-      providerType: ProviderCategoryType.fromValue(capability.identityType) ??
-          ((cubit.state is CapabilitiesLoaded)
-              ? (cubit.state as CapabilitiesLoaded)
-                  .categoryTypes[capability.categorySlug]
-              : null),
-      onEdit: () => _showAddSheet(
-        context,
-        preselectedCategorySlug: capability.categorySlug,
-      ),
-      onTogglePause: (paused) => cubit.setCapabilityPaused(
-        providerCapabilityId: capability.id,
-        paused: paused,
-      ),
-      onRemove: () => _confirmRemove(context, capability, l10n),
-      onAddProof: () async {
-        Navigator.of(context).pop();
-        await Future<void>.delayed(const Duration(milliseconds: 250));
-        if (!context.mounted) return;
-        await _openCapabilityProofDestination(
-          context,
-          capability: capability,
-          l10n: l10n,
-        );
-      },
-      onAddRoleProof: (roleSlug, qualificationSlug) async {
-        Navigator.of(context).pop();
-        await Future<void>.delayed(const Duration(milliseconds: 250));
-        if (!context.mounted) return;
-        if (roleSlug == null || qualificationSlug == null) {
-          await _openCapabilityProofDestination(
-            context,
-            capability: capability,
-            l10n: l10n,
-          );
-        } else {
-          await _uploadRoleQualificationEvidence(
-            context,
-            capability: capability,
-            roleSlug: roleSlug,
-            qualificationSlug: qualificationSlug,
-            l10n: l10n,
-          );
-        }
-      },
-      onRemoveRoleProof: (roleSlug, qualificationSlug) async {
-        if (roleSlug == null || qualificationSlug == null) return;
-        Navigator.of(context).pop();
-        await Future<void>.delayed(const Duration(milliseconds: 250));
-        if (!context.mounted) return;
-        await _removeRoleQualificationEvidence(
-          context,
-          capability: capability,
-          roleSlug: roleSlug,
-          qualificationSlug: qualificationSlug,
-          l10n: l10n,
-        );
-      },
-    );
-  }
-
-  Future<void> _uploadRoleQualificationEvidence(
-    BuildContext context, {
-    required ProviderCapability capability,
-    required String roleSlug,
-    required String qualificationSlug,
-    required AppLocalizations l10n,
-  }) async {
-    final cubit = context.read<CapabilitiesCubit>();
-    try {
-      const evidenceTypes = XTypeGroup(
-        label: 'Qualification document',
-        extensions: ['jpg', 'jpeg', 'png', 'pdf'],
-      );
-      final file = await openFile(acceptedTypeGroups: [evidenceTypes]);
-      if (file == null) return;
-      if (await file.length() > 5 * 1024 * 1024) {
-        throw StateError(l10n.companyEvidenceTooLarge);
-      }
-      final bytes = await file.readAsBytes();
-      if (bytes.isEmpty || bytes.lengthInBytes > 5 * 1024 * 1024) {
-        throw StateError(l10n.companyEvidenceTooLarge);
-      }
-      final extension = file.name.split('.').last.toLowerCase();
-      final mimeType = switch (extension) {
-        'jpg' || 'jpeg' => 'image/jpeg',
-        'png' => 'image/png',
-        'pdf' => 'application/pdf',
-        _ => '',
-      };
-      if (mimeType.isEmpty) {
-        throw StateError(l10n.companyEvidenceUnsupported);
-      }
-      final repository = getIt<IProviderRepository>();
-      final path = await repository.uploadRoleQualificationEvidence(
-        capabilitySlug: capability.capabilitySlug,
-        roleSlug: roleSlug,
-        qualificationSlug: qualificationSlug,
-        fileName: file.name,
-        mimeType: mimeType,
-        bytes: bytes,
-      );
-      await repository.submitRoleQualificationEvidence(
-        providerCapabilityId: capability.id,
-        roleSlug: roleSlug,
-        qualificationSlug: qualificationSlug,
-        evidenceObjectPath: path,
-      );
-      await cubit.loadWithOpportunities();
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.providerEvidenceSubmitted)),
-        );
-      }
-    } catch (error) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userFacingErrorMessage(error))),
-      );
-    }
-  }
-
-  Future<void> _removeRoleQualificationEvidence(
-    BuildContext context, {
-    required ProviderCapability capability,
-    required String roleSlug,
-    required String qualificationSlug,
-    required AppLocalizations l10n,
-  }) async {
-    final cubit = context.read<CapabilitiesCubit>();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.companyDocumentRemove),
-        content: Text(l10n.providerEvidenceRemoveConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(l10n.companyDocumentRemove),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !context.mounted) return;
-    try {
-      await getIt<IProviderRepository>().removeRoleQualificationEvidence(
-        providerCapabilityId: capability.id,
-        roleSlug: roleSlug,
-        qualificationSlug: qualificationSlug,
-      );
-      await cubit.loadWithOpportunities();
-    } catch (error) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(userFacingErrorMessage(error))),
-      );
-    }
-  }
-
   Future<void> _openCapabilityProofDestination(
     BuildContext context, {
     required ProviderCapability capability,
@@ -980,27 +800,23 @@ class _ScreenASummaryView extends StatefulWidget {
     required this.capabilities,
     required this.categoryTypes,
     required this.opportunities,
-    required this.needsRepository,
     required this.isDark,
     required this.l10n,
     required this.onAddService,
-    required this.onTapCapability,
     required this.onAddProof,
+    required this.onEditCategory,
     this.onRemoveCapability,
-    this.onEditCompanyDetails,
   });
 
   final List<ProviderCapability> capabilities;
   final Map<String, ProviderCategoryType> categoryTypes;
   final List<ProviderOpportunity> opportunities;
-  final NeedsRepository needsRepository;
   final bool isDark;
   final AppLocalizations l10n;
   final VoidCallback onAddService;
-  final ValueChanged<ProviderCapability> onTapCapability;
   final ValueChanged<ProviderCapability> onAddProof;
+  final ValueChanged<String?> onEditCategory;
   final ValueChanged<ProviderCapability>? onRemoveCapability;
-  final ValueChanged<ProviderCapability>? onEditCompanyDetails;
 
   @override
   State<_ScreenASummaryView> createState() => _ScreenASummaryViewState();
@@ -1018,35 +834,52 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
     return selected == null || capability.identityType == selected.name;
   }
 
-  List<ProviderCapability> get _filtered {
-    final activeCapabilities = widget.capabilities.where((capability) {
-      if (!_belongsToSelectedFinancialIdentity(capability)) return false;
-      return !capability.isWork ||
-          capability.metadata['is_role_active'] != false;
-    }).toList();
-    switch (_filter) {
-      case _CapFilter.services:
-        return activeCapabilities.where((c) => !c.isWork).toList();
-      case _CapFilter.jobs:
-        return activeCapabilities.where((c) => c.isWork).toList();
-      case _CapFilter.all:
-        return activeCapabilities;
+  List<ProviderCapability> get _visibleCapabilities =>
+      widget.capabilities.where((capability) {
+        if (!_belongsToSelectedFinancialIdentity(capability)) return false;
+        return !capability.isWork ||
+            capability.metadata['is_role_active'] != false;
+      }).toList();
+
+  Map<String, List<ProviderCapability>> _groupCapabilities(
+    Iterable<ProviderCapability> capabilities,
+  ) {
+    final grouped = <String, List<ProviderCapability>>{};
+    for (final capability in capabilities) {
+      final key = capability.categorySlug?.isNotEmpty == true
+          ? capability.categorySlug!
+          : capability.capabilitySlug;
+      grouped.putIfAbsent(key, () => []).add(capability);
     }
+    return grouped;
   }
 
   @override
   Widget build(BuildContext context) {
-    final caps = widget.capabilities.where((capability) {
-      if (!_belongsToSelectedFinancialIdentity(capability)) return false;
-      return !capability.isWork ||
-          capability.metadata['is_role_active'] != false;
-    }).toList();
-    final servicesCount = caps.where((c) => !c.isWork).length;
-    final jobsCount = caps.where((c) => c.isWork).length;
+    final capabilities = _visibleCapabilities;
+    final allGroups = _groupCapabilities(capabilities);
+    final serviceCategoryCount = allGroups.values
+        .where((items) => items.any((item) => !item.isWork))
+        .length;
+    final jobCategoryCount = allGroups.values
+        .where((items) => items.any((item) => item.isWork))
+        .length;
+    final filteredGroups = <MapEntry<String, List<ProviderCapability>>>[];
+    for (final entry in allGroups.entries) {
+      final items = switch (_filter) {
+        _CapFilter.services =>
+          entry.value.where((item) => !item.isWork).toList(),
+        _CapFilter.jobs => entry.value.where((item) => item.isWork).toList(),
+        _CapFilter.all => entry.value,
+      };
+      if (items.isNotEmpty) {
+        filteredGroups.add(MapEntry(entry.key, items));
+      }
+    }
+
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
-        // ── Filter chips ──
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -1055,14 +888,15 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
               child: Row(
                 children: [
                   _FilterChip(
-                    label: widget.l10n.providerSummaryAll(caps.length),
+                    label: widget.l10n.providerSummaryAll(allGroups.length),
                     selected: _filter == _CapFilter.all,
                     onTap: () => setState(() => _filter = _CapFilter.all),
                   ),
                   const SizedBox(width: 8),
-                  if (servicesCount > 0) ...[
+                  if (serviceCategoryCount > 0) ...[
                     _FilterChip(
-                      label: widget.l10n.providerSummaryServices(servicesCount),
+                      label: widget.l10n
+                          .providerSummaryServices(serviceCategoryCount),
                       selected: _filter == _CapFilter.services,
                       color: AppColors.accent,
                       onTap: () =>
@@ -1071,7 +905,7 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                     const SizedBox(width: 8),
                   ],
                   _FilterChip(
-                    label: widget.l10n.providerSummaryJobs(jobsCount),
+                    label: widget.l10n.providerSummaryJobs(jobCategoryCount),
                     selected: _filter == _CapFilter.jobs,
                     color: AppColors.proPurple,
                     onTap: () => setState(() => _filter = _CapFilter.jobs),
@@ -1081,18 +915,15 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
             ),
           ),
         ),
-
         if (widget.categoryTypes.values.contains(ProviderCategoryType.company))
           SliverToBoxAdapter(
             child: _CompanyVerificationSummary(
               categoryTypes: widget.categoryTypes,
-              capabilities: caps,
+              capabilities: capabilities,
               l10n: widget.l10n,
             ),
           ),
-
-        // ── Capability cards ──
-        if (_filtered.isEmpty)
+        if (filteredGroups.isEmpty)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
@@ -1103,49 +934,293 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             sliver: SliverList.builder(
-              itemCount: _filtered.length,
-              itemBuilder: (context, i) {
-                final cap = _filtered[i];
-                final oppCount = widget.opportunities
-                    .where((o) => o.capabilitySlug == cap.capabilitySlug)
-                    .fold<int>(0, (sum, o) => sum + o.opportunityCount);
-                return CapabilityBadge(
-                  capability: cap,
-                  hiddenForCompanyOnly: !cap.isWork &&
-                      cap.identityType == null &&
-                      widget.categoryTypes[cap.categorySlug] ==
-                          ProviderCategoryType.individual,
-                  showProfileDetails: true,
-                  providerType:
-                      ProviderCategoryType.fromValue(cap.identityType) ??
-                          widget.categoryTypes[cap.categorySlug],
-                  onEditCompanyDetails:
-                      (ProviderCategoryType.fromValue(cap.identityType) ??
-                                      widget.categoryTypes[cap.categorySlug]) ==
-                                  ProviderCategoryType.company &&
-                              !cap.isWork
-                          ? () => widget.onEditCompanyDetails?.call(cap)
-                          : null,
-                  opportunityCount: oppCount,
-                  onTap: () => widget.onTapCapability(cap),
-                  onAddProof: () => widget.onAddProof(cap),
-                  onEdit: () => widget.onTapCapability(cap),
-                  onTogglePause: (val) {
-                    context.read<CapabilitiesCubit>().setCapabilityPaused(
-                          providerCapabilityId: cap.id,
-                          paused: val,
-                        );
-                  },
-                  onRemove: widget.onRemoveCapability != null
-                      ? () => widget.onRemoveCapability!(cap)
-                      : null,
+              itemCount: filteredGroups.length,
+              itemBuilder: (context, index) {
+                final entry = filteredGroups[index];
+                final items = entry.value;
+                final first = items.first;
+                final providerType = ProviderCategoryType.fromValue(
+                      first.identityType,
+                    ) ??
+                    widget.categoryTypes[first.categorySlug];
+                final opportunitiesByCapability = <String, int>{};
+                for (final opportunity in widget.opportunities) {
+                  opportunitiesByCapability.update(
+                    opportunity.capabilitySlug,
+                    (count) => count + opportunity.opportunityCount,
+                    ifAbsent: () => opportunity.opportunityCount,
+                  );
+                }
+                return _ProviderCategoryCard(
+                  capabilities: items,
+                  providerType: providerType,
+                  opportunitiesByCapability: opportunitiesByCapability,
+                  l10n: widget.l10n,
+                  onEdit: () => widget.onEditCategory(first.categorySlug),
+                  onAddProof: widget.onAddProof,
+                  onTogglePause: (capability, paused) =>
+                      context.read<CapabilitiesCubit>().setCapabilityPaused(
+                            providerCapabilityId: capability.id,
+                            paused: paused,
+                          ),
+                  onRemove: widget.onRemoveCapability,
                 );
               },
             ),
           ),
-
-        // Bottom padding for FAB
         const SliverToBoxAdapter(child: SizedBox(height: 96)),
+      ],
+    );
+  }
+}
+
+class _ProviderCategoryCard extends StatelessWidget {
+  const _ProviderCategoryCard({
+    required this.capabilities,
+    required this.providerType,
+    required this.opportunitiesByCapability,
+    required this.l10n,
+    required this.onEdit,
+    required this.onAddProof,
+    required this.onTogglePause,
+    required this.onRemove,
+  });
+
+  final List<ProviderCapability> capabilities;
+  final ProviderCategoryType? providerType;
+  final Map<String, int> opportunitiesByCapability;
+  final AppLocalizations l10n;
+  final VoidCallback onEdit;
+  final ValueChanged<ProviderCapability> onAddProof;
+  final void Function(ProviderCapability capability, bool paused) onTogglePause;
+  final ValueChanged<ProviderCapability>? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final border = theme.brightness == Brightness.dark
+        ? AppColors.borderDark
+        : AppColors.borderLight;
+    final first = capabilities.first;
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final categorySlug = first.categorySlug ?? '';
+    final categoryName = NeedCategory(
+      slug: categorySlug,
+      name: first.categoryName ?? categorySlug,
+      icon: first.categoryIcon ?? '💼',
+    ).localizedName(localeCode);
+    final categoryKind = providerType == ProviderCategoryType.company
+        ? l10n.providerTypeCompany
+        : providerType == ProviderCategoryType.individual
+            ? l10n.providerTypeIndividual
+            : null;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 10, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(first.categoryIcon ?? '💼',
+                    style: const TextStyle(fontSize: 22)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    [categoryName, if (categoryKind != null) categoryKind]
+                        .where((item) => item.isNotEmpty)
+                        .join(' · '),
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                TextButton(onPressed: onEdit, child: Text(l10n.edit)),
+              ],
+            ),
+            const Divider(height: 12),
+            for (var index = 0; index < capabilities.length; index++) ...[
+              if (index > 0) const Divider(height: 16),
+              _CategoryCapabilityRow(
+                capability: capabilities[index],
+                localeCode: localeCode,
+                l10n: l10n,
+                opportunityCount: opportunitiesByCapability[
+                        capabilities[index].capabilitySlug] ??
+                    0,
+                onAddProof: () => onAddProof(capabilities[index]),
+                onTogglePause: (paused) =>
+                    onTogglePause(capabilities[index], paused),
+                onRemove: onRemove == null
+                    ? null
+                    : () => onRemove!(capabilities[index]),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryCapabilityRow extends StatelessWidget {
+  const _CategoryCapabilityRow({
+    required this.capability,
+    required this.localeCode,
+    required this.l10n,
+    required this.opportunityCount,
+    required this.onAddProof,
+    required this.onTogglePause,
+    required this.onRemove,
+  });
+
+  final ProviderCapability capability;
+  final String? localeCode;
+  final AppLocalizations l10n;
+  final int opportunityCount;
+  final VoidCallback onAddProof;
+  final ValueChanged<bool> onTogglePause;
+  final VoidCallback? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final isJob = capability.isWork;
+    final capabilityName = NeedCapability(
+      slug: capability.capabilitySlug,
+      categorySlug: capability.categorySlug ?? '',
+      name: capability.capabilityName ?? capability.capabilitySlug,
+    ).localizedName(localeCode);
+    final noProofIndividualLoan =
+        capability.categorySlug == 'financial_services' &&
+            capability.identityType == 'individual';
+    final hasRoleProofToAdd = !isJob ||
+        capability.roleQualificationClaims.any(
+          (claim) {
+            if (claim['is_evidence'] != true) return false;
+            final hasEvidence = claim['has_evidence'] == true;
+            final status = claim['status']?.toString();
+            return !(hasEvidence &&
+                (status == 'pending_review' ||
+                    status == 'verified' ||
+                    (status == 'expired' && claim['verified_at'] != null)));
+          },
+        );
+    final canAddProof = hasRoleProofToAdd &&
+        !noProofIndividualLoan &&
+        capability.status != ProviderCapabilityStatus.providerVerified;
+    final statusNote = switch (capability.status) {
+      ProviderCapabilityStatus.pendingReview =>
+        l10n.providerCapabilityPendingReview,
+      ProviderCapabilityStatus.rejected =>
+        capability.latestRejectReason ?? l10n.providerCapabilityRejected,
+      ProviderCapabilityStatus.expired => l10n.expired,
+      _
+          when capability.verificationPolicy ==
+                  ProviderVerificationPolicy.requiredProof &&
+              capability.status != ProviderCapabilityStatus.providerVerified =>
+        l10n.providerPolicyProofRequired,
+      _
+          when capability.verificationPolicy ==
+              ProviderVerificationPolicy.optionalProof =>
+        l10n.providerPolicyProofLater,
+      _ => '',
+    };
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: isJob
+                ? AppColors.proPurple.withValues(alpha: 0.14)
+                : AppColors.accent.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            isJob ? 'Job' : 'Service',
+            style: TextStyle(
+              fontSize: 10,
+              color: isJob ? AppColors.proPurple : AppColors.accent,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(capabilityName,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 5),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  ProviderVerificationChip(
+                    level: capability.verificationLevel,
+                    status: capability.status,
+                  ),
+                  if (opportunityCount > 0)
+                    Text('$opportunityCount open needs match this profile'),
+                ],
+              ),
+              if (statusNote.isNotEmpty || canAddProof) ...[
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    if (statusNote.isNotEmpty)
+                      Expanded(
+                        child: Text(
+                          statusNote,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                        ),
+                      ),
+                    if (canAddProof)
+                      TextButton(
+                        onPressed: onAddProof,
+                        style: TextButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                        ),
+                        child: Text(l10n.companyEvidenceAdd),
+                      ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+        PopupMenuButton<String>(
+          tooltip: l10n.edit,
+          onSelected: (value) {
+            if (value == 'pause') onTogglePause(!capability.isPaused);
+            if (value == 'remove') onRemove?.call();
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 'pause',
+              child: Text(capability.isPaused ? 'Resume' : 'Pause'),
+            ),
+            if (onRemove != null)
+              PopupMenuItem(value: 'remove', child: Text(l10n.removeService)),
+          ],
+        ),
       ],
     );
   }

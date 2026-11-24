@@ -44,13 +44,17 @@ const _marketingCapabilitySlugs = {
 };
 
 const _financialCategorySlug = 'financial_services';
+const _financeProviderCategorySlugs = <String>{
+  'financial_services',
+  'investment_services',
+  'investment_opportunities',
+  'forex_money_services',
+  'savings_cooperatives',
+};
 const _financialMetadataSlugs = {
   'bank_loan_agent',
   'money_lender_private_lender',
-  'financial_advisory',
-  'forex_currency_exchange',
   'loan_services',
-  'sacco_microfinance',
   'other_financial_services',
 };
 const _financialOrderedSlugs = [
@@ -82,23 +86,6 @@ const _financialOrderedSlugs = [
   'education_loan_services',
   'travel_financing',
   'wedding_financing',
-  'forex_currency_exchange',
-  'forex_trading_training',
-  'forex_trading_brokerage',
-  'money_transfer',
-  'investment_stocks_shares',
-  'investment_bonds_treasury_bills',
-  'investment_precious_metals',
-  'investment_brokerage',
-  'investment_advisory',
-  'sacco_services',
-  'vsla_groups',
-  'cooperative_societies',
-  'group_savings_chamas',
-  'angel_investor_network',
-  'startup_advisory',
-  'investor_introductions',
-  'incubator_accelerator',
 ];
 
 const _financialLoanGroupSlugs = <String, String>{
@@ -130,6 +117,10 @@ const _financialLoanGroupSlugs = <String, String>{
   'education_loan_services': 'education_financing',
   'travel_financing': 'lifestyle_financing',
   'wedding_financing': 'lifestyle_financing',
+  'loan_services': 'personal_financing',
+  'bank_loan_agent': 'personal_financing',
+  'money_lender_private_lender': 'personal_financing',
+  'other_financial_services': 'personal_financing',
 };
 
 const _financeUiGroupNames = <String, String>{
@@ -190,6 +181,10 @@ List<(String?, String?, List<NeedCapability>)> _loanMainGroups(
 }
 
 const _directIdentityGateCategorySlugs = <String>{
+  'investment_services',
+  'investment_opportunities',
+  'forex_money_services',
+  'savings_cooperatives',
   'construction_building',
   'machinery_equipment',
   'technology_digital',
@@ -239,7 +234,6 @@ const _providerCategoryLabels = <String, String>{
   'domestic_household': 'Domestic & Household',
   'health_medical': 'Health & Medical',
   'business_investment': 'Business & Investment',
-  'financial_services': 'Finance & Investments',
   'property_real_estate': 'Property & Real Estate',
   'traditional_cultural': 'Traditional & Cultural Services',
 };
@@ -267,8 +261,12 @@ const _providerCategoryOrder = <String, int>{
   'health_medical': 15,
   'traditional_cultural': 16,
   'business_investment': 17,
-  'financial_services': 17,
-  'property_real_estate': 18,
+  'financial_services': 18,
+  'investment_services': 19,
+  'investment_opportunities': 20,
+  'forex_money_services': 21,
+  'savings_cooperatives': 22,
+  'property_real_estate': 23,
 };
 
 String _providerCategoryName(NeedCategory category, String? localeCode) =>
@@ -278,7 +276,10 @@ String _providerCategoryName(NeedCategory category, String? localeCode) =>
 String? _providerSafetyNotice(AppLocalizations l10n, String? slug) =>
     switch (slug) {
       'health_medical' => l10n.providerSafetyMedical,
-      'business_investment' => l10n.providerSafetyInvestment,
+      'business_investment' ||
+      'investment_services' ||
+      'investment_opportunities' =>
+        l10n.providerSafetyInvestment,
       'traditional_cultural' => l10n.providerSafetyTraditional,
       'beauty_fashion_styling' => l10n.providerSafetyWellness,
       'education_training' => l10n.providerSafetyAcademic,
@@ -643,7 +644,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   ProviderCapabilitySelection _selection({bool? capabilitiesSaved}) {
     final slugs = <String>[];
     if (_providerType != ProviderCategoryType.individual ||
-        _selectedCategory?.slug == _financialCategorySlug) {
+        _financeProviderCategorySlugs.contains(_selectedCategory?.slug)) {
       slugs.addAll(_selected);
     }
     final metadataBySlug = <String, Map<String, dynamic>>{};
@@ -765,6 +766,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
 
   void _previewFinancialServices() {
     setState(() => _showFinancialServicesPreview = true);
+  }
+
+  void _saveIndividualFinanceServices() {
+    Navigator.of(context).pop(_selection());
   }
 
   Map<String, List<String>> _selectedFinancialServicesByGroup(
@@ -2192,32 +2197,32 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                                       categorySlug:
                                                                           _selectedCategory
                                                                               ?.slug,
-                                                                      capabilities:
-                                                                          _categoryCapabilities
-                                                                              .where((capability) {
-                                                                        final groupSlug =
-                                                                            _selectedServiceGroupSlug;
-                                                                        if (groupSlug ==
-                                                                            null) {
-                                                                          return true;
-                                                                        }
-                                                                        if (_selectedCategory?.slug ==
-                                                                            _financialCategorySlug) {
-                                                                          if (const {
-                                                                            'loans',
-                                                                            'forex',
-                                                                            'saccos_cooperatives',
-                                                                            'investment_opportunities',
-                                                                          }.contains(
-                                                                              groupSlug)) {
-                                                                            return _financeUiGroupSlug(capability) ==
-                                                                                groupSlug;
-                                                                          }
-                                                                        }
-                                                                        return (capability.serviceGroupSlug ??
-                                                                                'services') ==
-                                                                            groupSlug;
-                                                                      }).toList(),
+                                                                      financeProviderCategory:
+                                                                          _financeProviderCategorySlugs
+                                                                              .contains(
+                                                                        _selectedCategory
+                                                                            ?.slug,
+                                                                      ),
+                                                                      capabilities: _selectedCategory?.slug == 'forex_money_services' &&
+                                                                              _providerType == ProviderCategoryType.individual
+                                                                          ? const []
+                                                                          : _categoryCapabilities.where((capability) {
+                                                                              final groupSlug = _selectedServiceGroupSlug;
+                                                                              if (groupSlug == null) {
+                                                                                return true;
+                                                                              }
+                                                                              if (_selectedCategory?.slug == _financialCategorySlug) {
+                                                                                if (const {
+                                                                                  'loans',
+                                                                                  'forex',
+                                                                                  'saccos_cooperatives',
+                                                                                  'investment_opportunities',
+                                                                                }.contains(groupSlug)) {
+                                                                                  return _financeUiGroupSlug(capability) == groupSlug;
+                                                                                }
+                                                                              }
+                                                                              return (capability.serviceGroupSlug ?? 'services') == groupSlug;
+                                                                            }).toList(),
                                                                       roles:
                                                                           _categoryRoles,
                                                                       existingSlugs:
@@ -2260,9 +2265,13 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                                       onChangeProviderType: () =>
                                                                           setState(() =>
                                                                               _step = 4),
-                                                                      onSaveServices: _providerType == ProviderCategoryType.individual &&
-                                                                              _selectedCategory?.slug == _financialCategorySlug
-                                                                          ? _previewFinancialServices
+                                                                      onSaveServices: _providerType ==
+                                                                              ProviderCategoryType.individual
+                                                                          ? (_selectedCategory?.slug == _financialCategorySlug
+                                                                              ? _previewFinancialServices
+                                                                              : _financeProviderCategorySlugs.contains(_selectedCategory?.slug)
+                                                                                  ? _saveIndividualFinanceServices
+                                                                                  : _openCompanyDetails)
                                                                           : _openCompanyDetails,
                                                                       onNextKind:
                                                                           () {
@@ -3765,9 +3774,7 @@ class _CategoryListState extends State<_CategoryList> {
                       Divider(height: 1, color: border),
                   itemBuilder: (_, i) {
                     final cat = filtered[i];
-                    final description = cat.slug == _financialCategorySlug
-                        ? 'Loans, Forex, SACCOs, investments, and other financial services.'
-                        : cat.localizedDescription(localeCode);
+                    final description = cat.localizedDescription(localeCode);
                     final count = widget.existingCapabilities
                         .where((c) =>
                             c.categorySlug == cat.slug ||
@@ -4118,6 +4125,7 @@ class _SubcategoryList extends StatelessWidget {
 class _CategoryCapabilitiesView extends StatelessWidget {
   const _CategoryCapabilitiesView({
     this.categorySlug,
+    required this.financeProviderCategory,
     required this.capabilities,
     required this.roles,
     required this.existingSlugs,
@@ -4142,6 +4150,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
   });
 
   final String? categorySlug;
+  final bool financeProviderCategory;
   final List<NeedCapability> capabilities;
   final List<ProviderServiceRole> roles;
   final Set<String> existingSlugs;
@@ -4211,12 +4220,15 @@ class _CategoryCapabilitiesView extends StatelessWidget {
     final financialServicePath = categorySlug == _financialCategorySlug;
     final serviceAccent =
         individualType ? AppColors.proPurple : AppColors.accent;
-    final canSaveFinancialChanges = financialServicePath &&
+    final canSaveFinancialChanges = financeProviderCategory &&
         individualType &&
         (selected.isNotEmpty || existingSlugs.isNotEmpty);
-    final showRoles = iWantJobs && individualType && !financialServicePath;
+    final showRoles = iWantJobs &&
+        individualType &&
+        !financialServicePath &&
+        roles.isNotEmpty;
     final hasServices =
-        (companyType || financialServicePath) && selected.isNotEmpty;
+        (companyType || financeProviderCategory) && selected.isNotEmpty;
     final hasRoles = showRoles && selectedRoles.isNotEmpty;
 
     return Stack(
@@ -4414,7 +4426,8 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                 ),
             ],
 
-            if (companyType && !financialServicePath)
+            if ((companyType || financeProviderCategory) &&
+                !financialServicePath)
               for (final (groupSlug, groupName, caps) in orderedGroups) ...[
                 if (groupName != null && groupName.isNotEmpty) ...[
                   Padding(
@@ -4512,7 +4525,7 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                       localeCode: localeCode,
                       isSelected: selected.contains(cap.slug),
                       alreadyOwned: existingSlugs.contains(cap.slug) &&
-                          !(financialServicePath && individualType),
+                          !(financeProviderCategory && individualType),
                       accentColor: serviceAccent,
                       border: border,
                       text2: text2,
@@ -4569,31 +4582,19 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                 style: TextStyle(fontSize: 12, color: text2),
               ),
               const SizedBox(height: 12),
-              if (roles.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Center(
-                    child: Text(
-                      l10n.providerTypeNoRolesConfigured,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13, color: text2),
-                    ),
-                  ),
-                )
-              else
-                for (final role in roles)
-                  _RoleCard(
-                    role: role,
-                    isSelected: selectedRoles.contains(role.slug),
-                    pendingProofCount: pendingProofCounts[role.slug] ?? 0,
-                    approvedProofCount: approvedProofCounts[role.slug] ?? 0,
-                    isRemoving: removingRoleSlugs.contains(role.slug),
-                    border: border,
-                    text2: text2,
-                    onTap: removingRoleSlugs.contains(role.slug)
-                        ? null
-                        : () => onToggleRole(role.slug),
-                  ),
+              for (final role in roles)
+                _RoleCard(
+                  role: role,
+                  isSelected: selectedRoles.contains(role.slug),
+                  pendingProofCount: pendingProofCounts[role.slug] ?? 0,
+                  approvedProofCount: approvedProofCounts[role.slug] ?? 0,
+                  isRemoving: removingRoleSlugs.contains(role.slug),
+                  border: border,
+                  text2: text2,
+                  onTap: removingRoleSlugs.contains(role.slug)
+                      ? null
+                      : () => onToggleRole(role.slug),
+                ),
             ],
           ],
         ),
@@ -4605,14 +4606,20 @@ class _CategoryCapabilitiesView extends StatelessWidget {
           bottom: 8,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Text(
-                individualType && !financialServicePath
+                individualType &&
+                        showRoles &&
+                        (!financeProviderCategory ||
+                            categorySlug == 'forex_money_services')
                     ? l10n.rolesCount(showRoles ? selectedRoles.length : 0)
                     : companyMode
                         ? l10n.servicesCount(selected.length)
                         : l10n.servicesCount(selected.length),
                 style: TextStyle(fontSize: 11, color: text2)),
             const SizedBox(height: 8),
-            if (individualType && !financialServicePath)
+            if (individualType &&
+                showRoles &&
+                (!financeProviderCategory ||
+                    categorySlug == 'forex_money_services'))
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.proPurple,
@@ -4630,6 +4637,27 @@ class _CategoryCapabilitiesView extends StatelessWidget {
                   hasRoles
                       ? l10n.providerTypeNextKind
                       : l10n.selectAtLeastOneRole,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 15),
+                ),
+              )
+            else if (individualType && financeProviderCategory && hasRoles)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.proPurple,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor:
+                      AppColors.proPurple.withValues(alpha: 0.35),
+                  disabledForegroundColor: Colors.white.withValues(alpha: 0.6),
+                  minimumSize: const Size.fromHeight(48),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: onNextKind,
+                child: Text(
+                  l10n.providerTypeNextKind,
                   style: const TextStyle(
                       fontWeight: FontWeight.w700, fontSize: 15),
                 ),

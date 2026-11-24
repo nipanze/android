@@ -29,6 +29,10 @@ const _providerCatalogCategorySlugs = <String>{
   'health_medical',
   'traditional_cultural',
   'financial_services',
+  'investment_services',
+  'investment_opportunities',
+  'forex_money_services',
+  'savings_cooperatives',
   'property_real_estate',
 };
 
@@ -37,6 +41,10 @@ const _providerCategoriesMissingFromNeeds = <String>{
   'health_medical',
   'traditional_cultural',
   'financial_services',
+  'investment_services',
+  'investment_opportunities',
+  'forex_money_services',
+  'savings_cooperatives',
   'property_real_estate',
 };
 
