@@ -1053,7 +1053,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
               : cat.slug == _financialCategorySlug
                   ? (providerType == null ? 4 : 1)
                   : _directIdentityGateCategorySlugs.contains(cat.slug)
-                      ? 4
+                      ? (providerType == null ? 4 : 1)
                       : const {
                           'traditional_cultural',
                           'property_real_estate',
@@ -1088,7 +1088,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   void _selectServiceSubcategory(String groupSlug) {
     setState(() {
       _selectedServiceGroupSlug = groupSlug;
-      _step = _providerTypeRequired ? 4 : 1;
+      _step = _providerTypeRequired && _savedProviderType == null ? 4 : 1;
     });
   }
 
@@ -1096,7 +1096,9 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
     setState(() {
       _selectedFinanceUiGroupSlug = groupSlug;
       _selectedServiceGroupSlug = groupSlug;
-      _step = _providerTypeRequired ? 4 : (groupSlug == 'loans' ? 9 : 1);
+      _step = _providerTypeRequired && _savedProviderType == null
+          ? 4
+          : (groupSlug == 'loans' ? 9 : 1);
     });
   }
 
@@ -3188,6 +3190,9 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
+    final reviewCardColor = colors.surfaceContainerHighest;
+    final reviewBorderColor = colors.outlineVariant;
+    final reviewLabelColor = colors.onSurfaceVariant;
     final fromName = from == ProviderCategoryType.company
         ? l10n.providerTypeCompany
         : l10n.providerTypeIndividual;
@@ -3250,9 +3255,9 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
               const SizedBox(height: 16),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: reviewCardColor,
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: const Color(0xFFDCE4EF)),
+                  border: Border.all(color: reviewBorderColor),
                 ),
                 child: Column(
                   children: [
@@ -3287,9 +3292,9 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
               const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: reviewCardColor,
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: const Color(0xFFDCE4EF)),
+                  border: Border.all(color: reviewBorderColor),
                 ),
                 child: Column(
                   children: [
@@ -3325,9 +3330,9 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                  color: reviewCardColor,
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: const Color(0xFFDCE4EF)),
+                  border: Border.all(color: reviewBorderColor),
                   ),
                   child: Text(
                     'No inactive services for this identity.',
@@ -3452,7 +3457,7 @@ class _IdentityReviewRow extends StatelessWidget {
                 label,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontSize: 12.5,
-                      color: const Color(0xFF5B6470),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w500,
                     ),
               ),
@@ -3464,7 +3469,7 @@ class _IdentityReviewRow extends StatelessWidget {
                 textAlign: TextAlign.right,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontSize: 14,
-                      color: const Color(0xFF1F2A37),
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                       height: 1.25,
                     ),
@@ -3494,7 +3499,7 @@ class _ReviewCheckRow extends StatelessWidget {
               text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 13,
-                    color: const Color(0xFF1F2A37),
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
                   ),
             ),
@@ -3534,7 +3539,7 @@ class _ReviewAttentionRow extends StatelessWidget {
                   title,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontSize: 13,
-                        color: const Color(0xFF1F2A37),
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w700,
                       ),
                 ),
@@ -3543,7 +3548,7 @@ class _ReviewAttentionRow extends StatelessWidget {
                   subtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontSize: 12.5,
-                        color: const Color(0xFF5B6470),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         height: 1.2,
                       ),
                 ),
@@ -5570,7 +5575,8 @@ class _RoleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const activeColor = AppColors.proPurple;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
@@ -5602,9 +5608,13 @@ class _RoleCard extends StatelessWidget {
                 height: 20,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(4),
-                  color: isSelected ? activeColor : Colors.transparent,
+                  color: isSelected
+                      ? activeColor
+                      : (isDark ? theme.colorScheme.surface : Colors.transparent),
                   border: Border.all(
-                    color: isSelected ? activeColor : border,
+                    color: isSelected
+                        ? activeColor
+                        : (isDark ? theme.colorScheme.outline : border),
                     width: 1.5,
                   ),
                 ),
