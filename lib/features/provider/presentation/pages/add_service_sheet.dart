@@ -6345,7 +6345,12 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                   ),
                 ),
               ],
-              for (final qual in role.qualifications)
+              // Experience is captured once in the shared selector below.
+              // Catalogs may still contain legacy per-role experience
+              // qualifications, so omit those from this checklist.
+              for (final qual in role.qualifications.where(
+                (qual) => !qual.slug.contains('years_experience'),
+              ))
                 Builder(builder: (ctx) {
                   final roleQuals = widget.qualificationsByRole
                       .putIfAbsent(role.slug, () => {});

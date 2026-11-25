@@ -112,6 +112,14 @@ class _ProviderServicesView extends StatelessWidget {
                 opps: opps,
                 l10n: l10n,
               ),
+              onEditCapability: (cap) => _showAddSheet(
+                context,
+                preselectedCategorySlug: cap.categorySlug,
+                initialProofRoleSlug: cap.isWork
+                    ? cap.metadata['role_id']?.toString() ??
+                        cap.capabilitySlug.replaceFirst('work_', '')
+                    : null,
+              ),
               onAddProof: (cap) => _openCapabilityProofDestination(
                 context,
                 capability: cap,
@@ -985,6 +993,7 @@ class _ScreenASummaryView extends StatefulWidget {
     required this.l10n,
     required this.onAddService,
     required this.onTapCapability,
+    required this.onEditCapability,
     required this.onAddProof,
     this.onRemoveCapability,
     this.onEditCompanyDetails,
@@ -998,6 +1007,7 @@ class _ScreenASummaryView extends StatefulWidget {
   final AppLocalizations l10n;
   final VoidCallback onAddService;
   final ValueChanged<ProviderCapability> onTapCapability;
+  final ValueChanged<ProviderCapability> onEditCapability;
   final ValueChanged<ProviderCapability> onAddProof;
   final ValueChanged<ProviderCapability>? onRemoveCapability;
   final ValueChanged<ProviderCapability>? onEditCompanyDetails;
@@ -1043,6 +1053,22 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
     }).toList();
     final servicesCount = caps.where((c) => !c.isWork).length;
     final jobsCount = caps.where((c) => c.isWork).length;
+    final displayItems = <List<ProviderCapability>>[];
+    final workGroups = <String, List<ProviderCapability>>{};
+    for (final capability in _filtered) {
+      final type = ProviderCategoryType.fromValue(capability.identityType) ??
+          widget.categoryTypes[capability.categorySlug];
+      if (type != null) {
+        workGroups
+            .putIfAbsent(
+                '${capability.categorySlug}|${capability.identityType ?? type.name}',
+                () => <ProviderCapability>[])
+            .add(capability);
+      } else {
+        displayItems.add([capability]);
+      }
+    }
+    displayItems.addAll(workGroups.values);
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
@@ -1092,7 +1118,7 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
           ),
 
         // ── Capability cards ──
-        if (_filtered.isEmpty)
+        if (displayItems.isEmpty)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
@@ -1103,12 +1129,40 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             sliver: SliverList.builder(
-              itemCount: _filtered.length,
+              itemCount: displayItems.length,
               itemBuilder: (context, i) {
-                final cap = _filtered[i];
-                final oppCount = widget.opportunities
-                    .where((o) => o.capabilitySlug == cap.capabilitySlug)
-                    .fold<int>(0, (sum, o) => sum + o.opportunityCount);
+                final group = displayItems[i];
+                final cap = group.first;
+                final oppCount = group.fold<int>(
+                    0,
+                    (sum, item) =>
+                        sum +
+                        widget.opportunities
+                            .where(
+                                (o) => o.capabilitySlug == item.capabilitySlug)
+                            .fold<int>(
+                                0,
+                                (subtotal, o) =>
+                                    subtotal + o.opportunityCount));
+                final providerType =
+                    ProviderCategoryType.fromValue(cap.identityType) ??
+                        widget.categoryTypes[cap.categorySlug];
+                if (providerType != null) {
+                  return GroupedWorkCapabilityCard(
+                    capabilities: group,
+                    providerType: providerType,
+                    showFinancialParents:
+                        cap.categorySlug == 'financial_services',
+                    opportunityCount: oppCount,
+                    onTap: (item) => widget.onTapCapability(item),
+                    onEdit: (item) => widget.onEditCapability(item),
+                    onTogglePause: (item, value) => context
+                        .read<CapabilitiesCubit>()
+                        .setCapabilityPaused(
+                            providerCapabilityId: item.id, paused: value),
+                    onRemove: (item) => widget.onRemoveCapability?.call(item),
+                  );
+                }
                 return CapabilityBadge(
                   capability: cap,
                   hiddenForCompanyOnly: !cap.isWork &&
@@ -1129,7 +1183,7 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
                   opportunityCount: oppCount,
                   onTap: () => widget.onTapCapability(cap),
                   onAddProof: () => widget.onAddProof(cap),
-                  onEdit: () => widget.onTapCapability(cap),
+                  onEdit: () => widget.onEditCapability(cap),
                   onTogglePause: (val) {
                     context.read<CapabilitiesCubit>().setCapabilityPaused(
                           providerCapabilityId: cap.id,

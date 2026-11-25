@@ -148,15 +148,15 @@ class CapabilityBadge extends StatelessWidget {
               children: [
                 // Icon
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: (isJob ? AppColors.proPurple : AppColors.accent)
                         .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.center,
-                  child: Text(icon, style: const TextStyle(fontSize: 22)),
+                  child: Text(icon, style: const TextStyle(fontSize: 24)),
                 ),
                 const SizedBox(width: 12),
                 // Info
@@ -325,6 +325,11 @@ class CapabilityBadge extends StatelessWidget {
                   PopupMenuButton<String>(
                     icon: Icon(Icons.more_vert_rounded, color: text2, size: 20),
                     padding: EdgeInsets.zero,
+                    menuPadding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 132,
+                      maxWidth: 156,
+                    ),
                     onSelected: (val) {
                       if (val == 'edit' && onEdit != null) onEdit!();
                       if (val == 'company_details' &&
@@ -340,6 +345,8 @@ class CapabilityBadge extends StatelessWidget {
                       if (onEdit != null)
                         const PopupMenuItem(
                           value: 'edit',
+                          height: 40,
+                          padding: EdgeInsets.symmetric(horizontal: 12),
                           child: Row(
                             children: [
                               Icon(Icons.edit_outlined, size: 18),
@@ -351,6 +358,8 @@ class CapabilityBadge extends StatelessWidget {
                       if (onEditCompanyDetails != null)
                         PopupMenuItem(
                           value: 'company_details',
+                          height: 40,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Row(
                             children: [
                               const Icon(Icons.business_outlined, size: 18),
@@ -363,6 +372,8 @@ class CapabilityBadge extends StatelessWidget {
                           (!hasApprovedRoleProof || capability.isPaused))
                         PopupMenuItem(
                           value: 'pause',
+                          height: 40,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Row(
                             children: [
                               Icon(
@@ -381,6 +392,8 @@ class CapabilityBadge extends StatelessWidget {
                       if (onRemove != null)
                         PopupMenuItem(
                           value: 'remove',
+                          height: 40,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Row(
                             children: [
                               const Icon(Icons.delete_outline,
@@ -407,6 +420,215 @@ class CapabilityBadge extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Displays individual work roles from one category in a single card.
+class GroupedWorkCapabilityCard extends StatelessWidget {
+  const GroupedWorkCapabilityCard({
+    super.key,
+    required this.capabilities,
+    required this.providerType,
+    this.showFinancialParents = false,
+    required this.opportunityCount,
+    required this.onTap,
+    required this.onEdit,
+    required this.onTogglePause,
+    required this.onRemove,
+  });
+
+  final List<ProviderCapability> capabilities;
+  final ProviderCategoryType providerType;
+  final bool showFinancialParents;
+  final int opportunityCount;
+  final ValueChanged<ProviderCapability> onTap;
+  final ValueChanged<ProviderCapability> onEdit;
+  final void Function(ProviderCapability, bool) onTogglePause;
+  final ValueChanged<ProviderCapability> onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final first = capabilities.first;
+    final isWork = first.isWork;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final text2 = isDark ? AppColors.text2Dark : AppColors.text2Light;
+    final category = first.categoryName ?? first.categorySlug ?? '';
+    final providerLabel = providerType == ProviderCategoryType.company
+        ? AppLocalizations.of(context)!.providerTypeCompany
+        : AppLocalizations.of(context)!.providerTypeIndividual;
+    final exp = first.metadata['years_experience']?.toString();
+    final availability = first.metadata['availability']?.toString();
+    final financeGroups = <String, List<ProviderCapability>>{};
+    if (showFinancialParents) {
+      for (final capability in capabilities) {
+        financeGroups
+            .putIfAbsent(
+                _financeParent(capability.capabilitySlug) ?? 'Other Financing',
+                () => <ProviderCapability>[])
+            .add(capability);
+      }
+    }
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.bg2Dark : AppColors.bg2Light,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight),
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Container(
+            width: 48,
+            height: 48,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                color: (isWork ? AppColors.proPurple : AppColors.accent)
+                    .withValues(alpha: .1),
+                borderRadius: BorderRadius.circular(12)),
+            child: Text(first.categoryIcon ?? '💼',
+                style: const TextStyle(fontSize: 24))),
+        const SizedBox(width: 12),
+        Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                    color: (isWork ? AppColors.proPurple : AppColors.accent)
+                        .withValues(alpha: .15),
+                    borderRadius: BorderRadius.circular(4)),
+                child: Text(isWork ? 'Job' : 'Service',
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: isWork ? AppColors.proPurple : AppColors.accent,
+                        fontWeight: FontWeight.w700))),
+            const SizedBox(width: 8),
+            Expanded(
+                child: Text('$category · $providerLabel',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: text2))),
+          ]),
+          if (showFinancialParents)
+            for (final groupName in [
+              'Personal Financing',
+              'Business Financing',
+              'Other Financing',
+            ])
+              if (financeGroups.containsKey(groupName)) ...[
+                const SizedBox(height: 8),
+                Text(groupName,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        )),
+                const SizedBox(height: 3),
+              ],
+          if (!showFinancialParents)
+            for (final item in capabilities) ...[
+              const SizedBox(height: 8),
+              InkWell(
+                  onTap: () => onTap(item),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(item.capabilityName ?? item.capabilitySlug,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontWeight: FontWeight.w700)),
+                        if (!isWork) ...[
+                          const SizedBox(height: 3),
+                          ProviderVerificationChip(
+                              level: item.verificationLevel,
+                              status: item.status),
+                        ],
+                        if (item.kindIds.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Wrap(
+                              spacing: 4,
+                              runSpacing: 2,
+                              children: item.kindIds
+                                  .map((kind) =>
+                                      _MiniPill(label: _formatSlug(kind)))
+                                  .toList()),
+                        ],
+                      ])),
+            ],
+          const SizedBox(height: 10),
+          Wrap(spacing: 8, runSpacing: 4, children: [
+            if (isWork && !showFinancialParents)
+              ProviderVerificationChip(
+                  level: first.verificationLevel, status: first.status),
+            if (!isWork && showFinancialParents)
+              ProviderVerificationChip(
+                  level: first.verificationLevel, status: first.status),
+            if (opportunityCount > 0)
+              _OpportunityPill(
+                  count: opportunityCount, l10n: AppLocalizations.of(context)!),
+          ]),
+          const SizedBox(height: 8),
+          if (isWork && !showFinancialParents)
+            Text(
+                '${capabilities.fold<int>(0, (count, item) => count + item.qualificationIds.length)} qualifications declared',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: text2, fontStyle: FontStyle.italic)),
+          if (exp != null || availability != null) ...[
+            const SizedBox(height: 8),
+            Text(
+                [
+                  if (exp != null) '$exp experience',
+                  if (availability != null) availability
+                ].join(' · '),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: text2,
+                    )),
+          ],
+        ])),
+        PopupMenuButton<String>(
+            menuPadding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 132, maxWidth: 156),
+            onSelected: (action) {
+              if (action == 'edit') onEdit(first);
+              if (action == 'remove') onRemove(first);
+              if (action == 'pause') onTogglePause(first, !first.isPaused);
+            },
+            itemBuilder: (_) => const [
+                  PopupMenuItem(
+                      value: 'edit',
+                      height: 40,
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(children: [
+                        Icon(Icons.edit_outlined, size: 18),
+                        SizedBox(width: 8),
+                        Text('Edit'),
+                      ])),
+                  PopupMenuItem(
+                      value: 'pause',
+                      height: 40,
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(children: [
+                        Icon(Icons.pause_circle_outline, size: 18),
+                        SizedBox(width: 8),
+                        Text('Pause'),
+                      ])),
+                  PopupMenuItem(
+                      value: 'remove',
+                      height: 40,
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(children: [
+                        Icon(Icons.delete_outline,
+                            size: 18, color: Colors.redAccent),
+                        SizedBox(width: 8),
+                        Text('Remove',
+                            style: TextStyle(color: Colors.redAccent)),
+                      ])),
+                ]),
+      ]),
     );
   }
 }
@@ -539,15 +761,24 @@ class _MiniPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.proPurple.withValues(alpha: isDark ? 0.14 : 0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: AppColors.proPurple.withValues(alpha: isDark ? 0.42 : 0.28),
+          width: 0.8,
+        ),
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.labelSmall,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              fontSize: 11,
+              color: isDark ? const Color(0xFFB99AFF) : AppColors.proPurple,
+              fontWeight: FontWeight.w600,
+            ),
       ),
     );
   }
@@ -647,6 +878,20 @@ String _formatSlug(String slug) => slug
     .where((part) => part.isNotEmpty)
     .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
     .join(' ');
+
+String? _financeParent(String slug) => switch (slug) {
+      'personal_loan_services' ||
+      'emergency_loan_services' ||
+      'salary_loan_services' ||
+      'medical_financing' =>
+        'Personal Financing',
+      'business_startup_financing' ||
+      'working_capital_financing' ||
+      'business_expansion_financing' ||
+      'sme_financing' =>
+        'Business Financing',
+      _ => null,
+    };
 
 String _capabilityDisplayName(
   String slug,
