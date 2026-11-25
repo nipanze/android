@@ -3237,6 +3237,15 @@ class AppLocalizationsFr extends AppLocalizations {
       'Les projets et centres d’intérêt privés enregistrés à partir des questions de découverte apparaîtront ici.';
 
   @override
+  String get savedInterestsHeading => 'Centres d’intérêt enregistrés';
+
+  @override
+  String get savedPlansHeading => 'Projets enregistrés';
+
+  @override
+  String get savedInterestRemove => 'Supprimer cet intérêt';
+
+  @override
   String get savedPlanActions => 'Actions du projet';
 
   @override

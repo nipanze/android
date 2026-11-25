@@ -3203,6 +3203,15 @@ class AppLocalizationsSw extends AppLocalizations {
       'Mipango na mambo yanayokuvutia yaliyohifadhiwa kwa faragha kutoka kwenye maswali ya ugunduzi yataonekana hapa.';
 
   @override
+  String get savedInterestsHeading => 'Mambo yanayokuvutia yaliyohifadhiwa';
+
+  @override
+  String get savedPlansHeading => 'Mipango iliyohifadhiwa';
+
+  @override
+  String get savedInterestRemove => 'Ondoa kinachokuvutia';
+
+  @override
   String get savedPlanActions => 'Vitendo vya mpango';
 
   @override

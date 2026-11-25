@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../needs/domain/models/need_category.dart';
 import '../../data/discovery_repository.dart';
 import '../../domain/models/user_discovery_plan.dart';
 import '../cubit/discovery_cubit.dart';
@@ -22,8 +24,51 @@ class SavedPlansPage extends StatelessWidget {
   }
 }
 
-class _SavedPlansView extends StatelessWidget {
+class _SavedPlansView extends StatefulWidget {
   const _SavedPlansView();
+
+  @override
+  State<_SavedPlansView> createState() => _SavedPlansViewState();
+}
+
+class _SavedPlansViewState extends State<_SavedPlansView> {
+  Set<String> _interests = const {};
+  bool _interestsLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInterests();
+  }
+
+  Future<void> _loadInterests() async {
+    try {
+      final interests =
+          await getIt<DiscoveryRepository>().getSavedInterestCategories();
+      if (mounted) setState(() => _interests = interests);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingErrorMessage(error))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _interestsLoading = false);
+    }
+  }
+
+  Future<void> _removeInterest(String slug) async {
+    try {
+      await getIt<DiscoveryRepository>().removeInterestCategories({slug});
+      if (mounted) setState(() => _interests = {..._interests}..remove(slug));
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(userFacingErrorMessage(error))),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +85,9 @@ class _SavedPlansView extends StatelessWidget {
             }
           },
           builder: (context, state) {
-            if (state is DiscoveryLoading || state is DiscoveryInitial) {
+            if (state is DiscoveryLoading ||
+                state is DiscoveryInitial ||
+                _interestsLoading) {
               return const Center(child: CircularProgressIndicator());
             }
             if (state is DiscoveryError) {
@@ -51,7 +98,7 @@ class _SavedPlansView extends StatelessWidget {
             }
             final plans =
                 state is DiscoveryPlansLoaded ? state.plans : const [];
-            if (plans.isEmpty) {
+            if (plans.isEmpty && _interests.isEmpty) {
               return EmptyState(
                 icon: Icons.event_note_outlined,
                 title: l10n.savedPlansEmptyTitle,
@@ -60,17 +107,59 @@ class _SavedPlansView extends StatelessWidget {
             }
 
             return RefreshIndicator(
-              onRefresh: () => context.read<DiscoveryCubit>().loadPlans(),
-              child: ListView.separated(
+              onRefresh: () async {
+                await Future.wait([
+                  context.read<DiscoveryCubit>().loadPlans(),
+                  _loadInterests(),
+                ]);
+              },
+              child: ListView(
                 padding: const EdgeInsets.all(16),
-                itemCount: plans.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, index) => _PlanTile(plan: plans[index]),
+                children: [
+                  if (_interests.isNotEmpty) ...[
+                    Text(l10n.savedInterestsHeading,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: (_interests.toList()..sort())
+                          .map((slug) => _interestChip(context, slug))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  if (plans.isNotEmpty) ...[
+                    Text(l10n.savedPlansHeading,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 10),
+                    ...plans.map((plan) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _PlanTile(plan: plan),
+                        )),
+                  ],
+                ],
               ),
             );
           },
         ),
       ),
+    );
+  }
+
+  Widget _interestChip(BuildContext context, String slug) {
+    final category = NeedCategory.findBySlug(slug);
+    final locale = AppLocalizations.of(context)!.localeName;
+    return InputChip(
+      avatar: Text(category.icon),
+      label: Text(category.localizedName(locale)),
+      onDeleted: () => _removeInterest(slug),
     );
   }
 }

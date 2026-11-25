@@ -3177,6 +3177,15 @@ class AppLocalizationsAr extends AppLocalizations {
       'ستظهر هنا الخطط والاهتمامات الخاصة التي تحفظها من أسئلة الاستكشاف.';
 
   @override
+  String get savedInterestsHeading => 'الاهتمامات المحفوظة';
+
+  @override
+  String get savedPlansHeading => 'الخطط المحفوظة';
+
+  @override
+  String get savedInterestRemove => 'إزالة الاهتمام';
+
+  @override
   String get savedPlanActions => 'إجراءات الخطة';
 
   @override

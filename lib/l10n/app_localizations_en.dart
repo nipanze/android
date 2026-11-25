@@ -3191,6 +3191,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Private plans and interests you save from discovery questions will appear here.';
 
   @override
+  String get savedInterestsHeading => 'Saved interests';
+
+  @override
+  String get savedPlansHeading => 'Saved plans';
+
+  @override
+  String get savedInterestRemove => 'Remove interest';
+
+  @override
   String get savedPlanActions => 'Plan actions';
 
   @override

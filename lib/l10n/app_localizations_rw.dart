@@ -3207,6 +3207,15 @@ class AppLocalizationsRw extends AppLocalizations {
       'Imigambi n\'ibyo ukunda bibitswe mu ibanga bivuye mu bibazo byo gushakisha bizagaragara hano.';
 
   @override
+  String get savedInterestsHeading => 'Ibyo ukunda wabitse';
+
+  @override
+  String get savedPlansHeading => 'Imigambi wabitse';
+
+  @override
+  String get savedInterestRemove => 'Kuraho ibyo ukunda';
+
+  @override
   String get savedPlanActions => 'Ibikorwa by\'umugambi';
 
   @override

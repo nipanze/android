@@ -1051,8 +1051,25 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
       return !capability.isWork ||
           capability.metadata['is_role_active'] != false;
     }).toList();
-    final servicesCount = caps.where((c) => !c.isWork).length;
-    final jobsCount = caps.where((c) => c.isWork).length;
+    int cardCount(Iterable<ProviderCapability> capabilities) {
+      final keys = <String>{};
+      var ungrouped = 0;
+      for (final capability in capabilities) {
+        final type = ProviderCategoryType.fromValue(capability.identityType) ??
+            widget.categoryTypes[capability.categorySlug];
+        if (type == null) {
+          ungrouped++;
+        } else {
+          keys.add(
+              '${capability.categorySlug}|${capability.identityType ?? type.name}');
+        }
+      }
+      return keys.length + ungrouped;
+    }
+
+    final servicesCount = cardCount(caps.where((c) => !c.isWork));
+    final jobsCount = cardCount(caps.where((c) => c.isWork));
+    final allCount = servicesCount + jobsCount;
     final displayItems = <List<ProviderCapability>>[];
     final workGroups = <String, List<ProviderCapability>>{};
     for (final capability in _filtered) {
@@ -1081,7 +1098,7 @@ class _ScreenASummaryViewState extends State<_ScreenASummaryView> {
               child: Row(
                 children: [
                   _FilterChip(
-                    label: widget.l10n.providerSummaryAll(caps.length),
+                    label: widget.l10n.providerSummaryAll(allCount),
                     selected: _filter == _CapFilter.all,
                     onTap: () => setState(() => _filter = _CapFilter.all),
                   ),

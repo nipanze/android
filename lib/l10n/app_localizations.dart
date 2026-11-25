@@ -5842,6 +5842,24 @@ abstract class AppLocalizations {
   /// **'Private plans and interests you save from discovery questions will appear here.'**
   String get savedPlansEmptySubtitle;
 
+  /// No description provided for @savedInterestsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved interests'**
+  String get savedInterestsHeading;
+
+  /// No description provided for @savedPlansHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved plans'**
+  String get savedPlansHeading;
+
+  /// No description provided for @savedInterestRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove interest'**
+  String get savedInterestRemove;
+
   /// No description provided for @savedPlanActions.
   ///
   /// In en, this message translates to:

@@ -960,6 +960,15 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
                             capability.metadata['is_role_active'] != false))
                     .toList()
                 : const <ProviderCapability>[];
+            final uniqueServices = <ProviderCapability>[];
+            final seenProviderCategories = <String>{};
+            for (final service in services) {
+              final key =
+                  '${service.categorySlug ?? service.capabilitySlug}|${service.identityType ?? ''}';
+              if (seenProviderCategories.add(key)) {
+                uniqueServices.add(service);
+              }
+            }
             final isLoading = capabilitiesState is CapabilitiesInitial ||
                 capabilitiesState is CapabilitiesLoading;
             final loadFailed = capabilitiesState is CapabilitiesError;
@@ -1066,17 +1075,17 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
                                         ),
                                         const SizedBox(width: 6),
                                         for (var i = 0;
-                                            i < services.length;
+                                            i < uniqueServices.length;
                                             i++) ...[
                                           if (i > 0) const SizedBox(width: 6),
                                           _providerServicePill(
                                             context,
-                                            services[i],
+                                            uniqueServices[i],
                                             selected: selected ==
                                                     _moduleForProviderService(
-                                                        services[i]) &&
+                                                        uniqueServices[i]) &&
                                                 selectedProviderService?.id ==
-                                                    services[i].id,
+                                                    uniqueServices[i].id,
                                           ),
                                         ],
                                       ],
