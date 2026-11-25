@@ -213,7 +213,7 @@ class CapabilityDetailSheet extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            '${l10n.providerTypeOfferingAs} ${isJob ? l10n.companyPersonalProfile : providerType == ProviderCategoryType.company ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
+                            '${l10n.providerTypeOfferingAs} ${isJob ? l10n.providerTypeIndividual : providerType == ProviderCategoryType.company ? l10n.providerTypeCompany : l10n.providerTypeIndividual}',
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
