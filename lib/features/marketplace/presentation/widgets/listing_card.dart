@@ -201,7 +201,9 @@ class ListingCard extends StatelessWidget {
                 moduleIcon: null,
                 moduleEmoji: isNeeds
                     ? NeedCategory.findBySlug(needs.categorySlug).icon
-                    : NeedCategory.findBySlug('financial_services').icon,
+                    : isForex
+                        ? '💱'
+                        : NeedCategory.findBySlug('financial_services').icon,
                 expiryIndicator: ListingExpiryIndicator(
                   listedAt: listing.listedAt,
                   expiresAt:
