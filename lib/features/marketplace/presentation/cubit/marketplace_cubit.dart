@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/services/offline_service.dart';
+import '../../../needs/domain/models/need_category.dart';
 import '../../data/marketplace_repository.dart';
 import '../../domain/models/marketplace_item.dart';
 
@@ -404,7 +405,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   String? forYouReason(MarketplaceItem item) {
     if (item.loan != null) {
       if (_providerCategorySlugs.contains('financial_services')) {
-        return 'You offer Finance';
+        return 'You lend';
       }
       if (_forYouInterestSlugs.contains('financial_services')) {
         return 'Based on interests';
@@ -413,10 +414,14 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     }
     if (item.needs == null) {
       if (_providerCategorySlugs.contains('financial_services')) {
-        return 'You offer Finance';
+        return 'You lend';
       }
       if (_forYouInterestSlugs.contains('forex')) {
         return 'Based on interests';
+      }
+      if (_providerCategorySlugs.contains('forex') ||
+          _providerCategorySlugs.contains('currency_exchange')) {
+        return 'You exchange currency';
       }
       return _forYouInterestSlugs.contains('financial_services')
           ? 'Based on interests'
@@ -424,12 +429,38 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     }
     final slug = item.needs!.categorySlug;
     if (_providerCategorySlugs.contains(slug)) {
-      return 'You offer ${item.needs!.category}';
+      return _providerLabelFor(slug);
     }
     if (_forYouInterestSlugs.contains(slug)) {
       return 'Based on interests';
     }
     return null;
+  }
+
+  String _providerLabelFor(String slug) {
+    return switch (slug) {
+      'financial_services' => 'You lend',
+      'forex' || 'currency_exchange' => 'You exchange currency',
+      'professional_services' => 'You provide business services',
+      'transport_logistics' => 'You provide transport services',
+      'technology_digital' => 'You provide technology services',
+      'agriculture_agribusiness' => 'You provide agricultural services',
+      'construction_building' => 'You provide construction services',
+      'education_training' => 'You provide education services',
+      'health_medical' => 'You provide health services',
+      'property_real_estate' => 'You provide property services',
+      'specialized_products' => 'You sell goods',
+      'events_celebrations' => 'You provide event services',
+      'photo_video_talent' => 'You provide creative services',
+      'beauty_fashion_styling' => 'You provide personal care services',
+      'energy_utilities' => 'You provide energy services',
+      'machinery_equipment' => 'You provide equipment services',
+      'marketing_promotion' => 'You provide marketing services',
+      'travel_international' => 'You provide travel services',
+      'domestic_household' => 'You provide household services',
+      'traditional_cultural' => 'You provide cultural services',
+      _ => 'You provide ${NeedCategory.findBySlug(slug).name.toLowerCase()}',
+    };
   }
 
   bool get isLendingEnabled => _iLend;
