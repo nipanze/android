@@ -90,7 +90,29 @@ class MarketplacePage extends StatelessWidget {
         BlocProvider(create: (_) => getIt<WatchlistCubit>()..load()),
         BlocProvider(create: (_) => getIt<CapabilitiesCubit>()..load()),
       ],
-      child: _MarketplaceView(country: userCountry),
+      child: BlocListener<NotificationCubit, NotificationState>(
+        listenWhen: (previous, current) {
+          if (previous is! NotificationLoaded ||
+              current is! NotificationLoaded ||
+              current.notifications.isEmpty) {
+            return false;
+          }
+          final latest = current.notifications.first;
+          final prevIds = previous.notifications.map((n) => n.id).toSet();
+          final kind = latest.data?['kind']?.toString();
+          return !prevIds.contains(latest.id) &&
+              (kind == 'provider_capability_approved' ||
+                  kind == 'provider_capability_rejected' ||
+                  kind == 'provider_company_document_approved' ||
+                  kind == 'provider_company_document_rejected' ||
+                  kind == 'provider_role_qualification_approved' ||
+                  kind == 'provider_role_qualification_rejected');
+        },
+        listener: (context, _) {
+          unawaited(context.read<CapabilitiesCubit>().load());
+        },
+        child: _MarketplaceView(country: userCountry),
+      ),
     );
   }
 }

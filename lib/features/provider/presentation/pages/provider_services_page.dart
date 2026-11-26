@@ -44,8 +44,131 @@ class ProviderServicesPage extends StatelessWidget {
   }
 }
 
-class _ProviderServicesView extends StatelessWidget {
+class _ProviderServicesView extends StatefulWidget {
   const _ProviderServicesView();
+
+  @override
+  State<_ProviderServicesView> createState() => _ProviderServicesViewState();
+}
+
+class _ProviderServicesViewState extends State<_ProviderServicesView> {
+  StreamSubscription<List<Map<String, dynamic>>>? _capSub;
+  StreamSubscription<List<Map<String, dynamic>>>? _companyDocSub;
+  StreamSubscription<List<Map<String, dynamic>>>? _notifSub;
+  String? _lastNotifId;
+  bool _notifBaselineLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribeRealtime();
+  }
+
+  void _subscribeRealtime() {
+    try {
+      final client = supabase.Supabase.instance.client;
+      final uid = client.auth.currentUser?.id;
+      if (uid == null) return;
+
+      _capSub = client
+          .from(TableNames.providerCapabilities)
+          .stream(primaryKey: ['id'])
+          .eq('user_id', uid)
+          .skip(1)
+          .listen((_) {
+        if (mounted) {
+          unawaited(context.read<CapabilitiesCubit>().loadWithOpportunities());
+        }
+      }, onError: (_) {});
+
+      _companyDocSub = client
+          .from(TableNames.providerCompanyVerificationSubmissions)
+          .stream(primaryKey: ['id'])
+          .eq('user_id', uid)
+          .skip(1)
+          .listen((_) {
+        if (mounted) {
+          setState(() {});
+          unawaited(context.read<CapabilitiesCubit>().loadWithOpportunities());
+        }
+      }, onError: (_) {});
+
+      _notifSub = client
+          .from(TableNames.notifications)
+          .stream(primaryKey: ['id'])
+          .eq('user_id', uid)
+          .order('created_at', ascending: false)
+          .listen((rows) {
+        if (!mounted || rows.isEmpty) return;
+        final latest = rows.first;
+        final id = latest['id']?.toString();
+        final isRead = latest['is_read'] == true;
+        final data = latest['data'] is Map
+            ? (latest['data'] as Map).cast<String, dynamic>()
+            : const <String, dynamic>{};
+        final kind = data['kind']?.toString();
+        const providerKinds = {
+          'provider_capability_approved',
+          'provider_capability_rejected',
+          'provider_company_document_approved',
+          'provider_company_document_rejected',
+          'provider_role_qualification_approved',
+          'provider_role_qualification_rejected',
+        };
+        if (!_notifBaselineLoaded) {
+          _notifBaselineLoaded = true;
+          _lastNotifId = id;
+          return;
+        }
+        if (id != null &&
+            id != _lastNotifId &&
+            !isRead &&
+            providerKinds.contains(kind)) {
+          _lastNotifId = id;
+          unawaited(context.read<CapabilitiesCubit>().loadWithOpportunities());
+          final title = latest['title']?.toString() ?? '';
+          final body = latest['body']?.toString() ?? '';
+          final messenger = ScaffoldMessenger.maybeOf(context);
+          if (messenger != null && title.isNotEmpty) {
+            messenger.hideCurrentSnackBar();
+            messenger.showSnackBar(
+              SnackBar(
+                behavior: SnackBarBehavior.floating,
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    if (body.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        body,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+      }, onError: (_) {});
+    } catch (_) {
+      // Ignore when Supabase is not initialized (e.g. unit/widget tests).
+    }
+  }
+
+  @override
+  void dispose() {
+    _capSub?.cancel();
+    _companyDocSub?.cancel();
+    _notifSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

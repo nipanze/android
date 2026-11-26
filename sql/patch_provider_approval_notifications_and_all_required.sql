@@ -179,17 +179,26 @@ begin
   end if;
 
   select e.*, pc.user_id as provider_user_id, pc.capability_slug,
-         nc.category_slug, nc.name as capability_name
+         pc.identity_type as capability_identity_type,
+         nc.category_slug, nc.name as capability_name,
+         pcp.provider_type as category_provider_type
     into v_evidence
     from public.provider_capability_evidence e
     join public.provider_capabilities pc on pc.id = e.provider_capability_id
     join public.need_capabilities nc on nc.slug = pc.capability_slug
+    left join public.provider_category_profiles pcp
+      on pcp.user_id = pc.user_id and pcp.category_slug = nc.category_slug
     where e.id = p_evidence_id for update of e;
   if not found then
     raise exception 'Provider capability evidence not found.' using errcode = 'P0212';
   end if;
 
-  v_provider_type := coalesce(v_evidence.provider_type, 'both');
+  v_provider_type := coalesce(
+    nullif(v_evidence.provider_type, 'both'),
+    v_evidence.capability_identity_type,
+    v_evidence.category_provider_type,
+    'both'
+  );
   v_cap_name := coalesce(nullif(btrim(v_evidence.capability_name), ''), v_evidence.capability_slug);
 
   update public.provider_capability_evidence set
@@ -556,5 +565,41 @@ revoke all on function public.admin_review_provider_role_qualification(uuid, tex
   from public, anon;
 grant execute on function public.admin_review_provider_role_qualification(uuid, text, text, timestamptz)
   to authenticated;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.provider_capabilities;
+exception
+  when duplicate_object or undefined_object then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.provider_company_verification_submissions;
+exception
+  when duplicate_object or undefined_object then null;
+end $$;
+
+-- Re-evaluate existing required_proof capabilities that already have all
+-- required evidence approved so they activate immediately.
+update public.provider_capabilities pc
+set verification_level = 'provider_verified',
+    verified_at = coalesce(pc.verified_at, now())
+from public.need_capabilities nc
+where nc.slug = pc.capability_slug
+  and nc.verification_policy = 'required_proof'
+  and pc.verification_level <> 'provider_verified'
+  and exists (
+    select 1 from public.provider_capability_evidence e
+    where e.provider_capability_id = pc.id
+      and e.status = 'approved'
+      and (e.expires_at is null or e.expires_at > now())
+  );
+
+update public.provider_capabilities pc
+set is_active = pc.is_active
+from public.need_capabilities nc
+where nc.slug = pc.capability_slug
+  and nc.verification_policy = 'required_proof';
 
 commit;
