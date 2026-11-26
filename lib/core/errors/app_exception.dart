@@ -219,6 +219,59 @@ AppException _parsePostgrestError(String code, String message) {
     );
   }
 
+  // Company category RPC validation codes are emitted by the provider SQL
+  // functions. Keep these failures actionable instead of collapsing them to
+  // the generic database message.
+  if (code == 'P0201') {
+    return const ValidationException(
+      'The selected company services could not be saved. Refresh the category and try again.',
+    );
+  }
+  if (code == 'P0202') {
+    final lower = message.toLowerCase();
+    if (lower.contains('choose company')) {
+      return const ValidationException(
+        'Choose Company / Organization for this category, then try again.',
+      );
+    }
+    return const DatabaseException(
+      'Company services are not enabled for this category or market yet.',
+    );
+  }
+  if (code == 'P0203') {
+    return const ValidationException(
+      'A selected service is no longer available. Refresh the category and try again.',
+    );
+  }
+  if (code == 'P0204') {
+    return const ValidationException(
+      'Check the company name, registration number, team size, years in business, and service area.',
+    );
+  }
+  if (code == 'P0205') {
+    return const ValidationException(
+      'A company document could not be verified. Replace it and try again.',
+    );
+  }
+  if (code == 'P0206') {
+    return const ValidationException(
+      'You have reached the provider service limit. Remove a service and try again.',
+    );
+  }
+  if (code == 'P0217') {
+    return const ValidationException('Company or business name is required.');
+  }
+  if (code == 'P0218') {
+    return const ValidationException(
+      'Company name must be 80 characters or fewer.',
+    );
+  }
+  if (code == 'P0219') {
+    return const ValidationException(
+      'Add your representative name and confirm authorization, then try again.',
+    );
+  }
+
   if (code == '23514' &&
       message.toLowerCase().contains('chk_lr_repayment_plan')) {
     return const ValidationException(

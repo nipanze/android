@@ -461,6 +461,11 @@ class ProviderRepository implements IProviderRepository {
         'category_slug': categorySlug,
       });
     } catch (e) {
+      dev.log(
+        'saveCompanyCategory RPC failed: $e',
+        name: 'ProviderRepository',
+        error: e,
+      );
       throw parseSupabaseError(e);
     }
   }
