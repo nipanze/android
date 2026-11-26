@@ -404,14 +404,57 @@ class ProviderRepository implements IProviderRepository {
     required Map<String, dynamic> presentation,
   }) async {
     try {
-      await _client.rpc(RpcNames.saveCompanyCategory, params: {
+      final params = {
         'p_category_slug': categorySlug,
         'p_services': serviceSlugs,
         'p_roles': roleCapabilitySlugs,
         'p_profile': profile,
         'p_evidence': evidence,
         'p_presentation': presentation,
-      });
+      };
+      try {
+        await _client.rpc(RpcNames.saveCompanyCategory, params: params);
+      } on PostgrestException catch (error) {
+        // Older databases expose the five-argument RPC. It already persists
+        // the company profile and selected services; the newer six-argument
+        // wrapper additionally saves identity presentation atomically.
+        // Fall back only when PostgREST confirms that the newer signature is
+        // absent, so validation and network failures are never retried.
+        if (error.code != 'PGRST202' ||
+            !error.message.toLowerCase().contains('save_company_category')) {
+          rethrow;
+        }
+        // The six-argument wrapper initializes a first-time company identity
+        // before saving. Its older five-argument predecessor does not, so do
+        // that explicit step before invoking the legacy RPC.
+        if (categorySlug == 'financial_services') rethrow;
+        await setCategoryType(categorySlug, ProviderCategoryType.company);
+        await _client.rpc(RpcNames.saveCompanyCategory, params: {
+          'p_category_slug': categorySlug,
+          'p_services': serviceSlugs,
+          'p_roles': roleCapabilitySlugs,
+          'p_profile': profile,
+          'p_evidence': evidence,
+        });
+        // Older deployments may also predate the standalone presentation
+        // RPC. The profile and services are already saved at this point, so
+        // tolerate only that missing-RPC case while preserving other errors.
+        try {
+          await _client.rpc(RpcNames.saveProviderIdentityPresentation,
+              params: {
+            'p_category_slug': categorySlug,
+            'p_identity_type': ProviderCategoryType.company.name,
+            'p_presentation': presentation,
+          });
+        } on PostgrestException catch (presentationError) {
+          if (presentationError.code != 'PGRST202' ||
+              !presentationError.message
+                  .toLowerCase()
+                  .contains('save_provider_identity_presentation')) {
+            rethrow;
+          }
+        }
+      }
       _clearCache();
       _companyProfileCache[categorySlug] = ProviderCompanyProfile.fromMap({
         ...profile,
