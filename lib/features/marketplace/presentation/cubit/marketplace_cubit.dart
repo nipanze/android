@@ -69,6 +69,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   String? _districtFilter;
   MarketplaceModule? _moduleFilter;
   String? _providerCategoryFilter;
+  String? _providerCategoryFilterIdentityType;
   String? _viewerFeedKey;
   String? _countryFilter;
   Set<String> _interestCategorySlugs = {};
@@ -188,6 +189,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   Future<void> setModuleFilter(MarketplaceModule? module) async {
     if (isClosed) return;
     _providerCategoryFilter = null;
+    _providerCategoryFilterIdentityType = null;
     // If institutionMatchOnly is active and user selects a non-loan module,
     // automatically disable institutionMatchOnly so it stops forcing loan mode.
     if (_proFilter.institutionMatchOnly && module != MarketplaceModule.loan) {
@@ -207,10 +209,12 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   Future<void> setProviderCategoryFilter({
     required String categorySlug,
+    required String identityType,
     required MarketplaceModule module,
   }) async {
     if (isClosed) return;
     _providerCategoryFilter = categorySlug;
+    _providerCategoryFilterIdentityType = identityType;
     await load(
       district: _districtFilter,
       module: module,
@@ -414,6 +418,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     final categorySlug = item.needs?.categorySlug ??
         (item.loan != null || item.forex != null ? 'financial_services' : null);
     if (categorySlug == null) return null;
+    if (_providerCategoryFilter == categorySlug) {
+      return _providerCategoryFilterIdentityType;
+    }
     return _providerCategoryIdentityTypes[categorySlug];
   }
 

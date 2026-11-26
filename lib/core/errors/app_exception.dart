@@ -212,6 +212,12 @@ AppException _parsePostgrestError(String code, String message) {
       'Identity switching is not enabled on the server yet. Apply the provider identity switch database patch, then try again.',
     );
   }
+  if (code == 'PGRST202' &&
+      message.toLowerCase().contains('save_company_category')) {
+    return const DatabaseException(
+      'Company profile saving is not enabled on the server yet. Apply the company profile presentation database patch, then try again.',
+    );
+  }
 
   if (code == '23514' &&
       message.toLowerCase().contains('chk_lr_repayment_plan')) {

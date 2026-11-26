@@ -25,6 +25,7 @@ import '../../../needs/domain/models/need_category.dart';
 import '../../../notifications/presentation/cubit/notification_cubit.dart';
 import '../../../provider/domain/repositories/provider_repository_interface.dart';
 import '../../../provider/domain/entities/provider_capability.dart';
+import '../../../provider/domain/entities/provider_category_type.dart';
 import '../../../provider/presentation/cubit/capabilities_cubit.dart';
 import '../../../provider/presentation/cubit/capabilities_state.dart';
 import '../../../watchlist/presentation/cubit/watchlist_cubit.dart';
@@ -466,15 +467,16 @@ class _MarketplaceView extends StatelessWidget {
                                     marketplaceCubit.forYouReason(listing);
                                 final providerIdentityType = marketplaceCubit
                                     .forYouProviderIdentityType(listing);
-                                final categoryBadgeColor = !isForYou
-                                    ? null
-                                    : switch (providerIdentityType) {
-                                        'individual' => AppColors.proPurple,
-                                        'company' => AppColors.accent,
-                                        _ => reason == null
-                                            ? AppColors.accent
-                                            : AppColors.warning,
-                                      };
+                                final categoryBadgeColor =
+                                    switch (providerIdentityType) {
+                                  'individual' => AppColors.proPurple,
+                                  'company' => AppColors.accent,
+                                  _ => isForYou
+                                      ? (reason == null
+                                          ? AppColors.accent
+                                          : AppColors.warning)
+                                      : null,
+                                };
                                 return ListingCard(
                                   listing: listing,
                                   onTap: () => context.push(
@@ -917,9 +919,10 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
   Widget _providerServicePill(
     BuildContext context,
     ProviderCapability service, {
+    required String identityType,
     required bool selected,
   }) {
-    final isIndividual = service.identityType == 'individual';
+    final isIndividual = identityType == 'individual';
     final l10n = AppLocalizations.of(context)!;
     final identityLabel =
         isIndividual ? l10n.providerTypeIndividual : l10n.companyLabel;
@@ -944,6 +947,7 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
         setState(() => _selectedProviderCapabilityId = service.id);
         context.read<MarketplaceCubit>().setProviderCategoryFilter(
               categorySlug: service.categorySlug ?? service.capabilitySlug,
+              identityType: identityType,
               module: _moduleForProviderService(service),
             );
       },
@@ -966,11 +970,26 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
                             capability.metadata['is_role_active'] != false))
                     .toList()
                 : const <ProviderCapability>[];
+            final categoryTypes = capabilitiesState is CapabilitiesLoaded
+                ? capabilitiesState.categoryTypes
+                : const <String, dynamic>{};
+            String identityFor(ProviderCapability capability) {
+              final categoryType = categoryTypes[capability.categorySlug];
+              final resolvedType = switch (categoryType) {
+                ProviderCategoryType.individual => 'individual',
+                ProviderCategoryType.company => 'company',
+                _ => null,
+              };
+              return capability.identityType ??
+                  resolvedType ??
+                  (capability.isWork ? 'individual' : 'company');
+            }
+
             final uniqueServices = <ProviderCapability>[];
             final seenProviderCategories = <String>{};
             for (final service in services) {
               final key =
-                  '${service.categorySlug ?? service.capabilitySlug}|${service.identityType ?? ''}';
+                  '${service.categorySlug ?? service.capabilitySlug}|${identityFor(service)}';
               if (seenProviderCategories.add(key)) {
                 uniqueServices.add(service);
               }
@@ -1079,6 +1098,8 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
                                           _providerServicePill(
                                             context,
                                             uniqueServices[i],
+                                            identityType:
+                                                identityFor(uniqueServices[i]),
                                             selected: selected ==
                                                     _moduleForProviderService(
                                                         uniqueServices[i]) &&
