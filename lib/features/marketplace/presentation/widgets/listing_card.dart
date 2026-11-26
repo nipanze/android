@@ -188,18 +188,20 @@ class ListingCard extends StatelessWidget {
                 accent: accent,
                 moduleBadgeColor: categoryBadgeColor ?? AppColors.accent,
                 moduleLabel: isNeeds
-                    ? '${needs.categoryIcon} ${NeedCategory.findBySlug(needs.categorySlug).localizedName(Localizations.localeOf(context).languageCode)}'
+                    ? NeedCategory.findBySlug(needs.categorySlug)
+                        .localizedName(
+                        Localizations.localeOf(context).languageCode,
+                      )
                     : isForex
-                        ? l10n.marketplaceForex
+                        ? l10n.forexCurrencyExchangeCapability
                         : NeedCategory.findBySlug('financial_services')
                             .localizedName(
                             Localizations.localeOf(context).languageCode,
                           ),
-                moduleIcon: isNeeds
-                    ? null
-                    : isForex
-                        ? Icons.currency_exchange_rounded
-                        : Icons.account_balance_wallet_outlined,
+                moduleIcon: null,
+                moduleEmoji: isNeeds
+                    ? NeedCategory.findBySlug(needs.categorySlug).icon
+                    : NeedCategory.findBySlug('financial_services').icon,
                 expiryIndicator: ListingExpiryIndicator(
                   listedAt: listing.listedAt,
                   expiresAt:
@@ -327,6 +329,7 @@ class _MainListingArea extends StatelessWidget {
     required this.moduleBadgeColor,
     required this.moduleLabel,
     required this.moduleIcon,
+    required this.moduleEmoji,
     required this.expiryIndicator,
     required this.title,
     required this.amountWidget,
@@ -349,6 +352,7 @@ class _MainListingArea extends StatelessWidget {
   final Color moduleBadgeColor;
   final String moduleLabel;
   final IconData? moduleIcon;
+  final String? moduleEmoji;
   final Widget expiryIndicator;
   final String title;
   final Widget amountWidget;
@@ -409,6 +413,7 @@ class _MainListingArea extends StatelessWidget {
                   _ModuleBadge(
                     label: moduleLabel,
                     icon: moduleIcon,
+                    emoji: moduleEmoji,
                     color: moduleBadgeColor,
                   ),
                   expiryIndicator,
@@ -531,11 +536,13 @@ class _ModuleBadge extends StatelessWidget {
   const _ModuleBadge({
     required this.label,
     required this.icon,
+    required this.emoji,
     required this.color,
   });
 
   final String label;
   final IconData? icon;
+  final String? emoji;
   final Color color;
 
   @override
@@ -550,7 +557,10 @@ class _ModuleBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[
+          if (emoji != null) ...[
+            Text(emoji!, style: const TextStyle(fontSize: 12, height: 1)),
+            const SizedBox(width: 4),
+          ] else if (icon != null) ...[
             Icon(icon, size: 12, color: color),
             const SizedBox(width: 4),
           ],
