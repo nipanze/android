@@ -64,6 +64,11 @@ class AppNotification extends Equatable {
     if (data?['kind'] == 'loan_product_enquiry') {
       return '/provider/loan-products';
     }
+    if (data?['kind'] == 'provider_capability_approved' ||
+        data?['kind'] == 'provider_company_document_approved' ||
+        data?['kind'] == 'provider_role_qualification_approved') {
+      return '/account/services';
+    }
     final agreementId =
         (data?['agreement_id'] ?? data?['agreementId'])?.toString();
     final needId = (data?['need_id'] ?? data?['needId'])?.toString();

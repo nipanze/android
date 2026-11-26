@@ -62,7 +62,58 @@ class MainScaffold extends StatelessWidget {
 
     return BlocProvider(
       create: (_) => getIt<NotificationCubit>()..load(),
-      child: Scaffold(
+      child: BlocListener<NotificationCubit, NotificationState>(
+        listenWhen: (previous, current) {
+          if (previous is! NotificationLoaded || current is! NotificationLoaded) {
+            return false;
+          }
+          if (current.notifications.isEmpty) return false;
+          final latest = current.notifications.first;
+          final prevIds = previous.notifications.map((n) => n.id).toSet();
+          return !latest.isRead && !prevIds.contains(latest.id);
+        },
+        listener: (context, state) {
+          if (state is! NotificationLoaded || state.notifications.isEmpty) {
+            return;
+          }
+          final latest = state.notifications.first;
+          final messenger = ScaffoldMessenger.maybeOf(context);
+          if (messenger == null) return;
+          final l10n = AppLocalizations.of(context);
+          messenger.hideCurrentSnackBar();
+          messenger.showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    latest.title,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  if (latest.body.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      latest.body,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+              action: SnackBarAction(
+                label: l10n?.tapToView ?? 'Tap to view',
+                onPressed: () {
+                  context.read<NotificationCubit>().markAsRead(latest.id);
+                  final route = latest.deepLinkRoute ?? AppRoutes.notifications;
+                  context.push(route);
+                },
+              ),
+            ),
+          );
+        },
+        child: Scaffold(
         body: Stack(
           fit: StackFit.expand,
           children: [
