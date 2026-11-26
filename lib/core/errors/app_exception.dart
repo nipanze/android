@@ -258,6 +258,16 @@ AppException _parsePostgrestError(String code, String message) {
       'You have reached the provider service limit. Remove a service and try again.',
     );
   }
+  if (code == 'P0213') {
+    return const ValidationException(
+      'Evidence upload limit reached. Please try again later.',
+    );
+  }
+  if (code == 'P0214') {
+    return const ValidationException(
+      'Individual profiles cannot offer company services.',
+    );
+  }
   if (code == 'P0217') {
     return const ValidationException('Company or business name is required.');
   }
@@ -319,7 +329,9 @@ AppException _parsePostgrestError(String code, String message) {
   if (code == 'PGRST204' ||
       code == 'PGRST205' ||
       code == '42703' ||
-      code == '42P01') {
+      code == '42P01' ||
+      code == '42P10' ||
+      code == '42883') {
     return const DatabaseException(
       'The server database is missing an update required by this form. Apply the latest database patches, then try again.',
     );
