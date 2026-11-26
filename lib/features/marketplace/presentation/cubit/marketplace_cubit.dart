@@ -68,6 +68,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   String? _districtFilter;
   MarketplaceModule? _moduleFilter;
+  String? _providerCategoryFilter;
   String? _viewerFeedKey;
   String? _countryFilter;
   Set<String> _interestCategorySlugs = {};
@@ -186,6 +187,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
 
   Future<void> setModuleFilter(MarketplaceModule? module) async {
     if (isClosed) return;
+    _providerCategoryFilter = null;
     // If institutionMatchOnly is active and user selects a non-loan module,
     // automatically disable institutionMatchOnly so it stops forcing loan mode.
     if (_proFilter.institutionMatchOnly && module != MarketplaceModule.loan) {
@@ -201,6 +203,22 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     if (_proFilter.isActive) {
       await applyProFilters(_proFilter);
     }
+  }
+
+  Future<void> setProviderCategoryFilter({
+    required String categorySlug,
+    required MarketplaceModule module,
+  }) async {
+    if (isClosed) return;
+    _providerCategoryFilter = categorySlug;
+    await load(
+      district: _districtFilter,
+      module: module,
+      country: _countryFilter,
+      interestCategorySlugs: const {},
+      personalizationCategorySlugs: _personalizationCategorySlugs,
+    );
+    if (_proFilter.isActive) await applyProFilters(_proFilter);
   }
 
   /// Apply (or replace) Pro Advanced Filters.
@@ -406,6 +424,15 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     final now = DateTime.now();
     var interestFiltered =
         _applyInterestFilter(overrideListings ?? _allListings);
+    final categoryFilter = _providerCategoryFilter;
+    if (categoryFilter != null) {
+      interestFiltered = interestFiltered.where((listing) {
+        if (categoryFilter == 'financial_services') {
+          return listing.loan != null || listing.forex != null;
+        }
+        return listing.needs?.categorySlug == categoryFilter;
+      }).toList();
+    }
     if (_moduleFilter == null) {
       interestFiltered = interestFiltered.where(_matchesForYou).toList();
     }

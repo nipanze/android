@@ -7,6 +7,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
+import '../../../needs/data/needs_repository.dart';
 import '../../../needs/domain/models/need_category.dart';
 import '../../data/discovery_repository.dart';
 import '../../domain/models/user_discovery_plan.dart';
@@ -33,6 +34,8 @@ class _SavedPlansView extends StatefulWidget {
 
 class _SavedPlansViewState extends State<_SavedPlansView> {
   Set<String> _interests = const {};
+  List<NeedCategory> _categories = const [];
+  String _interestQuery = '';
   bool _interestsLoading = true;
 
   @override
@@ -43,9 +46,16 @@ class _SavedPlansViewState extends State<_SavedPlansView> {
 
   Future<void> _loadInterests() async {
     try {
-      final interests =
-          await getIt<DiscoveryRepository>().getSavedInterestCategories();
-      if (mounted) setState(() => _interests = interests);
+      final results = await Future.wait([
+        getIt<DiscoveryRepository>().getSavedInterestCategories(),
+        getIt<NeedsRepository>().getCategories(),
+      ]);
+      if (mounted) {
+        setState(() {
+          _interests = results[0] as Set<String>;
+          _categories = results[1] as List<NeedCategory>;
+        });
+      }
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -57,16 +67,30 @@ class _SavedPlansViewState extends State<_SavedPlansView> {
     }
   }
 
-  Future<void> _removeInterest(String slug) async {
+  Future<void> _toggleInterest(String slug) async {
+    final wasSelected = _interests.contains(slug);
+    setState(() {
+      _interests = {..._interests}..remove(slug);
+      if (!wasSelected) _interests.add(slug);
+    });
     try {
-      await getIt<DiscoveryRepository>().removeInterestCategories({slug});
-      if (mounted) setState(() => _interests = {..._interests}..remove(slug));
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(userFacingErrorMessage(error))),
-        );
+      if (wasSelected) {
+        await getIt<DiscoveryRepository>().removeInterestCategories({slug});
+      } else {
+        await getIt<DiscoveryRepository>().saveInterestCategories({slug});
       }
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        if (wasSelected) {
+          _interests.add(slug);
+        } else {
+          _interests.remove(slug);
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingErrorMessage(error))),
+      );
     }
   }
 
@@ -98,14 +122,6 @@ class _SavedPlansViewState extends State<_SavedPlansView> {
             }
             final plans =
                 state is DiscoveryPlansLoaded ? state.plans : const [];
-            if (plans.isEmpty && _interests.isEmpty) {
-              return EmptyState(
-                icon: Icons.event_note_outlined,
-                title: l10n.savedPlansEmptyTitle,
-                subtitle: l10n.savedPlansEmptySubtitle,
-              );
-            }
-
             return RefreshIndicator(
               onRefresh: () async {
                 await Future.wait([
@@ -116,22 +132,48 @@ class _SavedPlansViewState extends State<_SavedPlansView> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  if (_interests.isNotEmpty) ...[
-                    Text(l10n.savedInterestsHeading,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: (_interests.toList()..sort())
-                          .map((slug) => _interestChip(context, slug))
-                          .toList(),
+                  Row(children: [
+                    Expanded(
+                        child: Text(l10n.savedInterestsHeading,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700))),
+                    Text('${_interests.length} selected',
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ]),
+                  const SizedBox(height: 8),
+                  TextField(
+                    onChanged: (value) =>
+                        setState(() => _interestQuery = value.trim()),
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.search_rounded),
+                      hintText: 'Find interests',
+                      border: OutlineInputBorder(),
+                      isDense: true,
                     ),
-                    const SizedBox(height: 20),
-                  ],
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _categories
+                        .where((category) {
+                          final name = category.localizedName(l10n.localeName);
+                          return name
+                              .toLowerCase()
+                              .contains(_interestQuery.toLowerCase());
+                        })
+                        .map((category) => FilterChip(
+                              avatar: Text(category.icon),
+                              label:
+                                  Text(category.localizedName(l10n.localeName)),
+                              selected: _interests.contains(category.slug),
+                              onSelected: (_) => _toggleInterest(category.slug),
+                            ))
+                        .toList(),
+                  ),
+                  const SizedBox(height: 24),
                   if (plans.isNotEmpty) ...[
                     Text(l10n.savedPlansHeading,
                         style: Theme.of(context)
@@ -150,16 +192,6 @@ class _SavedPlansViewState extends State<_SavedPlansView> {
           },
         ),
       ),
-    );
-  }
-
-  Widget _interestChip(BuildContext context, String slug) {
-    final category = NeedCategory.findBySlug(slug);
-    final locale = AppLocalizations.of(context)!.localeName;
-    return InputChip(
-      avatar: Text(category.icon),
-      label: Text(category.localizedName(locale)),
-      onDeleted: () => _removeInterest(slug),
     );
   }
 }

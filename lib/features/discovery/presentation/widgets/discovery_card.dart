@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/shared_widgets.dart';
@@ -200,6 +201,14 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
                   ],
                 ),
               ],
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () => context.push(AppRoutes.accountPlans),
+                  icon: const Icon(Icons.tune_rounded, size: 16),
+                  label: Text(l10n.savedInterestsHeading),
+                ),
+              ),
             ],
           ),
         ));

@@ -588,7 +588,7 @@ class _ForYouPreferencesSyncState extends State<_ForYouPreferencesSync> {
           capability.isActive &&
           !capability.isPaused &&
           (!capability.isWork ||
-              capability.metadata["is_role_active"] != false));
+              capability.metadata['is_role_active'] != false));
       final providerIdentityTypes = <String, String>{};
       for (final capability in activeCapabilities) {
         final categorySlug =
@@ -607,7 +607,7 @@ class _ForYouPreferencesSyncState extends State<_ForYouPreferencesSync> {
             interestSlugs: interests,
             providerSlugs: providerSlugs,
             providerIdentityTypes: providerIdentityTypes,
-            iLend: prefs.getBool("marketplace_i_lend") ?? false,
+            iLend: prefs.getBool('marketplace_i_lend') ?? false,
           );
     } catch (_) {
       // Keep the feed usable if preferences are unavailable offline.
@@ -909,6 +909,11 @@ class _ModuleFilterRow extends StatefulWidget {
 class _ModuleFilterRowState extends State<_ModuleFilterRow> {
   String? _selectedProviderCapabilityId;
 
+  void _selectForYou(BuildContext context) {
+    setState(() => _selectedProviderCapabilityId = null);
+    context.read<MarketplaceCubit>().setModuleFilter(null);
+  }
+
   Widget _providerServicePill(
     BuildContext context,
     ProviderCapability service, {
@@ -937,9 +942,10 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
       semanticsLabel: '$categoryLabel, $identityLabel provider service',
       onTap: () {
         setState(() => _selectedProviderCapabilityId = service.id);
-        context
-            .read<MarketplaceCubit>()
-            .setModuleFilter(_moduleForProviderService(service));
+        context.read<MarketplaceCubit>().setProviderCategoryFilter(
+              categorySlug: service.categorySlug ?? service.capabilitySlug,
+              module: _moduleForProviderService(service),
+            );
       },
     );
   }
@@ -1007,9 +1013,7 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
                                   icon: Icons.auto_awesome_rounded,
                                   selected: selected == null,
                                   accentColor: AppColors.accent,
-                                  onTap: () => context
-                                      .read<MarketplaceCubit>()
-                                      .setModuleFilter(null),
+                                  onTap: () => _selectForYou(context),
                                 ),
                                 const SizedBox(width: 6),
                                 const SizedBox(
@@ -1028,9 +1032,7 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
                                       icon: Icons.auto_awesome_rounded,
                                       selected: selected == null,
                                       accentColor: AppColors.accent,
-                                      onTap: () => context
-                                          .read<MarketplaceCubit>()
-                                          .setModuleFilter(null),
+                                      onTap: () => _selectForYou(context),
                                     ),
                                     const SizedBox(width: 6),
                                     ActionChip(
@@ -1052,9 +1054,7 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
                                           icon: Icons.auto_awesome_rounded,
                                           selected: selected == null,
                                           accentColor: AppColors.accent,
-                                          onTap: () => context
-                                              .read<MarketplaceCubit>()
-                                              .setModuleFilter(null),
+                                          onTap: () => _selectForYou(context),
                                         ),
                                         const SizedBox(width: 6),
                                         _DottedAddServiceChip(
@@ -1069,9 +1069,7 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
                                           icon: Icons.auto_awesome_rounded,
                                           selected: selected == null,
                                           accentColor: AppColors.accent,
-                                          onTap: () => context
-                                              .read<MarketplaceCubit>()
-                                              .setModuleFilter(null),
+                                          onTap: () => _selectForYou(context),
                                         ),
                                         const SizedBox(width: 6),
                                         for (var i = 0;

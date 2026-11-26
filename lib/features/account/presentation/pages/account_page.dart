@@ -188,7 +188,7 @@ class _AccountView extends StatelessWidget {
                       Card(
                         child: _ActionRow(
                           icon: Icons.event_note_outlined,
-                          label: 'Review saved discovery plans',
+                          label: 'Manage interests & plans',
                           onTap: () => context.push(AppRoutes.accountPlans),
                         ),
                       ),
