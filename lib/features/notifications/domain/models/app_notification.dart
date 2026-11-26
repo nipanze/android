@@ -65,8 +65,11 @@ class AppNotification extends Equatable {
       return '/provider/loan-products';
     }
     if (data?['kind'] == 'provider_capability_approved' ||
+        data?['kind'] == 'provider_capability_rejected' ||
         data?['kind'] == 'provider_company_document_approved' ||
-        data?['kind'] == 'provider_role_qualification_approved') {
+        data?['kind'] == 'provider_company_document_rejected' ||
+        data?['kind'] == 'provider_role_qualification_approved' ||
+        data?['kind'] == 'provider_role_qualification_rejected') {
       return '/account/services';
     }
     final agreementId =

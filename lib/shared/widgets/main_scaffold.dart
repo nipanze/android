@@ -206,6 +206,7 @@ class MainScaffold extends StatelessWidget {
           ),
         ),
       ),
+      ),
     );
   }
 

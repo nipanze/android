@@ -305,6 +305,24 @@ begin
         'activated', v_all_approved
       )
     );
+  elsif p_action = 'reject' then
+    insert into public.notifications(user_id, type, title, body, data)
+    values (
+      v_evidence.provider_user_id,
+      'system',
+      'Verification document rejected',
+      'A document for ' || v_cap_name || ' was rejected' ||
+        case when nullif(btrim(p_reject_reason), '') is not null
+          then ': ' || left(btrim(p_reject_reason), 180)
+          else '.' end,
+      jsonb_build_object(
+        'kind', 'provider_capability_rejected',
+        'capability_slug', v_evidence.capability_slug,
+        'category_slug', v_evidence.category_slug,
+        'requirement_key', v_evidence.requirement_key,
+        'reject_reason', p_reject_reason
+      )
+    );
   end if;
 
   insert into public.audit_logs(user_id, event_type, entity_type, entity_id, action, new_values)
@@ -358,12 +376,13 @@ begin
     raise exception 'Company document was not found.' using errcode = 'P0212';
   end if;
 
+  v_doc_label := case v_row.document_type
+    when 'business_registration' then 'Business registration certificate'
+    when 'business_licence' then 'Licences or authorization documents'
+    else 'Company verification document'
+  end;
+
   if p_action = 'approve' then
-    v_doc_label := case v_row.document_type
-      when 'business_registration' then 'Business registration certificate'
-      when 'business_licence' then 'Licences or authorization documents'
-      else 'Company verification document'
-    end;
     v_all_approved := not exists (
       select 1 from public.provider_company_verification_submissions s
       where s.user_id = v_row.user_id
@@ -387,6 +406,24 @@ begin
         'document_type', v_row.document_type,
         'submission_id', v_row.id,
         'all_approved', v_all_approved
+      )
+    );
+  elsif p_action = 'reject' then
+    insert into public.notifications(user_id, type, title, body, data)
+    values (
+      v_row.user_id,
+      'system',
+      'Company document rejected',
+      v_doc_label || ' was rejected' ||
+        case when nullif(btrim(v_row.reject_reason), '') is not null
+          then ': ' || left(btrim(v_row.reject_reason), 180)
+          else '.' end,
+      jsonb_build_object(
+        'kind', 'provider_company_document_rejected',
+        'category_slug', v_row.category_slug,
+        'document_type', v_row.document_type,
+        'submission_id', v_row.id,
+        'reject_reason', v_row.reject_reason
       )
     );
   end if;
@@ -480,6 +517,25 @@ begin
         'role_slug', v_claim.role_slug,
         'qualification_slug', v_claim.qualification_slug,
         'claim_id', p_claim_id
+      )
+    );
+  elsif p_action = 'reject' then
+    insert into public.notifications(user_id, type, title, body, data)
+    values (
+      v_claim.user_id,
+      'system',
+      'Role qualification rejected',
+      'Your qualification for ' || coalesce(nullif(btrim(v_claim.capability_name), ''), v_claim.capability_slug) || ' was rejected' ||
+        case when nullif(btrim(p_reject_reason), '') is not null
+          then ': ' || left(btrim(p_reject_reason), 180)
+          else '.' end,
+      jsonb_build_object(
+        'kind', 'provider_role_qualification_rejected',
+        'capability_slug', v_claim.capability_slug,
+        'role_slug', v_claim.role_slug,
+        'qualification_slug', v_claim.qualification_slug,
+        'claim_id', p_claim_id,
+        'reject_reason', p_reject_reason
       )
     );
   end if;
