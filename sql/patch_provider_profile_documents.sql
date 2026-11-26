@@ -673,4 +673,36 @@ revoke all on function public.remove_provider_role_qualification_evidence(uuid, 
 grant execute on function public.remove_provider_role_qualification_evidence(uuid, text, text)
   to authenticated;
 
+-- Keep a verified company's legal identity consistent with its approved proof.
+create or replace function private.lock_verified_company_identity()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, private, pg_temp
+as $$
+begin
+  if (new.company_name is distinct from old.company_name
+      or new.registration_number is distinct from old.registration_number)
+     and exists (
+       select 1
+       from public.provider_company_verification_submissions submission
+       where submission.user_id = old.user_id
+         and submission.category_slug = old.category_slug
+         and submission.status = 'approved'
+     ) then
+    raise exception 'Verified company name and registration number are locked.'
+      using errcode = 'P0206';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function private.lock_verified_company_identity()
+  from public, anon, authenticated;
+drop trigger if exists trg_lock_verified_company_identity
+  on public.provider_company_profiles;
+create trigger trg_lock_verified_company_identity
+  before update of company_name, registration_number
+  on public.provider_company_profiles
+  for each row execute function private.lock_verified_company_identity();
+
 commit;

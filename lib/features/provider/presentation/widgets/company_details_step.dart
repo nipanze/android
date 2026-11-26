@@ -65,6 +65,10 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   String? _companyLogoUrl;
   bool _uploadingLogo = false;
 
+  bool get _companyIdentityLocked => _verificationSubmissions.any(
+        (submission) => submission['status']?.toString() == 'approved',
+      );
+
   static const _teamSizes = ['1-5', '6-20', '21-50', '50+'];
   static const _businessYears = ['<1', '1-2', '3-5', '6-10', '10+'];
 
@@ -600,16 +604,22 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
               const SizedBox(height: 6),
               TextField(
                 controller: _companyNameController,
+                readOnly: _companyIdentityLocked,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   isDense: true,
                   contentPadding:
                       EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  suffixIcon: _companyIdentityLocked
+                      ? const Icon(Icons.lock_outline_rounded, size: 18)
+                      : null,
                 ),
-                onChanged: (value) => widget.onPresentationChanged?.call({
-                  'display_name': value,
-                }),
+                onChanged: _companyIdentityLocked
+                    ? null
+                    : (value) => widget.onPresentationChanged?.call({
+                          'display_name': value,
+                        }),
               ),
               const SizedBox(height: 5),
               Text('Required. Shown publicly as the provider name.',
@@ -849,13 +859,19 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
               const SizedBox(height: 6),
               TextField(
                 controller: _registrationController,
+                readOnly: _companyIdentityLocked,
                 maxLength: 40,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'For example, your business registration number',
                   counterText: '',
+                  suffixIcon: _companyIdentityLocked
+                      ? const Icon(Icons.lock_outline_rounded, size: 18)
+                      : null,
                 ),
-                onChanged: (_) => _notifyDraftChanged(),
+                onChanged: _companyIdentityLocked
+                    ? null
+                    : (_) => _notifyDraftChanged(),
               ),
               const SizedBox(height: 12),
               _ChoiceChips(
