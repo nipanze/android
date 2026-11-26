@@ -346,6 +346,38 @@ class NeedCategory {
       sortOrder: 19,
       isActive: true,
     ),
+    NeedCategory(
+      slug: 'investment_services',
+      name: 'Investment Services',
+      icon: '📈',
+      description: 'Investment brokerage, investment guidance and related services.',
+      sortOrder: 20,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'investment_opportunities',
+      name: 'Investment Opportunities',
+      icon: '🤝',
+      description: 'Investor networks, introductions and startup support services.',
+      sortOrder: 21,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'forex_money_services',
+      name: 'Forex & Money Services',
+      icon: '💱',
+      description: 'Currency exchange, forex services and money transfer.',
+      sortOrder: 22,
+      isActive: true,
+    ),
+    NeedCategory(
+      slug: 'savings_cooperatives',
+      name: 'Savings & Cooperatives',
+      icon: '🏦',
+      description: 'SACCOs, savings groups, VSLAs and cooperatives.',
+      sortOrder: 23,
+      isActive: true,
+    ),
   ];
 
   static NeedCategory findBySlug(String slug) {

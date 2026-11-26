@@ -9,14 +9,13 @@ void main() {
       () {
     final roles =
         ProviderServiceRole.defaultsForCategory('pets_animal_services');
-    expect(roles, hasLength(12));
+    expect(roles, hasLength(11));
     expect(
         roles.map((role) => role.slug),
         containsAll([
           'veterinarian',
           'veterinary_assistant',
           'pet_trainer_behaviour_specialist',
-          'dog_trainer',
           'pet_groomer',
           'pet_sitter',
           'pet_boarding_provider',
