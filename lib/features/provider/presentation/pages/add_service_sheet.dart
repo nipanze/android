@@ -142,11 +142,10 @@ const _loanFinancingGroupSlugs = <String>{
 };
 
 const _loanMainGroupNames = <String, String>{
-  'personal_financing': 'Personal Financing',
+  'personal_financing': 'Personal Loans',
   'business_financing': 'Business Financing',
   'asset_financing': 'Asset Financing',
   'property_financing': 'Property Financing',
-  'other_financing': 'Other Financing',
 };
 
 List<(String?, String?, List<NeedCapability>)> _loanMainGroups(
@@ -158,8 +157,8 @@ List<(String?, String?, List<NeedCapability>)> _loanMainGroups(
       'agricultural_financing' ||
       'education_financing' ||
       'lifestyle_financing' =>
-        'other_financing',
-      _ => slug ?? 'other_financing',
+        'personal_financing',
+      _ => slug ?? 'personal_financing',
     };
     merged.putIfAbsent(mainSlug, () => []).addAll(capabilities);
   }
@@ -168,13 +167,12 @@ List<(String?, String?, List<NeedCapability>)> _loanMainGroups(
     'business_financing',
     'asset_financing',
     'property_financing',
-    'other_financing',
   ];
   return order
       .where(merged.containsKey)
       .map((slug) => (
             slug,
-            _loanMainGroupNames[slug] ?? 'Other Financing',
+            _loanMainGroupNames[slug] ?? 'Personal Loans',
             merged[slug]!,
           ))
       .toList();

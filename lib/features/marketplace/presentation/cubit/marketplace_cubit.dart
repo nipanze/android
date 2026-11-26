@@ -70,6 +70,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   MarketplaceModule? _moduleFilter;
   String? _providerCategoryFilter;
   String? _providerCategoryFilterIdentityType;
+  Set<String>? _needsCategoryFilter;
   String? _viewerFeedKey;
   String? _countryFilter;
   Set<String> _interestCategorySlugs = {};
@@ -190,6 +191,7 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     if (isClosed) return;
     _providerCategoryFilter = null;
     _providerCategoryFilterIdentityType = null;
+    _needsCategoryFilter = null;
     // If institutionMatchOnly is active and user selects a non-loan module,
     // automatically disable institutionMatchOnly so it stops forcing loan mode.
     if (_proFilter.institutionMatchOnly && module != MarketplaceModule.loan) {
@@ -215,9 +217,29 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     if (isClosed) return;
     _providerCategoryFilter = categorySlug;
     _providerCategoryFilterIdentityType = identityType;
+    _needsCategoryFilter = null;
     await load(
       district: _districtFilter,
       module: module,
+      country: _countryFilter,
+      interestCategorySlugs: const {},
+      personalizationCategorySlugs: _personalizationCategorySlugs,
+    );
+    if (_proFilter.isActive) await applyProFilters(_proFilter);
+  }
+
+  Future<void> setMatchingNeedsCategories(Set<String> categorySlugs) async {
+    if (isClosed || categorySlugs.isEmpty) return;
+    _providerCategoryFilter = null;
+    _providerCategoryFilterIdentityType = null;
+    _needsCategoryFilter = Set.unmodifiable(categorySlugs);
+    if (_proFilter.institutionMatchOnly) {
+      _proFilter = _proFilter.copyWith(institutionMatchOnly: false);
+      _cachedProFilteredIds = null;
+    }
+    await load(
+      district: _districtFilter,
+      module: MarketplaceModule.needs,
       country: _countryFilter,
       interestCategorySlugs: const {},
       personalizationCategorySlugs: _personalizationCategorySlugs,
@@ -369,6 +391,9 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
     Map<String, String> providerIdentityTypes = const {},
     required bool iLend,
   }) {
+    // For You is the personalized mixed feed. A matching-opportunities filter
+    // must never narrow it, including when preferences refresh asynchronously.
+    if (_moduleFilter == null) _needsCategoryFilter = null;
     _forYouInterestSlugs = {...interestSlugs};
     _providerCategorySlugs = {...providerSlugs};
     _providerCategoryIdentityTypes = {...providerIdentityTypes};
@@ -439,6 +464,14 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
         }
         return listing.needs?.categorySlug == categoryFilter;
       }).toList();
+    }
+    final needsCategoryFilter = _needsCategoryFilter;
+    if (needsCategoryFilter != null) {
+      interestFiltered = interestFiltered
+          .where((listing) =>
+              listing.needs != null &&
+              needsCategoryFilter.contains(listing.needs!.categorySlug))
+          .toList();
     }
     if (_moduleFilter == null) {
       interestFiltered = interestFiltered.where(_matchesForYou).toList();

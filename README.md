@@ -66,6 +66,13 @@ Loans (💰) and Forex (💱) remain first-class markets alongside these, not su
 
 ### Provider capabilities (what you can help people with)
 
+Loans & Financing company onboarding offers four selectable service groups:
+Personal Loans, Business Financing, Asset Financing, and Property Financing.
+The legacy `personal_financing` catalog slug remains for existing provider
+records; no capability records are removed. Apply
+`sql/patch_financial_provider_service_groups.sql` to align catalog display
+names and grouping in the database.
+
 - **Multi-select, per capability.** Someone can provide *Visa Assistance* and *Excavator Hire* at the same time. Each capability is its own row (`provider_capabilities`), not a single "profession".
 - **Professional Services** includes specialist services performed for the requester, such as Accounting, Legal Support, Tax Filing, Business Registration, Marketing & Promotion, and **Driving School & Driver Training** (driver training and instructor services).
 - **Transport & Logistics** focuses on moving goods, equipment, cargo, and bulk transport (Bulk Delivery, Cargo Transport, Cold Chain, Courier, Heavy Haulage, Moving Services, Truck Hire, Vehicle Transport).

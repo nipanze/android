@@ -135,6 +135,29 @@ void main() {
       ],
     );
 
+    blocTest<MarketplaceCubit, MarketplaceState>(
+      'opportunity card opens Needs filtered to all matching categories',
+      build: () {
+        when(() => mockRepo.getListings(
+              district: any(named: 'district'),
+              module: any(named: 'module'),
+            )).thenAnswer((_) async => testNeeds);
+        return MarketplaceCubit(mockRepo);
+      },
+      act: (cubit) => cubit.setMatchingNeedsCategories(
+        {'professional_services'},
+      ),
+      expect: () => [
+        isA<MarketplaceLoading>(),
+        isA<MarketplaceLoaded>()
+            .having((state) => state.moduleFilter, 'module',
+                MarketplaceModule.needs)
+            .having((state) => state.listings.length, 'matching Needs', 1)
+            .having((state) => state.listings.first.requestId,
+                'matching request', 'need-services'),
+      ],
+    );
+
     test('saved interests rank relevant Needs higher without filtering others',
         () async {
       when(() => mockRepo.getListings(

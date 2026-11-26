@@ -464,7 +464,7 @@ class GroupedWorkCapabilityCard extends StatelessWidget {
       for (final capability in capabilities) {
         financeGroups
             .putIfAbsent(
-                _financeParent(capability.capabilitySlug) ?? 'Other Financing',
+                _financeParent(capability.capabilitySlug) ?? 'Personal Loans',
                 () => <ProviderCapability>[])
             .add(capability);
       }
@@ -514,9 +514,10 @@ class GroupedWorkCapabilityCard extends StatelessWidget {
           ]),
           if (showFinancialParents)
             for (final groupName in [
-              'Personal Financing',
+              'Personal Loans',
               'Business Financing',
-              'Other Financing',
+              'Asset Financing',
+              'Property Financing',
             ])
               if (financeGroups.containsKey(groupName)) ...[
                 const SizedBox(height: 8),
@@ -883,13 +884,39 @@ String? _financeParent(String slug) => switch (slug) {
       'personal_loan_services' ||
       'emergency_loan_services' ||
       'salary_loan_services' ||
-      'medical_financing' =>
-        'Personal Financing',
+      'medical_financing' ||
+      'agricultural_loan_services' ||
+      'livestock_financing' ||
+      'crop_financing' ||
+      'farm_equipment_financing' ||
+      'school_fees_financing' ||
+      'university_financing' ||
+      'education_loan_services' ||
+      'travel_financing' ||
+      'wedding_financing' ||
+      'loan_services' ||
+      'bank_loan_agent' ||
+      'money_lender_private_lender' ||
+      'other_financial_services' =>
+        'Personal Loans',
       'business_startup_financing' ||
       'working_capital_financing' ||
       'business_expansion_financing' ||
       'sme_financing' =>
         'Business Financing',
+      'boda_boda_financing' ||
+      'car_financing' ||
+      'tuk_tuk_financing' ||
+      'motorcycle_financing' ||
+      'smartphone_financing' ||
+      'laptop_financing' ||
+      'heavy_machinery_financing' ||
+      'equipment_financing' =>
+        'Asset Financing',
+      'mortgage_financing' ||
+      'land_financing' ||
+      'property_development_financing' =>
+        'Property Financing',
       _ => null,
     };
 

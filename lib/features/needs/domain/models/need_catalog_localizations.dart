@@ -1450,10 +1450,10 @@ class NeedCatalogLocalizations {
 
   static const serviceGroupNames = <String, Map<String, String>>{
     'personal_financing': {
-      'rw': 'Inkunga bwite',
-      'fr': 'Financement personnel',
-      'sw': 'Ufadhili binafsi',
-      'ar': 'التمويل الشخصي',
+      'rw': 'Inguzanyo bwite',
+      'fr': 'Prêts personnels',
+      'sw': 'Mikopo binafsi',
+      'ar': 'قروض شخصية',
     },
     'business_financing': {
       'rw': 'Inkunga y’ubucuruzi',

@@ -740,7 +740,9 @@ class _MarketplaceDiscoveryCardState extends State<_MarketplaceDiscoveryCard> {
       case _DiscoveryPromptKind.opportunities:
         await context
             .read<MarketplaceCubit>()
-            .setModuleFilter(MarketplaceModule.needs);
+            .setMatchingNeedsCategories(
+              prompt.categories.map((category) => category.slug).toSet(),
+            );
     }
   }
 

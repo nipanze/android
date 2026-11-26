@@ -738,6 +738,18 @@ Implement the confirmed Individual ↔ Company switch for one provider category 
 
 ## 18. Stage 4.18 — Financial Services Provider Capabilities (Part A)
 
+### Loans & Financing provider service selection update
+
+The company onboarding selector exposes exactly four loan service groups:
+Personal Loans, Business Financing, Asset Financing, and Property Financing.
+The legacy `personal_financing` group slug remains stable for compatibility,
+while its display label is Personal Loans. Agricultural, education, and
+lifestyle loan capabilities remain in the catalog and are grouped under
+Personal Loans; no provider capability rows are deleted. Other Financing is
+not offered as a selectable group. Apply
+`sql/patch_financial_provider_service_groups.sql` to align stored catalog group
+names without changing capability or provider record slugs.
+
 ### Scope
 
 - Reuse the existing `financial_services` catalogue category, provider identities, capability rows, evidence workflow, verification rules, and plan configuration. It remains excluded from Needs.
