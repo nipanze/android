@@ -310,41 +310,6 @@ class _MarketplaceView extends StatelessWidget {
                           discoveryCubit.state is! DiscoveryLoading &&
                               !hasActiveDiscoveryCard;
 
-                      if (state.moduleFilter == MarketplaceModule.loan &&
-                          !context.read<MarketplaceCubit>().isLendingEnabled) {
-                        return ListView(
-                            padding: const EdgeInsets.all(16),
-                            children: [
-                              Card(
-                                  child: Padding(
-                                      padding: const EdgeInsets.all(20),
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Icon(
-                                                Icons.lock_outline_rounded,
-                                                color: AppColors.accent),
-                                            const SizedBox(height: 10),
-                                            const Text(
-                                                'Loan requests are for lenders',
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight:
-                                                        FontWeight.w700)),
-                                            const SizedBox(height: 6),
-                                            const Text(
-                                                'Turn on I lend to see loan requests in your feed.'),
-                                            const SizedBox(height: 12),
-                                            FilledButton(
-                                                onPressed: () =>
-                                                    _enableLending(context),
-                                                child: const Text(
-                                                    'Turn on I lend')),
-                                          ]))),
-                            ]);
-                      }
-
                       // Subtle loading overlay while Pro filter RPC is in flight.
                       if (state.proFilterActive) {
                         return Center(
@@ -570,18 +535,6 @@ class _MarketplaceView extends StatelessWidget {
       ),
     );
   }
-}
-
-Future<void> _enableLending(BuildContext context) async {
-  final cubit = context.read<MarketplaceCubit>();
-  await (await SharedPreferences.getInstance())
-      .setBool('marketplace_i_lend', true);
-  cubit.setForYouPreferences(
-    interestSlugs: cubit.forYouInterests,
-    providerSlugs: cubit.providerCategories,
-    providerIdentityTypes: cubit.providerCategoryIdentityTypes,
-    iLend: true,
-  );
 }
 
 class _ForYouPreferencesSync extends StatefulWidget {

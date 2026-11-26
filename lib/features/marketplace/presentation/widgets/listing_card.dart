@@ -189,10 +189,12 @@ class ListingCard extends StatelessWidget {
                 moduleBadgeColor: categoryBadgeColor ?? AppColors.accent,
                 moduleLabel: isNeeds
                     ? '${needs.categoryIcon} ${NeedCategory.findBySlug(needs.categorySlug).localizedName(Localizations.localeOf(context).languageCode)}'
-                    : NeedCategory.findBySlug('financial_services')
-                        .localizedName(
-                        Localizations.localeOf(context).languageCode,
-                      ),
+                    : isForex
+                        ? l10n.marketplaceForex
+                        : NeedCategory.findBySlug('financial_services')
+                            .localizedName(
+                            Localizations.localeOf(context).languageCode,
+                          ),
                 moduleIcon: isNeeds
                     ? null
                     : isForex
