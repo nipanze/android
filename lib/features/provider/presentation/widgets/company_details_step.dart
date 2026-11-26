@@ -319,6 +319,7 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
   }) {
     final submission = _submissionFor(documentType);
     final status = submission?['status']?.toString();
+    final approved = status == 'approved';
     final uploading = _uploadingDocumentType != null &&
         (_uploadingDocumentType == documentType ||
             _uploadingDocumentType == submission?['id']?.toString());
@@ -353,28 +354,35 @@ class _CompanyDetailsStepState extends State<CompanyDetailsStep> {
             ),
           ),
           const SizedBox(width: 8),
-          TextButton.icon(
-            style: TextButton.styleFrom(
-              foregroundColor: theme.colorScheme.primary,
+          if (approved)
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              minimumSize: const Size(0, 40),
-            ),
-            onPressed: _uploadingDocumentType == null
-                ? () => _pickCompanyDocument(
-                      selectedDocumentType: documentType,
-                      existing: submission,
+              child: Icon(Icons.lock_outline_rounded,
+                  size: 18, color: theme.disabledColor),
+            )
+          else
+            TextButton.icon(
+              style: TextButton.styleFrom(
+                foregroundColor: theme.colorScheme.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                minimumSize: const Size(0, 40),
+              ),
+              onPressed: _uploadingDocumentType == null
+                  ? () => _pickCompanyDocument(
+                        selectedDocumentType: documentType,
+                        existing: submission,
+                      )
+                  : null,
+              icon: uploading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                : null,
-            icon: uploading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.upload_file_rounded, size: 18),
-            label: Text(submission == null ? 'Add proof' : 'Replace'),
-          ),
-          if (submission != null && status != 'approved')
+                  : const Icon(Icons.upload_file_rounded, size: 18),
+              label: Text(submission == null ? 'Add proof' : 'Replace'),
+            ),
+          if (submission != null && !approved)
             IconButton(
               tooltip: l10n.companyDocumentRemove,
               visualDensity: VisualDensity.compact,

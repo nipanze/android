@@ -279,6 +279,10 @@ begin
     if not found then
       raise exception 'Company document was not found.' using errcode = 'P0212';
     end if;
+    if v_existing_status = 'approved' then
+      raise exception 'Approved company documents are locked and cannot be replaced.'
+        using errcode = 'P0206';
+    end if;
     update public.provider_company_verification_submissions
     set document_type = p_document_type,
         file_path = p_file_path,

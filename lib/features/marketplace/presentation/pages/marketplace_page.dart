@@ -1250,6 +1250,15 @@ String _providerServiceLabel(
     return NeedCategory.findBySlug(service.categorySlug!)
         .localizedName(Localizations.localeOf(context).languageCode);
   }
+  if (context != null && service.categorySlug != null) {
+    final fullCategoryName = NeedCategory.findBySlug(service.categorySlug!)
+        .localizedName(Localizations.localeOf(context).languageCode)
+        .trim();
+    // Keep the horizontal filter row compact; selecting a pill reveals the
+    // complete localized category name.
+    final shortName = fullCategoryName.split(RegExp(r'[\s&]+')).first;
+    if (shortName.isNotEmpty) return shortName;
+  }
   final category = service.categoryName?.trim();
   if (category != null && category.isNotEmpty) return category;
   if (service.isWork) {

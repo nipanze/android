@@ -7,7 +7,33 @@
 -- patch_provider_profile_documents.sql, and patch_catalog_expansion_v3.sql.
 begin;
 
+-- 0. Helper: a Company is verified once BOTH its business registration and
+--    business licence/authorization documents have been approved.
+create or replace function private.has_approved_company_verification(p_user_id uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public, private, pg_temp
+as $$
+  select exists (
+    select 1 from public.provider_company_verification_submissions s
+    where s.user_id = p_user_id
+      and s.document_type = 'business_registration'
+      and s.status = 'approved'
+  ) and exists (
+    select 1 from public.provider_company_verification_submissions s
+    where s.user_id = p_user_id
+      and s.document_type = 'business_licence'
+      and s.status = 'approved'
+  );
+$$;
+revoke all on function private.has_approved_company_verification(uuid) from public, anon;
+grant execute on function private.has_approved_company_verification(uuid) to authenticated;
+
 -- 1. Enforce all-required-evidence activation in the capability policy trigger.
+--    For Company providers, once both Business Registration and Business Licence
+--    are approved, all Company capabilities/offers activate automatically.
 create or replace function private.enforce_provider_capability_policy()
 returns trigger language plpgsql security definer
 set search_path = public, private, pg_temp as $$
@@ -19,6 +45,7 @@ declare
   v_scope_id text;
   v_rule_provider_type text;
   v_required text[] := array[]::text[];
+  v_company_verified boolean := false;
 begin
   select category_slug, verification_policy, capability_type
     into v_category, v_policy, v_type
@@ -27,11 +54,22 @@ begin
     raise exception 'Provider capability is unavailable.' using errcode = 'P0203';
   end if;
 
+  select coalesce(new.identity_type, pcp.provider_type, 'both') into v_type
+  from (select 1) seed
+  left join public.provider_category_profiles pcp
+    on pcp.user_id = new.user_id and pcp.category_slug = v_category;
+
+  v_company_verified := (v_type = 'company')
+    and private.has_approved_company_verification(new.user_id);
+
+  if v_company_verified then
+    new.verification_level := 'provider_verified';
+    new.verified_at := coalesce(new.verified_at, now());
+    new.is_active := true;
+    return new;
+  end if;
+
   if v_category = 'financial_services' and v_policy = 'required_proof' then
-    select coalesce(new.identity_type, pcp.provider_type, 'company') into v_type
-    from (select 1) seed
-    left join public.provider_category_profiles pcp
-      on pcp.user_id = new.user_id and pcp.category_slug = v_category;
     if v_type = 'individual' then
       -- Individual loan providers can offer loan products without capability
       -- proof. Account/KYC checks still apply when an offer is published.
@@ -146,6 +184,75 @@ begin
   return new;
 end;
 $$;
+
+-- 1b. Update provider_capability_is_eligible so v_my_capability_policy_status
+--     also treats approved Companies as eligible across all selected services.
+create or replace function private.provider_capability_is_eligible(p_capability_id uuid)
+returns boolean language plpgsql security definer stable
+set search_path = public, private, pg_catalog as $$
+declare
+  v_user uuid;
+  v_slug text;
+  v_policy text;
+  v_type text := 'both';
+  v_rule_type text := 'both';
+  v_active boolean;
+  v_role_active boolean;
+  v_has_requirements boolean := false;
+  v_key text;
+begin
+  select pc.user_id, pc.capability_slug, nc.verification_policy, pc.is_active,
+         coalesce(pc.metadata->>'is_role_active' <> 'false', true),
+         coalesce(pc.identity_type, pcp.provider_type, 'both')
+    into v_user, v_slug, v_policy, v_active, v_role_active, v_type
+  from public.provider_capabilities pc
+  join public.need_capabilities nc on nc.slug = pc.capability_slug
+  left join public.provider_category_profiles pcp
+    on pcp.user_id = pc.user_id and pcp.category_slug = nc.category_slug
+  where pc.id = p_capability_id;
+  if not found or not v_active or not v_role_active then return false; end if;
+  if v_policy <> 'required_proof' then return true; end if;
+  if v_type = 'company' and private.has_approved_company_verification(v_user) then
+    return true;
+  end if;
+
+  if exists (select 1 from public.verification_requirements r
+    where r.scope_type = 'capability' and r.scope_id = v_slug
+      and r.provider_type = v_type and r.is_active) then
+    v_rule_type := v_type;
+  end if;
+  for v_key in
+    select distinct keys.value from (
+      select unnest(coalesce(r.required_evidence, array[]::text[])) as value
+      from public.verification_requirements r
+      where r.scope_type = 'capability' and r.scope_id = v_slug
+        and r.provider_type = v_rule_type and r.is_active
+      union
+      select jsonb_array_elements_text(case
+        when jsonb_typeof(r.evidence_requirements) = 'array'
+          then r.evidence_requirements else '[]'::jsonb end)
+      from public.verification_requirements r
+      where r.scope_type = 'capability' and r.scope_id = v_slug
+        and r.provider_type = v_rule_type and r.is_active
+    ) keys
+  loop
+    v_has_requirements := true;
+    if not exists (select 1 from public.provider_capability_evidence e
+      where e.provider_capability_id = p_capability_id
+        and e.requirement_key = v_key and e.status = 'approved'
+        and (e.expires_at is null or e.expires_at > now())) then
+      return false;
+    end if;
+  end loop;
+  return v_has_requirements and exists (
+    select 1 from public.provider_capabilities pc
+    where pc.id = p_capability_id and pc.verification_level = 'provider_verified'
+  );
+end;
+$$;
+revoke all on function private.provider_capability_is_eligible(uuid) from public;
+grant execute on function private.provider_capability_is_eligible(uuid)
+  to authenticated, anon;
 
 -- 2. Only activate capability when ALL required evidence items are approved,
 --    and send an instant notification on approval.
@@ -392,12 +499,16 @@ begin
   end;
 
   if p_action = 'approve' then
-    v_all_approved := not exists (
-      select 1 from public.provider_company_verification_submissions s
-      where s.user_id = v_row.user_id
-        and s.category_slug = v_row.category_slug
-        and s.status <> 'approved'
-    );
+    v_all_approved := private.has_approved_company_verification(v_row.user_id);
+    if v_all_approved then
+      update public.provider_capabilities pc
+        set verification_level = 'provider_verified',
+            verified_by = v_admin,
+            verified_at = coalesce(pc.verified_at, now()),
+            is_active = true
+        where pc.user_id = v_row.user_id
+          and pc.identity_type = 'company';
+    end if;
     insert into public.notifications(user_id, type, title, body, data)
     values (
       v_row.user_id,
@@ -405,9 +516,9 @@ begin
       case when v_all_approved then 'Company verification approved'
            else 'Company document approved' end,
       case when v_all_approved then
-        v_doc_label || ' approved. Your company verification is now approved.'
+        v_doc_label || ' approved. All your company services are now active.'
       else
-        v_doc_label || ' was approved.'
+        v_doc_label || ' was approved. Approve both registration and licence to activate all company services.'
       end,
       jsonb_build_object(
         'kind', 'provider_company_document_approved',
@@ -418,6 +529,17 @@ begin
       )
     );
   elsif p_action = 'reject' then
+    if not private.has_approved_company_verification(v_row.user_id) then
+      update public.provider_capabilities pc
+        set verification_level = 'self_declared',
+            verified_by = null,
+            verified_at = null
+        from public.need_capabilities nc
+        where nc.slug = pc.capability_slug
+          and nc.verification_policy = 'required_proof'
+          and pc.user_id = v_row.user_id
+          and pc.identity_type = 'company';
+    end if;
     insert into public.notifications(user_id, type, title, body, data)
     values (
       v_row.user_id,
@@ -581,7 +703,8 @@ exception
 end $$;
 
 -- Re-evaluate existing required_proof capabilities that already have all
--- required evidence approved so they activate immediately.
+-- required evidence approved (or belong to an approved Company) so they
+-- activate immediately.
 update public.provider_capabilities pc
 set verification_level = 'provider_verified',
     verified_at = coalesce(pc.verified_at, now())
@@ -589,11 +712,14 @@ from public.need_capabilities nc
 where nc.slug = pc.capability_slug
   and nc.verification_policy = 'required_proof'
   and pc.verification_level <> 'provider_verified'
-  and exists (
-    select 1 from public.provider_capability_evidence e
-    where e.provider_capability_id = pc.id
-      and e.status = 'approved'
-      and (e.expires_at is null or e.expires_at > now())
+  and (
+    (pc.identity_type = 'company' and private.has_approved_company_verification(pc.user_id))
+    or exists (
+      select 1 from public.provider_capability_evidence e
+      where e.provider_capability_id = pc.id
+        and e.status = 'approved'
+        and (e.expires_at is null or e.expires_at > now())
+    )
   );
 
 update public.provider_capabilities pc
