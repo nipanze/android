@@ -43,7 +43,7 @@ insert into public.need_capabilities
    service_group_slug, service_group_name, service_sort_order,
    capability_type, verification_policy)
 values
-  ('work_veterinarian','pets_animal_services','Veterinarian',true,'pets_animal_services',10,'work_roles','Work Roles',10,'work','required_proof'),
+  ('work_veterinarian','pets_animal_services','Veterinarian (clinical care)',true,'pets_animal_services',10,'work_roles','Work Roles',10,'work','required_proof'),
   ('work_veterinary_assistant','pets_animal_services','Veterinary Assistant',true,'pets_animal_services',20,'work_roles','Work Roles',20,'work','optional_proof'),
   ('work_pet_trainer_behaviour_specialist','pets_animal_services','Pet Trainer / Behaviour Specialist',true,'pets_animal_services',30,'work_roles','Work Roles',30,'work','optional_proof'),
   ('work_dog_trainer','pets_animal_services','Dog Trainer',true,'pets_animal_services',40,'work_roles','Work Roles',40,'work','optional_proof'),
@@ -74,8 +74,8 @@ where slug='work_veterinary_livestock_officer';
 insert into public.capability_roles
   (slug, category_slug, capability_slug, name, kind_question, is_active)
 values
-  ('veterinarian','pets_animal_services','work_veterinarian','Veterinarian','What animals do you treat?',true),
-  ('veterinary_assistant','pets_animal_services','work_veterinary_assistant','Veterinary Assistant','What animals do you work with?',true),
+  ('veterinarian','pets_animal_services','work_veterinarian','Veterinarian (clinical care)','What animals do you treat?',true),
+  ('veterinary_assistant','pets_animal_services','work_veterinary_assistant','Veterinary Assistant','Which animals can you assist with?',true),
   ('pet_trainer_behaviour_specialist','pets_animal_services','work_pet_trainer_behaviour_specialist','Pet Trainer / Behaviour Specialist','Which animals do you train?',true),
   ('dog_trainer','pets_animal_services','work_dog_trainer','Dog Trainer','Which dogs do you train?',true),
   ('pet_groomer','pets_animal_services','work_pet_groomer','Pet Groomer','Which animals do you groom?',true),
@@ -91,8 +91,8 @@ on conflict (slug) do update set
 
 update public.capability_roles
 set category_slug='pets_animal_services',
-    name='Veterinary / Livestock Officer',
-    kind_question='What animals do you work with?', is_active=true
+    name='Livestock Officer (herd health)',
+    kind_question='Which livestock do you support with herd health and vaccination?', is_active=true
 where slug='veterinary_livestock_officer';
 
 insert into public.role_kinds (role_slug, slug, name, sort_order)
@@ -108,7 +108,8 @@ cross join (values
   ('poultry','Poultry',40),('goats','Goats',50),('sheep','Sheep',60),
   ('rabbits','Rabbits',70),('horses','Horses',80),('other_animals','Other animals',90)
 ) kinds(slug,name,sort_order)
-where (roles.slug in ('veterinarian','veterinary_assistant','animal_breeder','animal_nutritionist','veterinary_livestock_officer')
+where (roles.slug in ('veterinarian','veterinary_assistant','animal_breeder','animal_nutritionist')
+       or (roles.slug='veterinary_livestock_officer' and kinds.slug in ('cattle','poultry','goats','sheep','rabbits','horses','other_animals'))
        or (roles.slug in ('pet_trainer_behaviour_specialist','pet_groomer') and kinds.slug in ('dogs','cats','other_animals'))
        or (roles.slug in ('pet_sitter','pet_boarding_provider') and kinds.slug in ('dogs','cats','rabbits','other_animals'))
        or (roles.slug='dog_trainer' and kinds.slug='dogs')
@@ -116,6 +117,10 @@ where (roles.slug in ('veterinarian','veterinary_assistant','animal_breeder','an
        or (roles.slug='animal_transport_provider' and kinds.slug in ('dogs','cats','cattle','poultry','goats','sheep','horses','other_animals')))
 on conflict (role_slug,slug) do update set
   name=excluded.name, sort_order=excluded.sort_order;
+
+delete from public.role_kinds
+where role_slug='veterinary_livestock_officer'
+  and slug in ('dogs','cats');
 
 insert into public.role_qualifications
   (role_slug,slug,name,is_evidence,is_required_proof,sort_order)

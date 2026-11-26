@@ -1884,14 +1884,13 @@ class ProviderServiceRole {
     ),
     ProviderServiceRole(
       slug: 'veterinary_livestock_officer',
-      name: 'Veterinary / Livestock Officer',
-      description: 'Animal health, treatment, and breeding advisory',
-      kindQuestion: 'What animals?',
+      name: 'Livestock Officer (herd health)',
+      description: 'Livestock herd health, vaccination, and field advisory',
+      kindQuestion:
+          'Which livestock do you support with herd health and vaccination?',
       categorySlug: 'pets_animal_services',
       capabilitySlug: 'work_veterinary_livestock_officer',
       kinds: [
-        ProviderRoleOption(slug: 'dogs', name: 'Dogs'),
-        ProviderRoleOption(slug: 'cats', name: 'Cats'),
         ProviderRoleOption(slug: 'cattle', name: 'Cattle'),
         ProviderRoleOption(slug: 'poultry', name: 'Poultry'),
         ProviderRoleOption(slug: 'goats', name: 'Goats'),
@@ -1917,7 +1916,7 @@ class ProviderServiceRole {
     ),
     ProviderServiceRole(
       slug: 'veterinarian',
-      name: 'Veterinarian',
+      name: 'Veterinarian (clinical care)',
       description: 'Veterinary diagnosis, treatment, and preventive care',
       kindQuestion: 'What animals do you treat?',
       categorySlug: 'pets_animal_services',
@@ -1945,7 +1944,7 @@ class ProviderServiceRole {
       slug: 'veterinary_assistant',
       name: 'Veterinary Assistant',
       description: 'Support veterinary examinations and animal care',
-      kindQuestion: 'What animals do you work with?',
+      kindQuestion: 'Which animals can you assist with?',
       categorySlug: 'pets_animal_services',
       capabilitySlug: 'work_veterinary_assistant',
       kinds: [

@@ -1792,6 +1792,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         }
       },
       child: DraggableScrollableSheet(
+        // Recreate the sheet for each category so an old scroll offset cannot
+        // leave the first role card hidden behind the pinned header.
+        key: ValueKey(
+            'provider-services-${_selectedCategory?.slug ?? 'categories'}'),
         initialChildSize: 0.85,
         minChildSize: 0.45,
         maxChildSize: 0.95,

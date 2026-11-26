@@ -3827,7 +3827,7 @@
       "work_roles": [
         {
           "id": "veterinarian",
-          "name": "Veterinarian",
+          "name": "Veterinarian (clinical care)",
           "kind_question": "What animals do you treat?",
           "kinds": [
             {
@@ -3880,7 +3880,7 @@
         {
           "id": "veterinary_assistant",
           "name": "Veterinary Assistant",
-          "kind_question": "What animals do you work with?",
+          "kind_question": "Which animals can you assist with?",
           "kinds": [
             {
               "id": "dogs",
@@ -4256,17 +4256,9 @@
         },
         {
           "id": "veterinary_livestock_officer",
-          "name": "Veterinary / Livestock Officer",
-          "kind_question": "What animals do you work with?",
+          "name": "Livestock Officer (herd health)",
+          "kind_question": "Which livestock do you support with herd health and vaccination?",
           "kinds": [
-            {
-              "id": "dogs",
-              "name": "Dogs"
-            },
-            {
-              "id": "cats",
-              "name": "Cats"
-            },
             {
               "id": "cattle",
               "name": "Cattle"

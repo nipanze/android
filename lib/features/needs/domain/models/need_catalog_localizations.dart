@@ -5,12 +5,14 @@ class NeedCatalogLocalizations {
 
   static const _petsRoleNames = <String, Map<String, String>>{
     'veterinarian': {
+      'en': 'Veterinarian (clinical care)',
       'sw': 'Daktari wa mifugo',
       'fr': 'Vétérinaire',
       'rw': 'Veterineri',
       'ar': 'طبيب بيطري'
     },
     'veterinary_assistant': {
+      'en': 'Veterinary Assistant',
       'sw': 'Msaidizi wa mifugo',
       'fr': 'Assistant vétérinaire',
       'rw': 'Umufasha wa veterineri',
@@ -71,6 +73,7 @@ class NeedCatalogLocalizations {
       'ar': 'أخصائي تغذية الحيوانات'
     },
     'veterinary_livestock_officer': {
+      'en': 'Livestock Officer (herd health)',
       'sw': 'Afisa wa mifugo',
       'fr': 'Agent vétérinaire / élevage',
       'rw': 'Umukozi ushinzwe amatungo',
@@ -186,7 +189,16 @@ class NeedCatalogLocalizations {
     String fallback,
   ) {
     final locale = localeCode?.toLowerCase();
-    if (locale == 'en' || locale == null) return fallback;
+    if (locale == 'en') {
+      return switch (roleSlug) {
+        'veterinarian' => 'Which animals do you treat?',
+        'veterinary_assistant' => 'Which animals can you assist with?',
+        'veterinary_livestock_officer' =>
+          'Which livestock do you support with herd health and vaccination?',
+        _ => fallback,
+      };
+    }
+    if (locale == null) return fallback;
     const questions = <String, Map<String, String>>{
       'veterinarian': {
         'sw': 'Unatibu wanyama gani?',
@@ -199,6 +211,13 @@ class NeedCatalogLocalizations {
         'fr': 'Avec quels animaux travaillez-vous ?',
         'rw': 'Ni izihe nyamaswa ukorana na zo?',
         'ar': 'مع أي حيوانات تعمل؟',
+      },
+      'veterinary_livestock_officer': {
+        'sw': 'Unasaidia mifugo gani kuhusu afya ya kundi na chanjo?',
+        'fr':
+            'Pour quel bétail assurez-vous le suivi sanitaire et la vaccination ?',
+        'rw': 'Ni ayahe matungo ufasha mu buzima bw’amatungo no gukingira?',
+        'ar': 'ما الماشية التي تقدم لها رعاية القطيع والتطعيم؟',
       },
       'pet_trainer_behaviour_specialist': {
         'sw': 'Unawafundisha wanyama gani?',
