@@ -179,6 +179,7 @@ List<(String?, String?, List<NeedCapability>)> _loanMainGroups(
 }
 
 const _directIdentityGateCategorySlugs = <String>{
+  'pets_animal_services',
   'investment_services',
   'investment_opportunities',
   'forex_money_services',
@@ -190,6 +191,41 @@ const _directIdentityGateCategorySlugs = <String>{
   'marketing_promotion',
   'health_medical',
 };
+
+String _roleDisplayName(BuildContext context, ProviderServiceRole role) {
+  final locale = Localizations.localeOf(context).languageCode;
+  return NeedCatalogLocalizations.providerRoleName(locale, role.slug) ??
+      role.name;
+}
+
+String _roleQuestion(BuildContext context, ProviderServiceRole role) {
+  final locale = Localizations.localeOf(context).languageCode;
+  if (role.categorySlug == 'pets_animal_services') {
+    return NeedCatalogLocalizations.providerAnimalQuestion(
+      locale,
+      role.slug,
+      role.kindQuestion ?? 'Which animals do you work with?',
+    );
+  }
+  return role.kindQuestion ?? 'Which kind do you do?';
+}
+
+String _roleKindName(BuildContext context, ProviderRoleOption kind) =>
+    NeedCatalogLocalizations.providerAnimalName(
+      Localizations.localeOf(context).languageCode,
+      kind.slug,
+      kind.name,
+    );
+
+String _roleQualificationName(
+  BuildContext context,
+  ProviderRoleQualification qualification,
+) =>
+    NeedCatalogLocalizations.providerQualificationName(
+      Localizations.localeOf(context).languageCode,
+      qualification.slug,
+      qualification.name,
+    );
 
 String _financeUiGroupSlug(NeedCapability capability) {
   final serviceGroup = capability.serviceGroupSlug?.trim();
@@ -227,6 +263,7 @@ const _providerCategoryLabels = <String, String>{
   'transport_logistics': 'Transport & Logistics',
   'machinery_equipment': 'Machinery & Equipment',
   'agriculture_agribusiness': 'Agriculture & Agribusiness',
+  'pets_animal_services': 'Pets & Animal Services',
   'specialized_products': 'Specialized Products & Procurement',
   'travel_international': 'Travel & International',
   'domestic_household': 'Domestic & Household',
@@ -253,18 +290,19 @@ const _providerCategoryOrder = <String, int>{
   'transport_logistics': 9,
   'machinery_equipment': 10,
   'agriculture_agribusiness': 11,
-  'specialized_products': 12,
-  'travel_international': 13,
-  'domestic_household': 14,
-  'health_medical': 15,
-  'traditional_cultural': 16,
-  'business_investment': 17,
-  'financial_services': 18,
-  'investment_services': 19,
-  'investment_opportunities': 20,
-  'forex_money_services': 21,
-  'savings_cooperatives': 22,
-  'property_real_estate': 23,
+  'pets_animal_services': 12,
+  'specialized_products': 13,
+  'travel_international': 14,
+  'domestic_household': 15,
+  'health_medical': 16,
+  'traditional_cultural': 17,
+  'business_investment': 18,
+  'financial_services': 19,
+  'investment_services': 20,
+  'investment_opportunities': 21,
+  'forex_money_services': 22,
+  'savings_cooperatives': 23,
+  'property_real_estate': 24,
 };
 
 String _providerCategoryName(NeedCategory category, String? localeCode) =>
@@ -458,6 +496,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
   final Map<String, List<Map<String, dynamic>>> _roleClaimStateOverrides = {};
   int _currentRoleIndex = 0;
   final Map<String, Set<String>> _kindsByRole = {};
+  final Map<String, String> _otherAnimalsByRole = {};
   final Map<String, Set<String>> _qualificationsByRole = {};
   final Map<String, String> _yearsExperienceByRole = {};
   final Map<String, String> _availabilityByRole = {};
@@ -552,6 +591,8 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
       'role_id': roleSlug,
       'is_role_active': true,
       'kind_ids': (_kindsByRole[roleSlug] ?? {}).toList(),
+      if (_otherAnimalsByRole[roleSlug]?.trim().isNotEmpty == true)
+        'other_animals_description': _otherAnimalsByRole[roleSlug]!.trim(),
       'qualification_ids': (_qualificationsByRole[roleSlug] ?? {}).toList(),
       if (_yearsExperienceByRole[roleSlug] != null)
         'years_experience': _yearsExperienceByRole[roleSlug],
@@ -577,6 +618,10 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         (metadata['qualification_ids'] as List? ?? const [])
             .map((value) => value.toString())
             .toSet();
+    if (metadata['other_animals_description'] != null) {
+      _otherAnimalsByRole[roleSlug] =
+          metadata['other_animals_description'].toString();
+    }
     if (metadata['years_experience'] != null) {
       _yearsExperienceByRole[roleSlug] =
           metadata['years_experience'].toString();
@@ -964,7 +1009,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
         .toList();
 
     // Populate initial selections for this category
-    final categoryWorkEnabled = widget.workProfilesEnabled &&
+    final categoryWorkEnabled =
         await widget.providerRepository.isCategoryWorkProfileEnabled(cat.slug);
     for (final cap in filteredCaps) {
       final existingForIdentity = widget.existingCapabilities.any((saved) =>
@@ -1462,7 +1507,7 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text('Remove ${role.name}?',
+                Text('Remove ${_roleDisplayName(context, role)}?',
                     style: Theme.of(sheetContext)
                         .textTheme
                         .titleLarge
@@ -2116,6 +2161,13 @@ class _AddServiceSheetState extends State<AddServiceSheet> {
                                                                   .toList(),
                                                               selectedKindsByRole:
                                                                   _kindsByRole,
+                                                              otherAnimalsByRole:
+                                                                  _otherAnimalsByRole,
+                                                              onOtherAnimalsChanged: (roleSlug,
+                                                                      value) =>
+                                                                  _otherAnimalsByRole[
+                                                                          roleSlug] =
+                                                                      value,
                                                               scrollController:
                                                                   scrollController,
                                                               onNext: () =>
@@ -3328,9 +3380,9 @@ class _IdentitySwitchReviewStep extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                  color: reviewCardColor,
+                    color: reviewCardColor,
                     borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: reviewBorderColor),
+                    border: Border.all(color: reviewBorderColor),
                   ),
                   child: Text(
                     'No inactive services for this identity.',
@@ -5608,7 +5660,9 @@ class _RoleCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   color: isSelected
                       ? activeColor
-                      : (isDark ? theme.colorScheme.surface : Colors.transparent),
+                      : (isDark
+                          ? theme.colorScheme.surface
+                          : Colors.transparent),
                   border: Border.all(
                     color: isSelected
                         ? activeColor
@@ -5627,7 +5681,7 @@ class _RoleCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    role.name,
+                    _roleDisplayName(context, role),
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
@@ -5636,7 +5690,9 @@ class _RoleCard extends StatelessWidget {
                   if ((role.description ?? role.kindQuestion) != null) ...[
                     const SizedBox(height: 2),
                     Text(
-                      role.description ?? role.kindQuestion!,
+                      role.categorySlug == 'pets_animal_services'
+                          ? _roleQuestion(context, role)
+                          : role.description ?? role.kindQuestion!,
                       style: TextStyle(fontSize: 12, color: text2),
                     ),
                   ],
@@ -5774,10 +5830,14 @@ class _KindsStepView extends StatefulWidget {
   const _KindsStepView(
       {required this.roles,
       required this.selectedKindsByRole,
+      required this.otherAnimalsByRole,
+      required this.onOtherAnimalsChanged,
       required this.scrollController,
       required this.onNext});
   final List<ProviderServiceRole> roles;
   final Map<String, Set<String>> selectedKindsByRole;
+  final Map<String, String> otherAnimalsByRole;
+  final void Function(String roleSlug, String value) onOtherAnimalsChanged;
   final ScrollController scrollController;
   final VoidCallback onNext;
   @override
@@ -5786,6 +5846,10 @@ class _KindsStepView extends StatefulWidget {
 
 class _KindsStepViewState extends State<_KindsStepView> {
   String _instruction(ProviderServiceRole role) {
+    final locale = Localizations.localeOf(context).languageCode;
+    if (role.categorySlug == 'pets_animal_services') {
+      return NeedCatalogLocalizations.providerAnimalInstructions(locale);
+    }
     final q = (role.kindQuestion ?? '').toLowerCase();
     final slug = role.slug.toLowerCase();
     if (slug == 'developer' || q.contains('build') || q.contains('software')) {
@@ -5805,8 +5869,12 @@ class _KindsStepViewState extends State<_KindsStepView> {
     final ready = widget.roles.isNotEmpty &&
         widget.roles.every((r) =>
             r.kinds.isEmpty ||
-            (widget.selectedKindsByRole[r.slug] ?? const <String>{})
-                .isNotEmpty);
+            ((widget.selectedKindsByRole[r.slug] ?? const <String>{})
+                    .isNotEmpty &&
+                (!(widget.selectedKindsByRole[r.slug] ?? const <String>{})
+                        .contains('other_animals') ||
+                    (widget.otherAnimalsByRole[r.slug]?.trim().isNotEmpty ??
+                        false))));
     return Stack(children: [
       ListView(
           controller: widget.scrollController,
@@ -5837,11 +5905,11 @@ class _KindsStepViewState extends State<_KindsStepView> {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(role.name,
+                      Text(_roleDisplayName(context, role),
                           style: const TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w700)),
                       const SizedBox(height: 6),
-                      Text(role.kindQuestion ?? 'Which kind do you do?',
+                      Text(_roleQuestion(context, role),
                           style: TextStyle(fontSize: 13, color: text2)),
                       const SizedBox(height: 3),
                       Text(_instruction(role),
@@ -5854,7 +5922,7 @@ class _KindsStepViewState extends State<_KindsStepView> {
                         Wrap(spacing: 8, runSpacing: 8, children: [
                           for (final kind in role.kinds)
                             _KindChip(
-                              label: kind.name,
+                              label: _roleKindName(context, kind),
                               selected:
                                   (widget.selectedKindsByRole[role.slug] ?? {})
                                       .contains(kind.slug),
@@ -5867,10 +5935,32 @@ class _KindsStepViewState extends State<_KindsStepView> {
                               }),
                             )
                         ]),
+                      if ((widget.selectedKindsByRole[role.slug] ?? const {})
+                          .contains('other_animals')) ...[
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          initialValue: widget.otherAnimalsByRole[role.slug],
+                          decoration: InputDecoration(
+                            labelText: NeedCatalogLocalizations
+                                .otherAnimalsDescriptionLabel(
+                              Localizations.localeOf(context).languageCode,
+                            ),
+                            hintText: NeedCatalogLocalizations
+                                .otherAnimalsDescriptionHint(
+                              Localizations.localeOf(context).languageCode,
+                            ),
+                            border: const OutlineInputBorder(),
+                          ),
+                          onChanged: (value) {
+                            widget.onOtherAnimalsChanged(role.slug, value);
+                            setState(() {});
+                          },
+                        ),
+                      ],
                       const SizedBox(height: 8),
                       if (role.kinds.isNotEmpty)
                         Text(
-                            '${(widget.selectedKindsByRole[role.slug] ?? const <String>{}).length} selected',
+                            '${(widget.selectedKindsByRole[role.slug] ?? const <String>{}).length} ${Localizations.localeOf(context).languageCode == 'fr' ? 'sélectionnés' : Localizations.localeOf(context).languageCode == 'sw' ? 'zimechaguliwa' : Localizations.localeOf(context).languageCode == 'rw' ? 'byatoranyijwe' : Localizations.localeOf(context).languageCode == 'ar' ? 'محدد' : 'selected'}',
                             style: TextStyle(
                                 fontSize: 11,
                                 color: text2,
@@ -6059,8 +6149,8 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                   const SizedBox(height: 10),
                   Text(
                     pending
-                        ? '${qualification.name} is being reviewed. Unticking withdraws it from review. You can upload it again later.'
-                        : 'Unticking ${qualification.name} will remove your Nipanze badge for this qualification.',
+                        ? '${_roleQualificationName(context, qualification)} is being reviewed. Unticking withdraws it from review. You can upload it again later.'
+                        : 'Unticking ${_roleQualificationName(context, qualification)} will remove your Nipanze badge for this qualification.',
                     style: Theme.of(sheetContext).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 16),
@@ -6301,7 +6391,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                 Padding(
                   padding: const EdgeInsets.only(top: 6, bottom: 4),
                   child: Text(
-                    role.name,
+                    _roleDisplayName(context, role),
                     style: const TextStyle(
                         fontWeight: FontWeight.w700, fontSize: 13),
                   ),
@@ -6456,7 +6546,7 @@ class _QualificationsStepViewState extends State<_QualificationsStepView> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      qual.name,
+                                      _roleQualificationName(context, qual),
                                       style: const TextStyle(
                                         fontSize: 13.5,
                                         fontWeight: FontWeight.w500,

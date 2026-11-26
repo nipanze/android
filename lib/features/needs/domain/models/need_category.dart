@@ -240,6 +240,15 @@ class NeedCategory {
       isActive: true,
     ),
     NeedCategory(
+      slug: 'pets_animal_services',
+      name: 'Pets & Animal Services',
+      icon: '🐾',
+      description:
+          'Veterinary care, pet training, grooming, boarding and animal care.',
+      sortOrder: 24,
+      isActive: true,
+    ),
+    NeedCategory(
       slug: 'energy_utilities',
       name: 'Energy & Water',
       icon: '⚡',

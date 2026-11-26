@@ -3772,44 +3772,6 @@
           "database_slug": "work_agronomist_extension_officer"
         },
         {
-          "id": "veterinary_livestock_officer",
-          "name": "Veterinary / Livestock Officer",
-          "kind_question": "What animals?",
-          "kinds": [
-            {
-              "id": "cattle",
-              "name": "Cattle"
-            },
-            {
-              "id": "poultry",
-              "name": "Poultry"
-            },
-            {
-              "id": "small_ruminants",
-              "name": "Small ruminants"
-            }
-          ],
-          "qualifications": [
-            {
-              "id": "veterinary_licence",
-              "name": "Veterinary licence",
-              "is_evidence": false
-            },
-            {
-              "id": "diploma_degree",
-              "name": "Diploma / degree",
-              "is_evidence": false
-            },
-            {
-              "id": "vaccination_certification",
-              "name": "Vaccination certification",
-              "is_evidence": false
-            }
-          ],
-          "is_active": true,
-          "database_slug": "work_veterinary_livestock_officer"
-        },
-        {
           "id": "farm_worker_operator",
           "name": "Farm Worker / Operator",
           "kind_question": "What work?",
@@ -3855,6 +3817,509 @@
       "is_active": true,
       "identity_rule": "individual_roles_only_company_services_only",
       "database_slug": "agriculture_agribusiness"
+    },
+    {
+      "id": "pets_animal_services",
+      "name": "Pets & Animal Services",
+      "icon": "🐾",
+      "description": "Veterinary care, pet training, grooming, boarding and animal care.",
+      "service_groups": [],
+      "work_roles": [
+        {
+          "id": "veterinarian",
+          "name": "Veterinarian",
+          "kind_question": "What animals do you treat?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            },
+            {
+              "id": "cats",
+              "name": "Cats"
+            },
+            {
+              "id": "cattle",
+              "name": "Cattle"
+            },
+            {
+              "id": "poultry",
+              "name": "Poultry"
+            },
+            {
+              "id": "goats",
+              "name": "Goats"
+            },
+            {
+              "id": "sheep",
+              "name": "Sheep"
+            },
+            {
+              "id": "rabbits",
+              "name": "Rabbits"
+            },
+            {
+              "id": "horses",
+              "name": "Horses"
+            },
+            {
+              "id": "other_animals",
+              "name": "Other animals"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "veterinary_licence",
+              "name": "Veterinary professional registration and authorization",
+              "is_evidence": true
+            }
+          ],
+          "is_active": true,
+          "database_slug": "work_veterinarian"
+        },
+        {
+          "id": "veterinary_assistant",
+          "name": "Veterinary Assistant",
+          "kind_question": "What animals do you work with?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            },
+            {
+              "id": "cats",
+              "name": "Cats"
+            },
+            {
+              "id": "cattle",
+              "name": "Cattle"
+            },
+            {
+              "id": "poultry",
+              "name": "Poultry"
+            },
+            {
+              "id": "goats",
+              "name": "Goats"
+            },
+            {
+              "id": "sheep",
+              "name": "Sheep"
+            },
+            {
+              "id": "rabbits",
+              "name": "Rabbits"
+            },
+            {
+              "id": "horses",
+              "name": "Horses"
+            },
+            {
+              "id": "other_animals",
+              "name": "Other animals"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "animal_care_qualification",
+              "name": "Animal care qualification",
+              "is_evidence": true
+            },
+            {
+              "id": "animal_care_experience",
+              "name": "Animal care experience",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "database_slug": "work_veterinary_assistant"
+        },
+        {
+          "id": "pet_trainer_behaviour_specialist",
+          "name": "Pet Trainer / Behaviour Specialist",
+          "kind_question": "Which animals do you train?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            },
+            {
+              "id": "cats",
+              "name": "Cats"
+            },
+            {
+              "id": "other_animals",
+              "name": "Other animals"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "training_qualification",
+              "name": "Training qualification",
+              "is_evidence": true
+            },
+            {
+              "id": "training_references",
+              "name": "Client references",
+              "is_evidence": true
+            },
+            {
+              "id": "training_experience",
+              "name": "Training experience",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "database_slug": "work_pet_trainer_behaviour_specialist"
+        },
+        {
+          "id": "dog_trainer",
+          "name": "Dog Trainer",
+          "kind_question": "Which dogs do you train?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "training_qualification",
+              "name": "Training qualification",
+              "is_evidence": true
+            },
+            {
+              "id": "training_references",
+              "name": "Client references",
+              "is_evidence": true
+            },
+            {
+              "id": "training_experience",
+              "name": "Training experience",
+              "is_evidence": false
+            }
+          ],
+          "is_active": true,
+          "database_slug": "work_dog_trainer"
+        },
+        {
+          "id": "pet_groomer",
+          "name": "Pet Groomer",
+          "kind_question": "Which animals do you groom?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            },
+            {
+              "id": "cats",
+              "name": "Cats"
+            },
+            {
+              "id": "other_animals",
+              "name": "Other animals"
+            }
+          ],
+          "qualifications": [],
+          "is_active": true,
+          "database_slug": "work_pet_groomer"
+        },
+        {
+          "id": "pet_sitter",
+          "name": "Pet Sitter",
+          "kind_question": "Which animals do you care for?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            },
+            {
+              "id": "cats",
+              "name": "Cats"
+            },
+            {
+              "id": "rabbits",
+              "name": "Rabbits"
+            },
+            {
+              "id": "birds",
+              "name": "Birds"
+            },
+            {
+              "id": "other_animals",
+              "name": "Other animals"
+            }
+          ],
+          "qualifications": [],
+          "is_active": true,
+          "database_slug": "work_pet_sitter"
+        },
+        {
+          "id": "pet_boarding_provider",
+          "name": "Pet Boarding Provider",
+          "kind_question": "Which animals can you accommodate?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            },
+            {
+              "id": "cats",
+              "name": "Cats"
+            },
+            {
+              "id": "rabbits",
+              "name": "Rabbits"
+            },
+            {
+              "id": "birds",
+              "name": "Birds"
+            },
+            {
+              "id": "other_animals",
+              "name": "Other animals"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "boarding_facility",
+              "name": "Boarding facility information",
+              "is_evidence": true
+            },
+            {
+              "id": "animal_welfare_practices",
+              "name": "Animal welfare practices",
+              "is_evidence": true
+            }
+          ],
+          "is_active": true,
+          "database_slug": "work_pet_boarding_provider"
+        },
+        {
+          "id": "dog_walker",
+          "name": "Dog Walker",
+          "kind_question": "Which animals do you walk?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            }
+          ],
+          "qualifications": [],
+          "is_active": true,
+          "database_slug": "work_dog_walker"
+        },
+        {
+          "id": "animal_transport_provider",
+          "name": "Animal Transport Provider",
+          "kind_question": "What animals can you transport?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            },
+            {
+              "id": "cats",
+              "name": "Cats"
+            },
+            {
+              "id": "cattle",
+              "name": "Cattle"
+            },
+            {
+              "id": "poultry",
+              "name": "Poultry"
+            },
+            {
+              "id": "goats",
+              "name": "Goats"
+            },
+            {
+              "id": "sheep",
+              "name": "Sheep"
+            },
+            {
+              "id": "horses",
+              "name": "Horses"
+            },
+            {
+              "id": "other_animals",
+              "name": "Other animals"
+            }
+          ],
+          "qualifications": [],
+          "is_active": true,
+          "database_slug": "work_animal_transport_provider"
+        },
+        {
+          "id": "animal_breeder",
+          "name": "Animal Breeder",
+          "kind_question": "Which animals do you breed?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            },
+            {
+              "id": "cats",
+              "name": "Cats"
+            },
+            {
+              "id": "cattle",
+              "name": "Cattle"
+            },
+            {
+              "id": "poultry",
+              "name": "Poultry"
+            },
+            {
+              "id": "goats",
+              "name": "Goats"
+            },
+            {
+              "id": "sheep",
+              "name": "Sheep"
+            },
+            {
+              "id": "rabbits",
+              "name": "Rabbits"
+            },
+            {
+              "id": "horses",
+              "name": "Horses"
+            },
+            {
+              "id": "other_animals",
+              "name": "Other animals"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "breeding_welfare_practices",
+              "name": "Breeding and animal welfare practices",
+              "is_evidence": true
+            },
+            {
+              "id": "breeding_authorization",
+              "name": "Applicable breeder authorization",
+              "is_evidence": true
+            }
+          ],
+          "is_active": true,
+          "database_slug": "work_animal_breeder"
+        },
+        {
+          "id": "animal_nutritionist",
+          "name": "Animal Nutritionist",
+          "kind_question": "Which animals do you advise on?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            },
+            {
+              "id": "cats",
+              "name": "Cats"
+            },
+            {
+              "id": "cattle",
+              "name": "Cattle"
+            },
+            {
+              "id": "poultry",
+              "name": "Poultry"
+            },
+            {
+              "id": "goats",
+              "name": "Goats"
+            },
+            {
+              "id": "sheep",
+              "name": "Sheep"
+            },
+            {
+              "id": "rabbits",
+              "name": "Rabbits"
+            },
+            {
+              "id": "horses",
+              "name": "Horses"
+            },
+            {
+              "id": "other_animals",
+              "name": "Other animals"
+            }
+          ],
+          "qualifications": [],
+          "is_active": true,
+          "database_slug": "work_animal_nutritionist"
+        },
+        {
+          "id": "veterinary_livestock_officer",
+          "name": "Veterinary / Livestock Officer",
+          "kind_question": "What animals do you work with?",
+          "kinds": [
+            {
+              "id": "dogs",
+              "name": "Dogs"
+            },
+            {
+              "id": "cats",
+              "name": "Cats"
+            },
+            {
+              "id": "cattle",
+              "name": "Cattle"
+            },
+            {
+              "id": "poultry",
+              "name": "Poultry"
+            },
+            {
+              "id": "goats",
+              "name": "Goats"
+            },
+            {
+              "id": "sheep",
+              "name": "Sheep"
+            },
+            {
+              "id": "rabbits",
+              "name": "Rabbits"
+            },
+            {
+              "id": "horses",
+              "name": "Horses"
+            },
+            {
+              "id": "other_animals",
+              "name": "Other animals"
+            }
+          ],
+          "qualifications": [
+            {
+              "id": "veterinary_licence",
+              "name": "Veterinary licence",
+              "is_evidence": true
+            },
+            {
+              "id": "diploma_degree",
+              "name": "Diploma / degree",
+              "is_evidence": false
+            },
+            {
+              "id": "vaccination_certification",
+              "name": "Vaccination certification",
+              "is_evidence": true
+            }
+          ],
+          "is_active": true,
+          "database_slug": "work_veterinary_livestock_officer"
+        }
+      ],
+      "is_active": true,
+      "identity_rule": "individual_roles_only_company_services_only",
+      "database_slug": "pets_animal_services"
     },
     {
       "id": "procurement_sourcing",

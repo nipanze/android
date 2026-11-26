@@ -20,6 +20,7 @@ const _requiredProofQualificationsByRole = <String, String>{
   'equipment_mechanic': 'mechanic_trade_certificate',
   'site_supervisor': 'safety_certification',
   'veterinary_livestock_officer': 'veterinary_licence',
+  'veterinarian': 'veterinary_licence',
   'clearing_customs_agent': 'customs_clearing_licence',
   'visa_assistance_specialist': 'travel_agency_licence',
   'tour_guide': 'tourism_board_guide_licence',
@@ -1886,12 +1887,18 @@ class ProviderServiceRole {
       name: 'Veterinary / Livestock Officer',
       description: 'Animal health, treatment, and breeding advisory',
       kindQuestion: 'What animals?',
-      categorySlug: 'agriculture_agribusiness',
+      categorySlug: 'pets_animal_services',
       capabilitySlug: 'work_veterinary_livestock_officer',
       kinds: [
+        ProviderRoleOption(slug: 'dogs', name: 'Dogs'),
+        ProviderRoleOption(slug: 'cats', name: 'Cats'),
         ProviderRoleOption(slug: 'cattle', name: 'Cattle'),
         ProviderRoleOption(slug: 'poultry', name: 'Poultry'),
-        ProviderRoleOption(slug: 'small_ruminants', name: 'Small ruminants'),
+        ProviderRoleOption(slug: 'goats', name: 'Goats'),
+        ProviderRoleOption(slug: 'sheep', name: 'Sheep'),
+        ProviderRoleOption(slug: 'rabbits', name: 'Rabbits'),
+        ProviderRoleOption(slug: 'horses', name: 'Horses'),
+        ProviderRoleOption(slug: 'other_animals', name: 'Other animals'),
       ],
       qualifications: [
         ProviderRoleQualification(
@@ -1906,6 +1913,239 @@ class ProviderServiceRole {
             slug: 'vaccination_certification',
             name: 'Vaccination certification',
             isEvidence: true),
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'veterinarian',
+      name: 'Veterinarian',
+      description: 'Veterinary diagnosis, treatment, and preventive care',
+      kindQuestion: 'What animals do you treat?',
+      categorySlug: 'pets_animal_services',
+      capabilitySlug: 'work_veterinarian',
+      kinds: [
+        ProviderRoleOption(slug: 'dogs', name: 'Dogs'),
+        ProviderRoleOption(slug: 'cats', name: 'Cats'),
+        ProviderRoleOption(slug: 'cattle', name: 'Cattle'),
+        ProviderRoleOption(slug: 'poultry', name: 'Poultry'),
+        ProviderRoleOption(slug: 'goats', name: 'Goats'),
+        ProviderRoleOption(slug: 'sheep', name: 'Sheep'),
+        ProviderRoleOption(slug: 'rabbits', name: 'Rabbits'),
+        ProviderRoleOption(slug: 'horses', name: 'Horses'),
+        ProviderRoleOption(slug: 'other_animals', name: 'Other animals'),
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'veterinary_licence',
+            name: 'Veterinary professional registration and authorization',
+            isEvidence: true,
+            isRequiredProof: true)
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'veterinary_assistant',
+      name: 'Veterinary Assistant',
+      description: 'Support veterinary examinations and animal care',
+      kindQuestion: 'What animals do you work with?',
+      categorySlug: 'pets_animal_services',
+      capabilitySlug: 'work_veterinary_assistant',
+      kinds: [
+        ProviderRoleOption(slug: 'dogs', name: 'Dogs'),
+        ProviderRoleOption(slug: 'cats', name: 'Cats'),
+        ProviderRoleOption(slug: 'cattle', name: 'Cattle'),
+        ProviderRoleOption(slug: 'poultry', name: 'Poultry'),
+        ProviderRoleOption(slug: 'goats', name: 'Goats'),
+        ProviderRoleOption(slug: 'sheep', name: 'Sheep'),
+        ProviderRoleOption(slug: 'rabbits', name: 'Rabbits'),
+        ProviderRoleOption(slug: 'horses', name: 'Horses'),
+        ProviderRoleOption(slug: 'other_animals', name: 'Other animals')
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'animal_care_qualification',
+            name: 'Animal care qualification',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'animal_care_experience',
+            name: 'Animal care experience',
+            isEvidence: false)
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'pet_trainer_behaviour_specialist',
+      name: 'Pet Trainer / Behaviour Specialist',
+      description: 'Train pets and support animal behaviour',
+      kindQuestion: 'Which animals do you train?',
+      categorySlug: 'pets_animal_services',
+      capabilitySlug: 'work_pet_trainer_behaviour_specialist',
+      kinds: [
+        ProviderRoleOption(slug: 'dogs', name: 'Dogs'),
+        ProviderRoleOption(slug: 'cats', name: 'Cats'),
+        ProviderRoleOption(slug: 'other_animals', name: 'Other animals')
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'training_qualification',
+            name: 'Training qualification',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'training_references',
+            name: 'Client references',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'training_experience',
+            name: 'Training experience',
+            isEvidence: false)
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'dog_trainer',
+      name: 'Dog Trainer',
+      description: 'Train dogs for behaviour and obedience',
+      kindQuestion: 'Which dogs do you train?',
+      categorySlug: 'pets_animal_services',
+      capabilitySlug: 'work_dog_trainer',
+      kinds: [ProviderRoleOption(slug: 'dogs', name: 'Dogs')],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'training_qualification',
+            name: 'Training qualification',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'training_references',
+            name: 'Client references',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'training_experience',
+            name: 'Training experience',
+            isEvidence: false)
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'pet_groomer',
+      name: 'Pet Groomer',
+      description: 'Groom and care for pets',
+      kindQuestion: 'Which animals do you groom?',
+      categorySlug: 'pets_animal_services',
+      capabilitySlug: 'work_pet_groomer',
+      kinds: [
+        ProviderRoleOption(slug: 'dogs', name: 'Dogs'),
+        ProviderRoleOption(slug: 'cats', name: 'Cats'),
+        ProviderRoleOption(slug: 'other_animals', name: 'Other animals')
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'pet_sitter',
+      name: 'Pet Sitter',
+      description: 'Provide in-home or visiting pet care',
+      kindQuestion: 'Which animals do you care for?',
+      categorySlug: 'pets_animal_services',
+      capabilitySlug: 'work_pet_sitter',
+      kinds: [
+        ProviderRoleOption(slug: 'dogs', name: 'Dogs'),
+        ProviderRoleOption(slug: 'cats', name: 'Cats'),
+        ProviderRoleOption(slug: 'rabbits', name: 'Rabbits'),
+        ProviderRoleOption(slug: 'birds', name: 'Birds'),
+        ProviderRoleOption(slug: 'other_animals', name: 'Other animals')
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'pet_boarding_provider',
+      name: 'Pet Boarding Provider',
+      description: 'Provide temporary animal boarding and care',
+      kindQuestion: 'Which animals can you accommodate?',
+      categorySlug: 'pets_animal_services',
+      capabilitySlug: 'work_pet_boarding_provider',
+      kinds: [
+        ProviderRoleOption(slug: 'dogs', name: 'Dogs'),
+        ProviderRoleOption(slug: 'cats', name: 'Cats'),
+        ProviderRoleOption(slug: 'rabbits', name: 'Rabbits'),
+        ProviderRoleOption(slug: 'birds', name: 'Birds'),
+        ProviderRoleOption(slug: 'other_animals', name: 'Other animals')
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'boarding_facility',
+            name: 'Boarding facility information',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'animal_welfare_practices',
+            name: 'Animal welfare practices',
+            isEvidence: true)
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'dog_walker',
+      name: 'Dog Walker',
+      description: 'Walk and exercise dogs',
+      kindQuestion: 'Which animals do you walk?',
+      categorySlug: 'pets_animal_services',
+      capabilitySlug: 'work_dog_walker',
+      kinds: [ProviderRoleOption(slug: 'dogs', name: 'Dogs')],
+    ),
+    ProviderServiceRole(
+      slug: 'animal_transport_provider',
+      name: 'Animal Transport Provider',
+      description: 'Transport animals safely',
+      kindQuestion: 'What animals can you transport?',
+      categorySlug: 'pets_animal_services',
+      capabilitySlug: 'work_animal_transport_provider',
+      kinds: [
+        ProviderRoleOption(slug: 'dogs', name: 'Dogs'),
+        ProviderRoleOption(slug: 'cats', name: 'Cats'),
+        ProviderRoleOption(slug: 'cattle', name: 'Cattle'),
+        ProviderRoleOption(slug: 'poultry', name: 'Poultry'),
+        ProviderRoleOption(slug: 'goats', name: 'Goats'),
+        ProviderRoleOption(slug: 'sheep', name: 'Sheep'),
+        ProviderRoleOption(slug: 'horses', name: 'Horses'),
+        ProviderRoleOption(slug: 'other_animals', name: 'Other animals')
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'animal_breeder',
+      name: 'Animal Breeder',
+      description: 'Breed and care for animals responsibly',
+      kindQuestion: 'Which animals do you breed?',
+      categorySlug: 'pets_animal_services',
+      capabilitySlug: 'work_animal_breeder',
+      kinds: [
+        ProviderRoleOption(slug: 'dogs', name: 'Dogs'),
+        ProviderRoleOption(slug: 'cats', name: 'Cats'),
+        ProviderRoleOption(slug: 'cattle', name: 'Cattle'),
+        ProviderRoleOption(slug: 'poultry', name: 'Poultry'),
+        ProviderRoleOption(slug: 'goats', name: 'Goats'),
+        ProviderRoleOption(slug: 'sheep', name: 'Sheep'),
+        ProviderRoleOption(slug: 'rabbits', name: 'Rabbits'),
+        ProviderRoleOption(slug: 'horses', name: 'Horses'),
+        ProviderRoleOption(slug: 'other_animals', name: 'Other animals')
+      ],
+      qualifications: [
+        ProviderRoleQualification(
+            slug: 'breeding_welfare_practices',
+            name: 'Breeding and animal welfare practices',
+            isEvidence: true),
+        ProviderRoleQualification(
+            slug: 'breeding_authorization',
+            name: 'Applicable breeder authorization',
+            isEvidence: true)
+      ],
+    ),
+    ProviderServiceRole(
+      slug: 'animal_nutritionist',
+      name: 'Animal Nutritionist',
+      description: 'Provide animal nutrition and feeding advice',
+      kindQuestion: 'Which animals do you advise on?',
+      categorySlug: 'pets_animal_services',
+      capabilitySlug: 'work_animal_nutritionist',
+      kinds: [
+        ProviderRoleOption(slug: 'dogs', name: 'Dogs'),
+        ProviderRoleOption(slug: 'cats', name: 'Cats'),
+        ProviderRoleOption(slug: 'cattle', name: 'Cattle'),
+        ProviderRoleOption(slug: 'poultry', name: 'Poultry'),
+        ProviderRoleOption(slug: 'goats', name: 'Goats'),
+        ProviderRoleOption(slug: 'sheep', name: 'Sheep'),
+        ProviderRoleOption(slug: 'rabbits', name: 'Rabbits'),
+        ProviderRoleOption(slug: 'horses', name: 'Horses'),
+        ProviderRoleOption(slug: 'other_animals', name: 'Other animals')
       ],
     ),
     ProviderServiceRole(

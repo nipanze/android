@@ -2,9 +2,9 @@
 
 > Catalog source: [`provider_services_v2.json`](./provider_services_v2.json). Database updates are in [`sql/patch_provider_catalog_one_word_hierarchy.sql`](./sql/patch_provider_catalog_one_word_hierarchy.sql). Apply that migration after its prerequisite catalog and verification patches, then apply [`sql/patch_finance_provider_top_level_categories.sql`](./sql/patch_finance_provider_top_level_categories.sql) after `patch_financial_services_provider_capabilities.sql`.
 > The Tourism Services group is added by [`sql/patch_travel_tourism_services.sql`](./sql/patch_travel_tourism_services.sql), after `patch_provider_services_v2_catalog.sql`.
-> Full category names in the backend are set by [`sql/patch_provider_category_full_names.sql`](./sql/patch_provider_category_full_names.sql), after `patch_provider_services_v2_catalog.sql`.
+> Full category names in the backend are set by [`sql/patch_provider_category_full_names.sql`](./sql/patch_provider_category_full_names.sql), after `patch_provider_services_v2_catalog.sql`. Pets & Animal Services is installed by [`sql/patch_pets_animal_services.sql`](./sql/patch_pets_animal_services.sql), after the provider work-profile catalogue.
 
-**Catalog size:** 22 categories · 211 services · 94 Individual roles.
+**Catalog size:** 23 categories · 211 services · 105 Individual roles.
 
 The picker flow is **Category → Subcategory → Individual or Company / Organization → Services**. Category and subcategory labels are display values; existing database slugs are preserved. Finance supports both identity types. Individual profiles select work roles; company profiles select services.
 
@@ -23,17 +23,18 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | 9 | Energy | `energy_utilities` | 3 | 8 | 4 |
 | 10 | Transport | `transport_logistics` | 5 | 13 | 5 |
 | 11 | Machinery | `machinery_equipment` | 3 | 7 | 4 |
-| 12 | Agriculture | `agriculture_agribusiness` | 3 | 5 | 4 |
-| 13 | Sourcing | `specialized_products` | 2 | 8 | 3 |
-| 14 | Travel | `travel_international` | 3 | 10 | 4 |
-| 15 | Domestic | `domestic_household` | 2 | 7 | 5 |
-| 16 | Health | `health_medical` | 4 | 15 | 12 |
-| 17 | Cultural | `traditional_cultural` | 2 | 5 | 4 |
-| 18 | Loans & Financing | `financial_services` | 1 | 28 | 0 |
-| 19 | Investment Services | `investment_services` | 1 | 5 | 0 |
-| 20 | Investment Opportunities | `investment_opportunities` | 1 | 4 | 2 |
-| 21 | Forex & Money Services | `forex_money_services` | 1 | 4 | 4 |
-| 22 | Savings & Cooperatives | `savings_cooperatives` | 1 | 4 | 0 |
+| 12 | Agriculture | `agriculture_agribusiness` | 3 | 5 | 3 |
+| 13 | Pets & Animal Services | `pets_animal_services` | 0 | 0 | 12 |
+| 14 | Sourcing | `specialized_products` | 2 | 8 | 3 |
+| 15 | Travel | `travel_international` | 3 | 10 | 4 |
+| 16 | Domestic | `domestic_household` | 2 | 7 | 5 |
+| 17 | Health | `health_medical` | 4 | 15 | 12 |
+| 18 | Cultural | `traditional_cultural` | 2 | 5 | 4 |
+| 19 | Loans & Financing | `financial_services` | 1 | 28 | 0 |
+| 20 | Investment Services | `investment_services` | 1 | 5 | 0 |
+| 21 | Investment Opportunities | `investment_opportunities` | 1 | 4 | 2 |
+| 22 | Forex & Money Services | `forex_money_services` | 1 | 4 | 4 |
+| 23 | Savings & Cooperatives | `savings_cooperatives` | 1 | 4 | 0 |
 
 ## Full catalog
 
@@ -1194,19 +1195,6 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Degree / diploma in agronomy | No |
 | Field experience | No |
 
-#### Veterinary / Livestock Officer
-
-**Database slug:** `work_veterinary_livestock_officer`
-**Status:** Available
-**Question:** What animals?
-**Kinds:** Cattle · Poultry · Small ruminants
-
-| Qualification | Evidence required |
-|---|---|
-| Veterinary licence | No |
-| Diploma / degree | No |
-| Vaccination certification | No |
-
 #### Farm Worker / Operator
 
 **Database slug:** `work_farm_worker_operator`
@@ -1220,7 +1208,34 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Pesticide handling certificate | No |
 | Experience 1+ year | No |
 
-## 13. 🔎 Sourcing
+## 13. 🐾 Pets & Animal Services
+
+**Database slug:** `pets_animal_services`
+**Description:** Veterinary care, pet training, grooming, boarding and animal care
+**Database patch:** `sql/patch_pets_animal_services.sql`
+
+The legacy Veterinary / Livestock Officer capability and role slug is retained in this category. Existing provider metadata remains attached to its original capability.
+
+### Individual roles
+
+| Role | Database slug | Animal specialization | Verification |
+|---|---|---|---|
+| Veterinarian | `work_veterinarian` | Dogs, cats, cattle, poultry, goats, sheep, rabbits, horses, other animals | Required professional registration and authorization |
+| Veterinary Assistant | `work_veterinary_assistant` | Relevant animal types | Qualification or experience review |
+| Pet Trainer / Behaviour Specialist | `work_pet_trainer_behaviour_specialist` | Dogs, cats, other animals | Optional qualification, experience and references |
+| Dog Trainer | `work_dog_trainer` | Dogs | Optional qualification, experience and references |
+| Pet Groomer | `work_pet_groomer` | Dogs, cats, other animals | Open |
+| Pet Sitter | `work_pet_sitter` | Dogs, cats, rabbits, birds, other animals | Open |
+| Pet Boarding Provider | `work_pet_boarding_provider` | Dogs, cats, rabbits, birds, other animals | Optional facility and animal welfare evidence |
+| Dog Walker | `work_dog_walker` | Dogs | Open |
+| Animal Transport Provider | `work_animal_transport_provider` | Dogs, cats, cattle, poultry, goats, sheep, horses, other animals | Open |
+| Animal Breeder | `work_animal_breeder` | Dogs, cats, cattle, poultry, goats, sheep, rabbits, horses, other animals | Optional authorization and animal welfare evidence |
+| Animal Nutritionist | `work_animal_nutritionist` | Relevant animal types | Optional qualification or experience review |
+| Veterinary / Livestock Officer (legacy) | `work_veterinary_livestock_officer` | Legacy livestock types and new animal specializations | Existing veterinary proof policy |
+
+Selections are multi-select per role. Selecting **Other animals** requires a provider-entered description. Animal requests capture animal type, and notification and offer matching checks the provider's declared specializations.
+
+## 14. 🔎 Sourcing
 
 **Database slug:** `specialized_products`
 **Description:** Buying, importing and finding hard-to-get products
@@ -1283,7 +1298,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Customs clearing licence | No |
 | Logistics experience | No |
 
-## 14. ✈️ Travel
+## 15. ✈️ Travel
 
 **Database slug:** `travel_international`
 **Description:** Bookings, visas, tours and relocation
@@ -1375,7 +1390,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Tourism diploma / degree | No |
 | Managed 3+ staff | No |
 
-## 15. 🏠 Domestic
+## 16. 🏠 Domestic
 
 **Database slug:** `domestic_household`
 **Description:** House help, childcare, home cooking and care at home
@@ -1468,7 +1483,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | National ID | Yes |
 | References | No |
 
-## 16. ⚕️ Health
+## 17. ⚕️ Health
 
 **Database slug:** `health_medical`
 **Description:** Nurses, doctors, specialists, clinics and care
@@ -1670,7 +1685,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Ministry of Health or facility authorisation | Yes |
 | National ID | Yes |
 
-## 17. 🪘 Cultural
+## 18. 🪘 Cultural
 
 **Database slug:** `traditional_cultural`
 **Description:** Traditional ceremonies, prayers, healing and culture
@@ -1740,7 +1755,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | Registration with relevant association or local authority | Yes |
 | Referees | No |
 
-## 18. 💰 Loans & Financing
+## 19. 💰 Loans & Financing
 
 **Database slug:** `financial_services`
 **Description:** Personal, business, asset and other loan financing services.
@@ -1807,7 +1822,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 
 | Wedding Financing | `wedding_financing` | Available | `required_proof` |
 
-## 19. 📈 Investment Services
+## 20. 📈 Investment Services
 
 **Database slug:** `investment_services`
 **Description:** Investment brokerage, investment guidance and related services.
@@ -1828,7 +1843,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 
 | Investment Advisory | `investment_advisory` | Available | `required_proof` |
 
-## 20. 🤝 Investment Opportunities
+## 21. 🤝 Investment Opportunities
 
 **Database slug:** `investment_opportunities`
 **Description:** Investor networks, introductions and startup support services.
@@ -1890,7 +1905,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 
 | Referees | No |
 
-## 21. 💱 Forex & Money Services
+## 22. 💱 Forex & Money Services
 
 **Database slug:** `forex_money_services`
 **Description:** Currency exchange, forex services and money transfer.
@@ -1964,7 +1979,7 @@ The picker flow is **Category → Subcategory → Individual or Company / Organi
 | AML / financial crime training | Yes |
 | Customer service experience | No |
 
-## 22. 🏦 Savings & Cooperatives
+## 23. 🏦 Savings & Cooperatives
 
 **Database slug:** `savings_cooperatives`
 **Description:** SACCOs, savings groups, VSLAs and cooperatives.

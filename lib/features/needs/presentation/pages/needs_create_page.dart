@@ -26,6 +26,7 @@ import '../../data/need_draft_exit_guard.dart';
 import '../../data/need_draft_store.dart';
 import '../../data/needs_repository.dart';
 import '../../domain/models/need_capability.dart';
+import '../../domain/models/need_catalog_localizations.dart';
 import '../../domain/models/need_category.dart';
 import '../../domain/models/need_form_schema.dart';
 
@@ -300,6 +301,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       categorySlug == 'professional_services' ||
       categorySlug == 'travel_international' ||
       categorySlug == 'agriculture_agribusiness' ||
+      categorySlug == 'pets_animal_services' ||
       categorySlug == 'energy_utilities' ||
       categorySlug == 'technology_digital' ||
       categorySlug == 'marketing_promotion' ||
@@ -331,6 +333,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         'professional_services' => 'Business',
         'travel_international' => 'Travel',
         'agriculture_agribusiness' => 'Agriculture',
+        'pets_animal_services' => 'Pets',
         'energy_utilities' => 'Energy',
         'technology_digital' => 'Digital',
         'marketing_promotion' => 'Marketing',
@@ -366,7 +369,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         _targetCapabilities = capabilities
             .where((capability) =>
                 capability.serviceGroupSlug != null &&
-                capability.serviceGroupSlug != 'work_roles')
+                (categorySlug == 'pets_animal_services' ||
+                    capability.serviceGroupSlug != 'work_roles'))
             .toList();
       });
     } catch (_) {}
@@ -630,6 +634,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
         'professional_services' => 'Business',
         'travel_international' => 'Travel',
         'agriculture_agribusiness' => 'Agriculture',
+        'pets_animal_services' => 'Pets',
         'energy_utilities' => 'Energy',
         'technology_digital' => 'Digital',
         'marketing_promotion' => 'Marketing',
@@ -779,7 +784,16 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                             ),
                           _buildServiceChoiceTile(
                             context: context,
-                            title: services[index].name,
+                            title: _categorySlug == 'pets_animal_services'
+                                ? NeedCatalogLocalizations.providerRoleName(
+                                      Localizations.localeOf(context)
+                                          .languageCode,
+                                      services[index]
+                                          .slug
+                                          .replaceFirst('work_', ''),
+                                    ) ??
+                                    services[index].name
+                                : services[index].name,
                             subtitle: _serviceDescription(services[index].slug),
                             selected:
                                 _targetCapabilitySlug == services[index].slug,
@@ -1302,6 +1316,60 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     return null;
   }
 
+  String _displayFieldLabel(NeedFormField field) {
+    if (_categorySlug == 'pets_animal_services' &&
+        (field.key == 'animal_type' || field.key == 'animal_service')) {
+      return NeedCatalogLocalizations.animalRequestFieldLabel(
+        Localizations.localeOf(context).languageCode,
+        field.key,
+      );
+    }
+    return field.label;
+  }
+
+  String _displayFieldHint(NeedFormField field) {
+    if (_categorySlug == 'pets_animal_services' &&
+        (field.key == 'animal_type' || field.key == 'animal_service')) {
+      return NeedCatalogLocalizations.animalRequestFieldHint(
+        Localizations.localeOf(context).languageCode,
+        field.key,
+      );
+    }
+    return field.hint;
+  }
+
+  String _displayFieldOption(NeedFormField field, String option) {
+    if (_categorySlug != 'pets_animal_services' || field.key != 'animal_type') {
+      return option;
+    }
+    const slugs = <String, String>{
+      'Dogs': 'dogs',
+      'Cats': 'cats',
+      'Cattle': 'cattle',
+      'Poultry': 'poultry',
+      'Goats': 'goats',
+      'Sheep': 'sheep',
+      'Rabbits': 'rabbits',
+      'Horses': 'horses',
+      'Other animals': 'other_animals',
+    };
+    final slug = slugs[option];
+    return slug == null
+        ? option
+        : NeedCatalogLocalizations.providerAnimalName(
+            Localizations.localeOf(context).languageCode,
+            slug,
+            option,
+          );
+  }
+
+  String _canonicalFieldOption(NeedFormField field, String option) {
+    for (final canonical in field.options ?? const <String>[]) {
+      if (_displayFieldOption(field, canonical) == option) return canonical;
+    }
+    return option;
+  }
+
   void _setFieldValue(NeedFormField field, String value) {
     setState(() {
       if (field.type == NeedFieldType.boolean) {
@@ -1459,10 +1527,15 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     return FormSuggestionStrip(
       label: label,
       topPadding: 0,
-      suggestions: _optionsForField(field),
+      suggestions: _optionsForField(field)
+          .map((option) => _displayFieldOption(field, option))
+          .toList(),
       maxVisibleChoices: _maxVisibleChoiceCount(_optionsForField(field).length),
-      selectedValue: selected?.isEmpty == true ? null : selected,
-      onSelected: (value) => _setFieldValue(field, value),
+      selectedValue: selected?.isEmpty == true
+          ? null
+          : _displayFieldOption(field, selected!),
+      onSelected: (value) =>
+          _setFieldValue(field, _canonicalFieldOption(field, value)),
     );
   }
 
@@ -1793,7 +1866,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       final maxVisibleChoices = _maxVisibleChoiceCount(values.length);
 
       return FormSuggestionStrip(
-        label: field.label,
+        label: _displayFieldLabel(field),
         suggestions: [
           ...localizedValues,
           'Custom',
@@ -1858,7 +1931,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
     final localizedCurrentValue = localizedNationalities[currentValue] ??
         (currentValue.isEmpty ? null : currentValue);
     return FormSuggestionStrip(
-      label: field.label,
+      label: _displayFieldLabel(field),
       suggestions: values
           .map((value) => localizedNationalities[value] ?? value)
           .toList(),
@@ -1974,8 +2047,8 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 ? [FilteringTextInputFormatter.digitsOnly]
                 : null,
             decoration: _detailsInputDecoration(
-              label: _fieldLabel(field.label, field.guidance),
-              hintText: field.hint,
+              label: _fieldLabel(_displayFieldLabel(field), field.guidance),
+              hintText: _displayFieldHint(field),
               helperText: helperTextOverride ?? field.helperText,
               suffixIcon: _clearSuffix(
                 controller,
@@ -2180,7 +2253,9 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isOperator ? 'I need a machine operator' : field.label,
+                    isOperator
+                        ? 'I need a machine operator'
+                        : _displayFieldLabel(field),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -2349,7 +2424,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
               ),
               for (final field in dynamicFields)
                 _previewRow(
-                  field.label,
+                  _displayFieldLabel(field),
                   field.type == NeedFieldType.boolean
                       ? ((_dynamicBooleans[field.key] ?? false) ? 'Yes' : 'No')
                       : _dynamicControllers[field.key]?.text.trim() ?? '',
@@ -2558,7 +2633,11 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
       intlLocaleName(Localizations.localeOf(context)),
     );
 
-    final guidance = NeedFormSchema.guidanceForCategory(_categorySlug);
+    final guidance = _categorySlug == 'pets_animal_services'
+        ? NeedCatalogLocalizations.animalRequestGuidance(
+            Localizations.localeOf(context).languageCode,
+          )
+        : NeedFormSchema.guidanceForCategory(_categorySlug);
     final selectedCategory = _categories.firstWhere(
       (category) => category.slug == _categorySlug,
       orElse: () => NeedCategory.findBySlug(_categorySlug),
@@ -2809,7 +2888,7 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: _buildOptionPills(
                                   field,
-                                  label: field.label,
+                                  label: _displayFieldLabel(field),
                                 ),
                               )
                             else if (field.options != null)
@@ -2818,7 +2897,10 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _buildOptionPills(field),
+                                    _buildOptionPills(
+                                      field,
+                                      label: _displayFieldLabel(field),
+                                    ),
                                     const SizedBox(height: 8),
                                     DropdownButtonFormField<String>(
                                       key: ValueKey(
@@ -2834,15 +2916,17 @@ class _NeedsCreatePageState extends State<NeedsCreatePage> {
                                                   ?.text,
                                       decoration: _detailsInputDecoration(
                                         label: _fieldLabel(
-                                            field.label, field.guidance),
-                                        hintText: field.hint,
+                                            _displayFieldLabel(field),
+                                            field.guidance),
+                                        hintText: _displayFieldHint(field),
                                         helperText: field.helperText,
                                       ),
                                       items: _optionsForField(field)
                                           .map(
                                             (option) => DropdownMenuItem(
                                               value: option,
-                                              child: Text(option),
+                                              child: Text(_displayFieldOption(
+                                                  field, option)),
                                             ),
                                           )
                                           .toList(),

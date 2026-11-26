@@ -160,6 +160,12 @@ class NeedFormSchema {
       specificationHelper:
           'Mention quality, delivery, production volume, or timing preferences.',
     ),
+    'pets_animal_services': NeedFormGuidance(
+      titleHint: 'e.g. I need a veterinarian for my dog',
+      specificationHint: 'Add animal care requirements',
+      specificationHelper:
+          'Describe the animal, care needed, and any timing or handling requirements.',
+    ),
     'technology_digital': NeedFormGuidance(
       titleHint: 'e.g. I want an online shop for my business',
       specificationHint: 'Add other requirements not covered above',
@@ -2358,6 +2364,29 @@ class NeedFormSchema {
   }
 
   static const Map<String, List<NeedFormField>> categoryFields = {
+    'pets_animal_services': [
+      NeedFormField.text(
+        'animal_type',
+        label: 'Animal type',
+        hint: 'Choose an animal or enter another animal',
+        options: [
+          'Dogs',
+          'Cats',
+          'Cattle',
+          'Poultry',
+          'Goats',
+          'Sheep',
+          'Rabbits',
+          'Horses',
+          'Other animals'
+        ],
+      ),
+      NeedFormField.text(
+        'animal_service',
+        label: 'Animal service needed',
+        hint: 'e.g. Veterinary examination, grooming, boarding',
+      ),
+    ],
     'education_training': [
       NeedFormField.text(
         'subject_or_skill',

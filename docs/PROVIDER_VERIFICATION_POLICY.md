@@ -36,6 +36,11 @@ The seeded capabilities are:
 | Visa assistance, Hajj & Umrah | Authorization or affiliation with a licensed operator | Current travel/operator accreditation and business licence |
 | Seeds & inputs | Dealer/handler authorization when applicable | Registered dealer/premises and product registration for regulated inputs |
 | Catering | Food handler health certificate | Food business health permit and food staff certificates |
+| Veterinarian | Current veterinary professional registration and authorization | Current organization authorization and named veterinarian credential |
+| Veterinary Assistant | Relevant qualification or documented experience (reviewable evidence) | Assistant qualifications and experience for named staff |
+| Pet Trainer / Dog Trainer | Qualifications, experience, and client references (optional evidence) | Staff credentials and references where applicable |
+| Pet Boarding Provider | Facility information and animal welfare practices (optional evidence) | Facility and welfare evidence |
+| Animal Breeder | Applicable authorization and animal welfare practices (optional evidence) | Breeding authorization and welfare evidence |
 
 These are capability-specific safeguards, not a claim that every listed
 document is legally required for every service in every district. Admin review
@@ -44,6 +49,13 @@ Technology, Marketing, Photo/Video/Music, Beauty, general Events, general
 Education, or Procurement listings. If a regulated activity is later added
 (such as drone operation or medical supply distribution), add a separate rule
 for that capability.
+
+For animal services, Nipanze identity/KYC verification remains the account-level
+check. Veterinary registration and other role evidence are capability-level
+claims reviewed through the provider evidence workflow; they determine the
+Provider Verified status for that role and do not replace or imply identity
+verification. Optional trainer, facility, and welfare evidence remains
+reviewable without changing the account's KYC state.
 
 ## Flow and safeguards
 

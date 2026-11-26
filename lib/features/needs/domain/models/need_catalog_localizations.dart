@@ -1,5 +1,361 @@
+import 'need_form_schema.dart';
+
 class NeedCatalogLocalizations {
   NeedCatalogLocalizations._();
+
+  static const _petsRoleNames = <String, Map<String, String>>{
+    'veterinarian': {
+      'sw': 'Daktari wa mifugo',
+      'fr': 'Vétérinaire',
+      'rw': 'Veterineri',
+      'ar': 'طبيب بيطري'
+    },
+    'veterinary_assistant': {
+      'sw': 'Msaidizi wa mifugo',
+      'fr': 'Assistant vétérinaire',
+      'rw': 'Umufasha wa veterineri',
+      'ar': 'مساعد بيطري'
+    },
+    'pet_trainer_behaviour_specialist': {
+      'sw': 'Mkufunzi wa wanyama / mtaalamu wa tabia',
+      'fr': 'Éducateur animalier / comportementaliste',
+      'rw': 'Umutoza w’amatungo / inzobere mu myitwarire',
+      'ar': 'مدرب حيوانات / أخصائي سلوك'
+    },
+    'dog_trainer': {
+      'sw': 'Mkufunzi wa mbwa',
+      'fr': 'Éducateur canin',
+      'rw': 'Umutoza w’imbwa',
+      'ar': 'مدرب كلاب'
+    },
+    'pet_groomer': {
+      'sw': 'Mtoa huduma za urembo wa wanyama',
+      'fr': 'Toiletteur pour animaux',
+      'rw': 'Uwoza amatungo',
+      'ar': 'مصفف حيوانات أليفة'
+    },
+    'pet_sitter': {
+      'sw': 'Mlezi wa wanyama vipenzi',
+      'fr': 'Gardien d’animaux',
+      'rw': 'Uwitaho amatungo',
+      'ar': 'جليس حيوانات أليفة'
+    },
+    'pet_boarding_provider': {
+      'sw': 'Mtoa malazi ya wanyama',
+      'fr': 'Pension pour animaux',
+      'rw': 'Uwakira amatungo',
+      'ar': 'مقدم إيواء الحيوانات'
+    },
+    'dog_walker': {
+      'sw': 'Mtembezaji wa mbwa',
+      'fr': 'Promeneur de chiens',
+      'rw': 'Umutembereza imbwa',
+      'ar': 'ممشّي كلاب'
+    },
+    'animal_transport_provider': {
+      'sw': 'Mtoa usafiri wa wanyama',
+      'fr': 'Transporteur d’animaux',
+      'rw': 'Umutwara amatungo',
+      'ar': 'ناقل حيوانات'
+    },
+    'animal_breeder': {
+      'sw': 'Mfugaji wa wanyama',
+      'fr': 'Éleveur d’animaux',
+      'rw': 'Umworozi w’amatungo',
+      'ar': 'مربي حيوانات'
+    },
+    'animal_nutritionist': {
+      'sw': 'Mtaalamu wa lishe ya wanyama',
+      'fr': 'Nutritionniste animalier',
+      'rw': 'Inzobere mu mirire y’amatungo',
+      'ar': 'أخصائي تغذية الحيوانات'
+    },
+    'veterinary_livestock_officer': {
+      'sw': 'Afisa wa mifugo',
+      'fr': 'Agent vétérinaire / élevage',
+      'rw': 'Umukozi ushinzwe amatungo',
+      'ar': 'مسؤول بيطري / مواشٍ'
+    },
+  };
+
+  static const _animalNames = <String, Map<String, String>>{
+    'dogs': {'sw': 'Mbwa', 'fr': 'Chiens', 'rw': 'Imbwa', 'ar': 'كلاب'},
+    'cats': {'sw': 'Paka', 'fr': 'Chats', 'rw': 'Injangwe', 'ar': 'قطط'},
+    'cattle': {'sw': 'Ng’ombe', 'fr': 'Bovins', 'rw': 'Inka', 'ar': 'أبقار'},
+    'poultry': {'sw': 'Kuku', 'fr': 'Volailles', 'rw': 'Inkoko', 'ar': 'دواجن'},
+    'goats': {'sw': 'Mbuzi', 'fr': 'Chèvres', 'rw': 'Ihene', 'ar': 'ماعز'},
+    'sheep': {'sw': 'Kondoo', 'fr': 'Moutons', 'rw': 'Intama', 'ar': 'أغنام'},
+    'rabbits': {
+      'sw': 'Sungura',
+      'fr': 'Lapins',
+      'rw': 'Inkwavu',
+      'ar': 'أرانب'
+    },
+    'horses': {
+      'sw': 'Farasi',
+      'fr': 'Chevaux',
+      'rw': 'Amafarashi',
+      'ar': 'خيول'
+    },
+    'other_animals': {
+      'sw': 'Wanyama wengine',
+      'fr': 'Autres animaux',
+      'rw': 'Izindi nyamaswa',
+      'ar': 'حيوانات أخرى'
+    },
+    'birds': {'sw': 'Ndege', 'fr': 'Oiseaux', 'rw': 'Inyoni', 'ar': 'طيور'},
+  };
+
+  static const _petQualificationNames = <String, Map<String, String>>{
+    'veterinary_licence': {
+      'sw': 'Usajili na idhini ya kitaaluma ya mifugo',
+      'fr': 'Inscription professionnelle et autorisation vétérinaire',
+      'rw': 'Kwiyandikisha no kwemererwa mu mwuga w’ubuvuzi bw’amatungo',
+      'ar': 'التسجيل المهني والتصريح البيطري',
+    },
+    'animal_care_qualification': {
+      'sw': 'Sifa za utunzaji wa wanyama',
+      'fr': 'Qualification en soins animaliers',
+      'rw': 'Impamyabumenyi mu kwita ku matungo',
+      'ar': 'مؤهل في رعاية الحيوانات',
+    },
+    'animal_care_experience': {
+      'sw': 'Uzoefu wa utunzaji wa wanyama',
+      'fr': 'Expérience en soins animaliers',
+      'rw': 'Uburambe mu kwita ku matungo',
+      'ar': 'خبرة في رعاية الحيوانات',
+    },
+    'training_qualification': {
+      'sw': 'Sifa za mafunzo',
+      'fr': 'Qualification en dressage',
+      'rw': 'Impamyabumenyi mu gutoza amatungo',
+      'ar': 'مؤهل في تدريب الحيوانات',
+    },
+    'training_references': {
+      'sw': 'Marejeleo ya wateja',
+      'fr': 'Références de clients',
+      'rw': 'Abo wahaye serivisi bakugira inama',
+      'ar': 'مراجع من العملاء',
+    },
+    'training_experience': {
+      'sw': 'Uzoefu wa mafunzo',
+      'fr': 'Expérience en dressage',
+      'rw': 'Uburambe mu gutoza',
+      'ar': 'خبرة في التدريب',
+    },
+    'boarding_facility': {
+      'sw': 'Taarifa za kituo cha malazi',
+      'fr': 'Informations sur le lieu de pension',
+      'rw': 'Amakuru y’aho amatungo acumbikirwa',
+      'ar': 'معلومات مرفق الإيواء',
+    },
+    'animal_welfare_practices': {
+      'sw': 'Mbinu za ustawi wa wanyama',
+      'fr': 'Pratiques de bien-être animal',
+      'rw': 'Uburyo bwo kurengera imibereho myiza y’amatungo',
+      'ar': 'ممارسات رعاية الحيوان',
+    },
+    'breeding_welfare_practices': {
+      'sw': 'Ufugaji na ustawi wa wanyama',
+      'fr': 'Élevage et bien-être animal',
+      'rw': 'Ubworozi no kwita ku mibereho myiza y’amatungo',
+      'ar': 'ممارسات التربية ورعاية الحيوان',
+    },
+    'breeding_authorization': {
+      'sw': 'Idhini ya ufugaji inayohitajika',
+      'fr': 'Autorisation d’élevage applicable',
+      'rw': 'Uruhushya rukenewe rw’ubworozi',
+      'ar': 'تصريح التربية المطلوب',
+    },
+  };
+
+  static String? providerRoleName(String? localeCode, String roleSlug) =>
+      _petsRoleNames[roleSlug]?[localeCode?.toLowerCase()];
+
+  static String providerAnimalName(
+          String? localeCode, String slug, String fallback) =>
+      _animalNames[slug]?[localeCode?.toLowerCase()] ?? fallback;
+
+  static String providerQualificationName(
+          String? localeCode, String slug, String fallback) =>
+      _petQualificationNames[slug]?[localeCode?.toLowerCase()] ?? fallback;
+
+  static String providerAnimalQuestion(
+    String? localeCode,
+    String roleSlug,
+    String fallback,
+  ) {
+    final locale = localeCode?.toLowerCase();
+    if (locale == 'en' || locale == null) return fallback;
+    const questions = <String, Map<String, String>>{
+      'veterinarian': {
+        'sw': 'Unatibu wanyama gani?',
+        'fr': 'Quels animaux soignez-vous ?',
+        'rw': 'Ni izihe nyamaswa uvura?',
+        'ar': 'ما الحيوانات التي تعالجها؟',
+      },
+      'veterinary_assistant': {
+        'sw': 'Unashughulika na wanyama gani?',
+        'fr': 'Avec quels animaux travaillez-vous ?',
+        'rw': 'Ni izihe nyamaswa ukorana na zo?',
+        'ar': 'مع أي حيوانات تعمل؟',
+      },
+      'pet_trainer_behaviour_specialist': {
+        'sw': 'Unawafundisha wanyama gani?',
+        'fr': 'Quels animaux éduquez-vous ?',
+        'rw': 'Ni izihe nyamaswa utoza?',
+        'ar': 'ما الحيوانات التي تدربها؟',
+      },
+      'dog_trainer': {
+        'sw': 'Unawafundisha mbwa gani?',
+        'fr': 'Quels chiens éduquez-vous ?',
+        'rw': 'Ni izihe mbwa utoza?',
+        'ar': 'ما الكلاب التي تدربها؟',
+      },
+      'pet_groomer': {
+        'sw': 'Unawatunza kwa urembo wanyama gani?',
+        'fr': 'Quels animaux toilettez-vous ?',
+        'rw': 'Ni izihe nyamaswa wogosha?',
+        'ar': 'ما الحيوانات التي تعتني بمظهرها؟',
+      },
+      'pet_sitter': {
+        'sw': 'Unawatunza wanyama gani?',
+        'fr': 'Quels animaux gardez-vous ?',
+        'rw': 'Ni izihe nyamaswa witaho?',
+        'ar': 'ما الحيوانات التي ترعاها؟',
+      },
+      'pet_boarding_provider': {
+        'sw': 'Unaweza kupokea wanyama gani?',
+        'fr': 'Quels animaux pouvez-vous accueillir ?',
+        'rw': 'Ni izihe nyamaswa ushobora kwakira?',
+        'ar': 'ما الحيوانات التي يمكنك إيواؤها؟',
+      },
+      'dog_walker': {
+        'sw': 'Unatembeza mbwa gani?',
+        'fr': 'Quels chiens promenez-vous ?',
+        'rw': 'Ni izihe mbwa utambagiza?',
+        'ar': 'ما الكلاب التي تمشيها؟',
+      },
+      'animal_transport_provider': {
+        'sw': 'Unasafirisha wanyama gani?',
+        'fr': 'Quels animaux transportez-vous ?',
+        'rw': 'Ni izihe nyamaswa utwara?',
+        'ar': 'ما الحيوانات التي تنقلها؟',
+      },
+      'animal_breeder': {
+        'sw': 'Unazalisha wanyama gani?',
+        'fr': 'Quels animaux élevez-vous ?',
+        'rw': 'Ni izihe nyamaswa worora?',
+        'ar': 'ما الحيوانات التي تقوم بتربيتها؟',
+      },
+      'animal_nutritionist': {
+        'sw': 'Unashauri kuhusu lishe ya wanyama gani?',
+        'fr': 'Pour quels animaux conseillez-vous en nutrition ?',
+        'rw': 'Ni izihe nyamaswa ugira inama ku mirire yazo?',
+        'ar': 'ما الحيوانات التي تقدم لها نصائح غذائية؟',
+      },
+      'veterinary_livestock_officer': {
+        'sw': 'Unashughulika na wanyama gani?',
+        'fr': 'Quels animaux prenez-vous en charge ?',
+        'rw': 'Ni izihe nyamaswa witaho?',
+        'ar': 'ما الحيوانات التي تقدم لها الرعاية؟',
+      },
+    };
+    return questions[roleSlug]?[locale] ?? fallback;
+  }
+
+  static String animalRequestFieldLabel(String? localeCode, String key) {
+    final isAnimal = key == 'animal_type';
+    return switch ((localeCode?.toLowerCase(), isAnimal)) {
+      ('sw', true) => 'Aina ya mnyama',
+      ('sw', false) => 'Huduma ya mnyama inayohitajika',
+      ('fr', true) => 'Type d’animal',
+      ('fr', false) => 'Service animalier demandé',
+      ('rw', true) => 'Ubwoko bw’inyamaswa',
+      ('rw', false) => 'Serivisi y’inyamaswa ikenewe',
+      ('ar', true) => 'نوع الحيوان',
+      ('ar', false) => 'خدمة الحيوانات المطلوبة',
+      (_, true) => 'Animal type',
+      _ => 'Animal service needed',
+    };
+  }
+
+  static String animalRequestFieldHint(String? localeCode, String key) {
+    final isAnimal = key == 'animal_type';
+    return switch ((localeCode?.toLowerCase(), isAnimal)) {
+      ('sw', true) => 'Chagua mnyama au andika mnyama mwingine',
+      ('sw', false) => 'Mfano: uchunguzi wa mifugo, urembo au malazi',
+      ('fr', true) => 'Choisissez un animal ou saisissez-en un autre',
+      ('fr', false) => 'Ex. examen vétérinaire, toilettage ou pension',
+      ('rw', true) => 'Hitamo inyamaswa cyangwa wandike indi',
+      ('rw', false) =>
+        'Urugero: isuzuma rya veterineri, kuyogosha cyangwa kuyacumbikira',
+      ('ar', true) => 'اختر حيوانًا أو اكتب حيوانًا آخر',
+      ('ar', false) => 'مثال: فحص بيطري أو عناية أو إيواء',
+      (_, true) => 'Choose an animal or enter another animal',
+      _ => 'e.g. Veterinary examination, grooming, boarding',
+    };
+  }
+
+  static String providerAnimalInstructions(String? localeCode) =>
+      switch (localeCode?.toLowerCase()) {
+        'sw' =>
+          'Chagua zote zinazohusika. Wateja watakutafuta kwa aina ya mnyama.',
+        'fr' =>
+          'Choisissez tout ce qui convient. Les clients vous trouveront par type d’animal.',
+        'rw' =>
+          'Hitamo byose bireba. Abakiriya bazagushaka bakurikije ubwoko bw’inyamaswa.',
+        'ar' => 'اختر كل ما ينطبق. سيبحث العملاء عنك حسب نوع الحيوان.',
+        _ => 'Pick all that apply. Customers can find you by animal type.',
+      };
+
+  static String otherAnimalsDescriptionLabel(String? localeCode) =>
+      switch (localeCode?.toLowerCase()) {
+        'sw' => 'Ni wanyama gani wengine?',
+        'fr' => 'Quels autres animaux ?',
+        'rw' => 'Izindi nyamaswa izihe?',
+        'ar' => 'ما الحيوانات الأخرى؟',
+        _ => 'Which other animals?',
+      };
+
+  static String otherAnimalsDescriptionHint(String? localeCode) =>
+      switch (localeCode?.toLowerCase()) {
+        'sw' => 'Andika majina ya wanyama unaowahudumia',
+        'fr' => 'Précisez les animaux dont vous vous occupez',
+        'rw' => 'Andika inyamaswa witaho',
+        'ar' => 'اكتب أسماء الحيوانات التي تقدم لها الرعاية',
+        _ => 'Describe the other animals you work with',
+      };
+
+  static NeedFormGuidance animalRequestGuidance(String? localeCode) =>
+      switch (localeCode?.toLowerCase()) {
+        'sw' => const NeedFormGuidance(
+            titleHint:
+                'Mfano: Nahitaji daktari wa mifugo amchunguze mbwa wangu',
+            specificationHint: 'Ongeza mahitaji ya utunzaji wa mnyama',
+            specificationHelper:
+                'Eleza mnyama, huduma inayohitajika na muda au masharti ya kumshughulikia.'),
+        'fr' => const NeedFormGuidance(
+            titleHint: 'Ex. Je cherche un vétérinaire pour examiner mon chien',
+            specificationHint: 'Ajoutez les besoins de soins animaliers',
+            specificationHelper:
+                'Précisez l’animal, les soins souhaités et les contraintes de délai ou de manipulation.'),
+        'rw' => const NeedFormGuidance(
+            titleHint: 'Urugero: Nkeneye veterineri usuzuma imbwa yanjye',
+            specificationHint: 'Ongeraho ibisabwa mu kwita ku nyamaswa',
+            specificationHelper:
+                'Sobanura inyamaswa, serivisi ikenewe n’igihe cyangwa uburyo bwo kuyitaho.'),
+        'ar' => const NeedFormGuidance(
+            titleHint: 'مثال: أحتاج طبيبًا بيطريًا لفحص كلبي',
+            specificationHint: 'أضف متطلبات رعاية الحيوان',
+            specificationHelper:
+                'صف الحيوان والرعاية المطلوبة وأي قيود على الوقت أو التعامل.'),
+        _ => const NeedFormGuidance(
+            titleHint: 'e.g. I need a veterinarian for my dog',
+            specificationHint: 'Add animal care requirements',
+            specificationHelper:
+                'Describe the animal, care needed, and any timing or handling requirements.'),
+      };
 
   static const categoryNames = <String, Map<String, String>>{
     'construction_building': {
@@ -13,6 +369,12 @@ class NeedCatalogLocalizations {
       'fr': 'Agriculture',
       'sw': 'Kilimo',
       'ar': 'الزراعة',
+    },
+    'pets_animal_services': {
+      'rw': 'Serivisi z’amatungo n’inyamaswa',
+      'fr': 'Animaux et services animaliers',
+      'sw': 'Wanyama vipenzi na huduma za wanyama',
+      'ar': 'الحيوانات الأليفة وخدمات الحيوانات',
     },
     'technology_digital': {
       'rw': 'Ikoranabuhanga n\'ibikorwa by\'ikoranabuhanga',
@@ -133,6 +495,14 @@ class NeedCatalogLocalizations {
   };
 
   static const categoryDescriptions = <String, Map<String, String>>{
+    'pets_animal_services': {
+      'rw':
+          'Ubuvuzi bw’amatungo, kuyatoza, kuyogosha, kuyacumbikira no kuyitaho.',
+      'fr':
+          'Soins vétérinaires, dressage, toilettage, pension et soins animaliers.',
+      'sw': 'Huduma za mifugo, mafunzo, urembo, malazi na utunzaji wa wanyama.',
+      'ar': 'الرعاية البيطرية وتدريب الحيوانات الأليفة والعناية بها وإيواؤها.',
+    },
     'financial_services': {
       'rw': 'Inguzanyo n’inkunga utanga.',
       'fr': 'Prêts et financements que vous proposez.',

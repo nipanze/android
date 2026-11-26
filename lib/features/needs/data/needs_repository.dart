@@ -23,6 +23,7 @@ const _providerCatalogCategorySlugs = <String>{
   'transport_logistics',
   'machinery_equipment',
   'agriculture_agribusiness',
+  'pets_animal_services',
   'specialized_products',
   'travel_international',
   'domestic_household',

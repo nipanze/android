@@ -440,8 +440,7 @@ class ProviderRepository implements IProviderRepository {
         // RPC. The profile and services are already saved at this point, so
         // tolerate only that missing-RPC case while preserving other errors.
         try {
-          await _client.rpc(RpcNames.saveProviderIdentityPresentation,
-              params: {
+          await _client.rpc(RpcNames.saveProviderIdentityPresentation, params: {
             'p_category_slug': categorySlug,
             'p_identity_type': ProviderCategoryType.company.name,
             'p_presentation': presentation,
@@ -576,8 +575,6 @@ class ProviderRepository implements IProviderRepository {
 
   @override
   Future<bool> isCategoryWorkProfileEnabled(String categorySlug) async {
-    final globalEnabled = await workProfilesEnabled();
-    if (!globalEnabled) return false;
     try {
       final data = await _client
           .from(TableNames.systemSettings)
@@ -586,12 +583,14 @@ class ProviderRepository implements IProviderRepository {
           .eq('is_public', true)
           .maybeSingle();
       if (data == null) {
-        return true; // Default true if global is enabled and no specific override
+        final globalEnabled = await workProfilesEnabled();
+        return globalEnabled;
       }
       final value = data['setting_value']?.toString().toLowerCase();
       return value != 'false' && value != '0';
     } catch (_) {
-      return true;
+      final globalEnabled = await workProfilesEnabled();
+      return globalEnabled;
     }
   }
 

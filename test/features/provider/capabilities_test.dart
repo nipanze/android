@@ -97,7 +97,7 @@ void main() {
           .expand((role) => role.qualifications)
           .where((qualification) => qualification.isEvidence)
           .length,
-      44,
+      65,
     );
   });
 

@@ -236,6 +236,8 @@ shared/widgets/      # + NeedCard, CategoryChip, CapabilityBadge, ProviderVerifi
 
 **Recent Updates** — add a dated entry summarizing: Needs module, five categories, onboarding intent step, Home vs Markets split, capability-gated offers, and the privacy fix on `needs_requests` (below).
 
+**Provider Services update (2026-11-26):** Added Pets & Animal Services with veterinary care, training, grooming, sitting, boarding, transport, breeding, and nutrition roles. Provider profiles can declare multiple animal specializations; animal requests include an animal type and the existing work-role capability and offer pipeline narrows matching to compatible providers. Apply `sql/patch_pets_animal_services.sql` after the provider work-profile catalogue. The legacy Veterinary / Livestock Officer role and capability slugs are retained and moved to the new category so existing provider records remain linked.
+
 ---
 
 # PART 2 — HOW TO IMPLEMENT
