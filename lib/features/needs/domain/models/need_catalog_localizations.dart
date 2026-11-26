@@ -273,12 +273,6 @@ class NeedCatalogLocalizations {
         'rw': 'Ni izihe nyamaswa ugira inama ku mirire yazo?',
         'ar': 'ما الحيوانات التي تقدم لها نصائح غذائية؟',
       },
-      'veterinary_livestock_officer': {
-        'sw': 'Unashughulika na wanyama gani?',
-        'fr': 'Quels animaux prenez-vous en charge ?',
-        'rw': 'Ni izihe nyamaswa witaho?',
-        'ar': 'ما الحيوانات التي تقدم لها الرعاية؟',
-      },
     };
     return questions[roleSlug]?[locale] ?? fallback;
   }
