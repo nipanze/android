@@ -46,7 +46,6 @@ values
   ('work_veterinarian','pets_animal_services','Veterinarian (clinical care)',true,'pets_animal_services',10,'work_roles','Work Roles',10,'work','required_proof'),
   ('work_veterinary_assistant','pets_animal_services','Veterinary Assistant',true,'pets_animal_services',20,'work_roles','Work Roles',20,'work','optional_proof'),
   ('work_pet_trainer_behaviour_specialist','pets_animal_services','Pet Trainer / Behaviour Specialist',true,'pets_animal_services',30,'work_roles','Work Roles',30,'work','optional_proof'),
-  ('work_dog_trainer','pets_animal_services','Dog Trainer',true,'pets_animal_services',40,'work_roles','Work Roles',40,'work','optional_proof'),
   ('work_pet_groomer','pets_animal_services','Pet Groomer',true,'pets_animal_services',50,'work_roles','Work Roles',50,'work','open'),
   ('work_pet_sitter','pets_animal_services','Pet Sitter',true,'pets_animal_services',60,'work_roles','Work Roles',60,'work','open'),
   ('work_pet_boarding_provider','pets_animal_services','Pet Boarding Provider',true,'pets_animal_services',70,'work_roles','Work Roles',70,'work','optional_proof'),
@@ -71,23 +70,33 @@ set category_slug='pets_animal_services', ui_group_slug='pets_animal_services',
     service_group_name='Work Roles', service_sort_order=15, is_active=true
 where slug='work_veterinary_livestock_officer';
 
+-- Dog training is already covered by Pet Trainer / Behaviour Specialist,
+-- whose animal-kind selector includes dogs. Retire the duplicate catalog
+-- entry without deleting its capability or any providers' saved records.
+update public.need_capabilities
+set is_active=false
+where slug='work_dog_trainer';
+
 insert into public.capability_roles
   (slug, category_slug, capability_slug, name, kind_question, is_active)
 values
   ('veterinarian','pets_animal_services','work_veterinarian','Veterinarian (clinical care)','What animals do you treat?',true),
   ('veterinary_assistant','pets_animal_services','work_veterinary_assistant','Veterinary Assistant','Which animals can you assist with?',true),
   ('pet_trainer_behaviour_specialist','pets_animal_services','work_pet_trainer_behaviour_specialist','Pet Trainer / Behaviour Specialist','Which animals do you train?',true),
-  ('dog_trainer','pets_animal_services','work_dog_trainer','Dog Trainer','Which dogs do you train?',true),
   ('pet_groomer','pets_animal_services','work_pet_groomer','Pet Groomer','Which animals do you groom?',true),
   ('pet_sitter','pets_animal_services','work_pet_sitter','Pet Sitter','Which animals do you care for?',true),
   ('pet_boarding_provider','pets_animal_services','work_pet_boarding_provider','Pet Boarding Provider','Which animals can you accommodate?',true),
-  ('dog_walker','pets_animal_services','work_dog_walker','Dog Walker','Which animals do you walk?',true),
+  ('dog_walker','pets_animal_services','work_dog_walker','Dog Walker','Which dogs do you walk?',true),
   ('animal_transport_provider','pets_animal_services','work_animal_transport_provider','Animal Transport Provider','What animals can you transport?',true),
   ('animal_breeder','pets_animal_services','work_animal_breeder','Animal Breeder','Which animals do you breed?',true),
   ('animal_nutritionist','pets_animal_services','work_animal_nutritionist','Animal Nutritionist','Which animals do you advise on?',true)
 on conflict (slug) do update set
   category_slug=excluded.category_slug, capability_slug=excluded.capability_slug,
   name=excluded.name, kind_question=excluded.kind_question, is_active=true;
+
+update public.capability_roles
+set is_active=false
+where slug='dog_trainer';
 
 update public.capability_roles
 set category_slug='pets_animal_services',
@@ -99,7 +108,7 @@ insert into public.role_kinds (role_slug, slug, name, sort_order)
 select roles.slug, kinds.slug, kinds.name, kinds.sort_order
 from (values
   ('veterinarian'),('veterinary_assistant'),('pet_trainer_behaviour_specialist'),
-  ('dog_trainer'),('pet_groomer'),('pet_sitter'),('pet_boarding_provider'),
+  ('pet_groomer'),('pet_sitter'),('pet_boarding_provider'),
   ('dog_walker'),('animal_transport_provider'),('animal_breeder'),('animal_nutritionist'),
   ('veterinary_livestock_officer')
 ) roles(slug)

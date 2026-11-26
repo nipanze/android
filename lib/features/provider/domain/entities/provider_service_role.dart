@@ -1885,7 +1885,8 @@ class ProviderServiceRole {
     ProviderServiceRole(
       slug: 'veterinary_livestock_officer',
       name: 'Livestock Officer (herd health)',
-      description: 'Livestock herd health, vaccination, and field advisory',
+      description:
+          'Livestock herd-health programs and vaccination support; clinical diagnosis and treatment are veterinary work',
       kindQuestion:
           'Which livestock do you support with herd health and vaccination?',
       categorySlug: 'pets_animal_services',
@@ -1997,29 +1998,6 @@ class ProviderServiceRole {
       ],
     ),
     ProviderServiceRole(
-      slug: 'dog_trainer',
-      name: 'Dog Trainer',
-      description: 'Train dogs for behaviour and obedience',
-      kindQuestion: 'Which dogs do you train?',
-      categorySlug: 'pets_animal_services',
-      capabilitySlug: 'work_dog_trainer',
-      kinds: [ProviderRoleOption(slug: 'dogs', name: 'Dogs')],
-      qualifications: [
-        ProviderRoleQualification(
-            slug: 'training_qualification',
-            name: 'Training qualification',
-            isEvidence: true),
-        ProviderRoleQualification(
-            slug: 'training_references',
-            name: 'Client references',
-            isEvidence: true),
-        ProviderRoleQualification(
-            slug: 'training_experience',
-            name: 'Training experience',
-            isEvidence: false)
-      ],
-    ),
-    ProviderServiceRole(
       slug: 'pet_groomer',
       name: 'Pet Groomer',
       description: 'Groom and care for pets',
@@ -2035,7 +2013,8 @@ class ProviderServiceRole {
     ProviderServiceRole(
       slug: 'pet_sitter',
       name: 'Pet Sitter',
-      description: 'Provide in-home or visiting pet care',
+      description:
+          'Visit the owner’s home for feeding and care while they are away',
       kindQuestion: 'Which animals do you care for?',
       categorySlug: 'pets_animal_services',
       capabilitySlug: 'work_pet_sitter',
@@ -2076,7 +2055,7 @@ class ProviderServiceRole {
       slug: 'dog_walker',
       name: 'Dog Walker',
       description: 'Walk and exercise dogs',
-      kindQuestion: 'Which animals do you walk?',
+      kindQuestion: 'Which dogs do you walk?',
       categorySlug: 'pets_animal_services',
       capabilitySlug: 'work_dog_walker',
       kinds: [ProviderRoleOption(slug: 'dogs', name: 'Dogs')],
