@@ -3117,6 +3117,15 @@ class AppLocalizationsSw extends AppLocalizations {
   String get discoveryBusinessTitle => 'Unapanga jambo la baadaye?';
 
   @override
+  String get discoveryTravelTitle => 'Plan a trip with Nipanze';
+
+  @override
+  String get discoveryEducationTitle => 'Explore career opportunities';
+
+  @override
+  String get discoveryFinancialTitle => 'Explore finance options';
+
+  @override
   String get discoveryBusinessQuestion =>
       'Je, utahitaji vifaa, usafirishaji, manunuzi au huduma za biashara hivi karibuni?';
 
@@ -3188,6 +3197,9 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get discoverySkip => 'Ruka';
+
+  @override
+  String get discoveryPostRequest => 'Post a request';
 
   @override
   String get discoveryExploreOpportunities => 'Chunguza fursa';

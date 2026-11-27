@@ -181,7 +181,11 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
               ),
               if (!widget.compact) ...[
                 const SizedBox(height: 10),
-                Row(
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 4,
+                  runSpacing: 0,
                   children: [
                     TextButton.icon(
                       onPressed: () => unawaited(_performCardAction(
@@ -192,11 +196,15 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
                       icon: const Icon(Icons.close_rounded, size: 16),
                       label: Text(l10n.discoverySkip),
                     ),
-                    const Spacer(),
                     TextButton.icon(
                       onPressed: () => _explore(template),
-                      icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                      icon: const Icon(Icons.search_rounded, size: 16),
                       label: Text(_localizedCta(l10n, template)),
+                    ),
+                    FilledButton.tonalIcon(
+                      onPressed: () => _postRequest(template),
+                      icon: const Icon(Icons.add_rounded, size: 16),
+                      label: Text(l10n.discoveryPostRequest),
                     ),
                   ],
                 ),
@@ -256,11 +264,15 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
   ) async {
     final categorySlug = _categorySlugFor(template, option);
     if (categorySlug == null) {
+      final discoveryCubit = context.read<DiscoveryCubit>();
       await _performCardAction(
-        () => context.read<DiscoveryCubit>().answerTemplate(
-          templateId: template.id,
-          answer: {'value': option.value, 'label': option.label},
-        ),
+        () => switch (option.value) {
+          'later' || 'not_now' => discoveryCubit.skipTemplate(template.id),
+          _ => discoveryCubit.answerTemplate(
+              templateId: template.id,
+              answer: {'value': option.value, 'label': option.label},
+            ),
+        },
       );
       return;
     }
@@ -286,6 +298,15 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
         await repository.removeInterestCategories({categorySlug});
       } else {
         await repository.saveInterestCategories({categorySlug});
+        await repository.recordInteraction(
+          templateId: template.id,
+          action: 'answer',
+          answer: {
+            'value': option.value,
+            'label': option.label,
+            'category_slug': categorySlug,
+          },
+        );
       }
     } catch (error) {
       if (!mounted) return;
@@ -312,17 +333,16 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
         await getIt<DiscoveryRepository>().saveInterestCategories(
           _selectedCategorySlugs,
         );
-        if (_selectedCategorySlugs.isEmpty) {
-          await discoveryCubit.answerTemplate(
-            templateId: template.id,
-            answer: {
-              'values': selectedOptions.map((option) => option.value).toList(),
-              'labels': selectedOptions.map((option) => option.label).toList(),
-              'category_slugs': _selectedCategorySlugs.toList(),
-            },
-          );
-        }
       }
+      await discoveryCubit.answerTemplate(
+        templateId: template.id,
+        answer: {
+          'intent': 'browse',
+          'values': selectedOptions.map((option) => option.value).toList(),
+          'labels': selectedOptions.map((option) => option.label).toList(),
+          'category_slugs': _selectedCategorySlugs.toList(),
+        },
+      );
     } catch (error) {
       if (mounted) _showError(error);
       return;
@@ -330,14 +350,58 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
 
     if (!mounted) return;
     final interests = _selectedCategorySlugs.toList()..sort();
+    final module = switch (template.slug) {
+      'financial_interest_basic'
+          when _selectedValues.length == 1 &&
+              _selectedValues.contains('loans') =>
+        'loan',
+      'financial_interest_basic'
+          when _selectedValues.length == 1 &&
+              _selectedValues.contains('forex') =>
+        'forex',
+      'financial_interest_basic' => null,
+      _ when template.needCategorySlug == 'financial_services' => 'loan',
+      _ when template.needCategorySlug == 'forex_money_services' => 'forex',
+      _ => 'needs',
+    };
+    final browseInterests = module == 'needs' && interests.isEmpty
+        ? {if (template.needCategorySlug case final slug?) slug}
+        : interests.toSet();
     final uri = Uri(
       path: '/marketplace',
       queryParameters: {
-        'module': 'needs',
-        if (interests.isNotEmpty) 'interests': interests.join(','),
+        if (module != null) 'module': module,
+        if (browseInterests.isNotEmpty)
+          'interests': (browseInterests.toList()..sort()).join(','),
       },
     );
     context.go(uri.toString());
+  }
+
+  Future<void> _postRequest(DiscoveryQuestionTemplate template) async {
+    final categorySlug = template.needCategorySlug;
+    if (categorySlug == null || categorySlug.isEmpty) {
+      await _explore(template);
+      return;
+    }
+
+    try {
+      await context.read<DiscoveryCubit>().answerTemplate(
+        templateId: template.id,
+        answer: {
+          'intent': 'post_request',
+          'category_slug': categorySlug,
+          'values': _selectedValues.toList(),
+        },
+      );
+    } catch (error) {
+      if (mounted) _showError(error);
+      return;
+    }
+    if (!mounted) return;
+    context.push(
+      '${AppRoutes.needsCreateFull}?category=${Uri.encodeComponent(categorySlug)}',
+    );
   }
 
   Future<void> _performCardAction(Future<void> Function() action) async {
@@ -378,10 +442,9 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
   ) =>
       switch (template.slug) {
         'business_equipment_basic' => l10n.discoveryBusinessTitle,
-        'travel_planning_basic' ||
-        'internship_interest_basic' ||
-        'financial_interest_basic' =>
-          l10n.discoveryQuestionTitle,
+        'travel_planning_basic' => l10n.discoveryTravelTitle,
+        'internship_interest_basic' => l10n.discoveryEducationTitle,
+        'financial_interest_basic' => l10n.discoveryFinancialTitle,
         _ => template.title,
       };
 

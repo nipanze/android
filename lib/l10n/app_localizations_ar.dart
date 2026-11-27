@@ -3091,6 +3091,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get discoveryBusinessTitle => 'هل تخطط لشيء في المستقبل؟';
 
   @override
+  String get discoveryTravelTitle => 'Plan a trip with Nipanze';
+
+  @override
+  String get discoveryEducationTitle => 'Explore career opportunities';
+
+  @override
+  String get discoveryFinancialTitle => 'Explore finance options';
+
+  @override
   String get discoveryBusinessQuestion =>
       'هل ستحتاج قريبًا إلى معدات أو خدمات لوجستية أو مشتريات أو خدمات للأعمال؟';
 
@@ -3162,6 +3171,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get discoverySkip => 'تخطي';
+
+  @override
+  String get discoveryPostRequest => 'Post a request';
 
   @override
   String get discoveryExploreOpportunities => 'استكشف الفرص';

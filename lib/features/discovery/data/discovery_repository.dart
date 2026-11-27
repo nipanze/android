@@ -29,7 +29,7 @@ class DiscoveryRepository {
           .eq('is_active', true)
           .order('priority', ascending: true)
           .order('created_at', ascending: true)
-          .limit(20);
+          .limit(40);
       final templates = (templateRows as List)
           .map((row) => DiscoveryQuestionTemplate.fromMap(
                 Map<String, dynamic>.from(row as Map),
@@ -44,7 +44,7 @@ class DiscoveryRepository {
               'template_id, action, dismissed_until, muted_until, created_at')
           .eq('user_id', uid)
           .order('created_at', ascending: false)
-          .limit(80);
+          .limit(1000);
 
       final now = DateTime.now().toUtc();
       final unavailable = <String>{};

@@ -14,8 +14,16 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
   DiscoveryCubit(this._repository) : super(const DiscoveryInitial());
 
   final DiscoveryRepository _repository;
+  String? _country;
 
   Future<void> loadCard({required String country}) async {
+    _country = country;
+    await _loadNextCard();
+  }
+
+  Future<void> _loadNextCard() async {
+    final country = _country;
+    if (country == null) return;
     emit(const DiscoveryLoading());
     try {
       final template = await _repository.getNextTemplate(country: country);
@@ -41,7 +49,7 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
       action: 'skip',
       dismissFor: const Duration(days: 7),
     );
-    emit(const DiscoveryCardLoaded(null));
+    await _loadNextCard();
   }
 
   Future<void> dismissTemplate(String templateId) async {
@@ -50,7 +58,7 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
       action: 'dismiss',
       dismissFor: const Duration(days: 30),
     );
-    emit(const DiscoveryCardLoaded(null));
+    await _loadNextCard();
   }
 
   Future<void> muteTemplate(String templateId) async {
@@ -59,7 +67,7 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
       action: 'mute',
       muteFor: const Duration(days: 365),
     );
-    emit(const DiscoveryCardLoaded(null));
+    await _loadNextCard();
   }
 
   Future<void> answerTemplate({
@@ -71,7 +79,7 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
       action: 'answer',
       answer: answer,
     );
-    emit(const DiscoveryCardLoaded(null));
+    await _loadNextCard();
   }
 
   Future<void> createPlan(DiscoveryPlanDraft draft) async {

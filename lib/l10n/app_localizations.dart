@@ -5677,31 +5677,49 @@ abstract class AppLocalizations {
   /// No description provided for @discoveryBusinessTitle.
   ///
   /// In en, this message translates to:
-  /// **'Planning something ahead?'**
+  /// **'Find business support'**
   String get discoveryBusinessTitle;
+
+  /// No description provided for @discoveryTravelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan a trip with Nipanze'**
+  String get discoveryTravelTitle;
+
+  /// No description provided for @discoveryEducationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore career opportunities'**
+  String get discoveryEducationTitle;
+
+  /// No description provided for @discoveryFinancialTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore finance options'**
+  String get discoveryFinancialTitle;
 
   /// No description provided for @discoveryBusinessQuestion.
   ///
   /// In en, this message translates to:
-  /// **'Do you need equipment, logistics, procurement, or business services soon?'**
+  /// **'Browse equipment, transport, procurement, and business services people offer. Use the + button to post what your business needs.'**
   String get discoveryBusinessQuestion;
 
   /// No description provided for @discoveryTravelQuestion.
   ///
   /// In en, this message translates to:
-  /// **'Are you planning travel in the next few months?'**
+  /// **'Use Nipanze to request travel services or help planning your trip, then connect with providers who can assist.'**
   String get discoveryTravelQuestion;
 
   /// No description provided for @discoveryEducationQuestion.
   ///
   /// In en, this message translates to:
-  /// **'Would internship or professional development opportunities be useful to you?'**
+  /// **'Browse internships and career development requests, then contact the people offering opportunities that interest you.'**
   String get discoveryEducationQuestion;
 
   /// No description provided for @discoveryFinancialQuestion.
   ///
   /// In en, this message translates to:
-  /// **'Are you interested in loans, financing, or Forex opportunities?'**
+  /// **'Compare loan offers or find people to exchange currency with on Nipanze.'**
   String get discoveryFinancialQuestion;
 
   /// No description provided for @discoveryEquipment.
@@ -5773,25 +5791,25 @@ abstract class AppLocalizations {
   /// No description provided for @discoveryTravelCta.
   ///
   /// In en, this message translates to:
-  /// **'Explore travel help'**
+  /// **'Get travel help'**
   String get discoveryTravelCta;
 
   /// No description provided for @discoveryEducationCta.
   ///
   /// In en, this message translates to:
-  /// **'Explore education'**
+  /// **'Browse career opportunities'**
   String get discoveryEducationCta;
 
   /// No description provided for @discoveryBusinessCta.
   ///
   /// In en, this message translates to:
-  /// **'Explore opportunities'**
+  /// **'Find business services'**
   String get discoveryBusinessCta;
 
   /// No description provided for @discoveryFinancialCta.
   ///
   /// In en, this message translates to:
-  /// **'Open marketplace'**
+  /// **'Explore finance options'**
   String get discoveryFinancialCta;
 
   /// No description provided for @discoveryOptionsTooltip.
@@ -5817,6 +5835,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skip'**
   String get discoverySkip;
+
+  /// No description provided for @discoveryPostRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Post a request'**
+  String get discoveryPostRequest;
 
   /// No description provided for @discoveryExploreOpportunities.
   ///

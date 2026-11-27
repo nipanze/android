@@ -2,24 +2,40 @@
   "ar": [
     "declareCapabilityToBidTitle",
     "declareCapabilityToBidMessage",
-    "declareServiceNow"
+    "declareServiceNow",
+    "discoveryTravelTitle",
+    "discoveryEducationTitle",
+    "discoveryFinancialTitle",
+    "discoveryPostRequest"
   ],
 
   "fr": [
     "declareCapabilityToBidTitle",
     "declareCapabilityToBidMessage",
-    "declareServiceNow"
+    "declareServiceNow",
+    "discoveryTravelTitle",
+    "discoveryEducationTitle",
+    "discoveryFinancialTitle",
+    "discoveryPostRequest"
   ],
 
   "rw": [
     "declareCapabilityToBidTitle",
     "declareCapabilityToBidMessage",
-    "declareServiceNow"
+    "declareServiceNow",
+    "discoveryTravelTitle",
+    "discoveryEducationTitle",
+    "discoveryFinancialTitle",
+    "discoveryPostRequest"
   ],
 
   "sw": [
     "declareCapabilityToBidTitle",
     "declareCapabilityToBidMessage",
-    "declareServiceNow"
+    "declareServiceNow",
+    "discoveryTravelTitle",
+    "discoveryEducationTitle",
+    "discoveryFinancialTitle",
+    "discoveryPostRequest"
   ]
 }

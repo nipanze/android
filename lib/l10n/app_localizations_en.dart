@@ -3102,23 +3102,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discoveryQuestionTitle => 'A quick question';
 
   @override
-  String get discoveryBusinessTitle => 'Planning something ahead?';
+  String get discoveryBusinessTitle => 'Find business support';
+
+  @override
+  String get discoveryTravelTitle => 'Plan a trip with Nipanze';
+
+  @override
+  String get discoveryEducationTitle => 'Explore career opportunities';
+
+  @override
+  String get discoveryFinancialTitle => 'Explore finance options';
 
   @override
   String get discoveryBusinessQuestion =>
-      'Do you need equipment, logistics, procurement, or business services soon?';
+      'Browse equipment, transport, procurement, and business services people offer. Use the + button to post what your business needs.';
 
   @override
   String get discoveryTravelQuestion =>
-      'Are you planning travel in the next few months?';
+      'Use Nipanze to request travel services or help planning your trip, then connect with providers who can assist.';
 
   @override
   String get discoveryEducationQuestion =>
-      'Would internship or professional development opportunities be useful to you?';
+      'Browse internships and career development requests, then contact the people offering opportunities that interest you.';
 
   @override
   String get discoveryFinancialQuestion =>
-      'Are you interested in loans, financing, or Forex opportunities?';
+      'Compare loan offers or find people to exchange currency with on Nipanze.';
 
   @override
   String get discoveryEquipment => 'Equipment';
@@ -3154,16 +3163,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discoveryBoth => 'Both';
 
   @override
-  String get discoveryTravelCta => 'Explore travel help';
+  String get discoveryTravelCta => 'Get travel help';
 
   @override
-  String get discoveryEducationCta => 'Explore education';
+  String get discoveryEducationCta => 'Browse career opportunities';
 
   @override
-  String get discoveryBusinessCta => 'Explore opportunities';
+  String get discoveryBusinessCta => 'Find business services';
 
   @override
-  String get discoveryFinancialCta => 'Open marketplace';
+  String get discoveryFinancialCta => 'Explore finance options';
 
   @override
   String get discoveryOptionsTooltip => 'Discovery options';
@@ -3176,6 +3185,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get discoverySkip => 'Skip';
+
+  @override
+  String get discoveryPostRequest => 'Post a request';
 
   @override
   String get discoveryExploreOpportunities => 'Explore opportunities';
