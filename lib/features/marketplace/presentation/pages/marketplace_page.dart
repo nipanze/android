@@ -42,10 +42,12 @@ class MarketplacePage extends StatelessWidget {
     super.key,
     this.initialModule,
     this.interestCategorySlugs = const {},
+    this.temporaryTabLabel,
   });
 
   final MarketplaceModule? initialModule;
   final Set<String> interestCategorySlugs;
+  final String? temporaryTabLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -111,16 +113,18 @@ class MarketplacePage extends StatelessWidget {
         listener: (context, _) {
           unawaited(context.read<CapabilitiesCubit>().load());
         },
-        child: _MarketplaceView(country: userCountry),
+        child: _MarketplaceView(country: userCountry, temporaryTabLabel: temporaryTabLabel, temporaryCategorySlugs: interestCategorySlugs),
       ),
     );
   }
 }
 
 class _MarketplaceView extends StatelessWidget {
-  const _MarketplaceView({required this.country});
+  const _MarketplaceView({required this.country, this.temporaryTabLabel, this.temporaryCategorySlugs = const {}});
 
   final String country;
+  final String? temporaryTabLabel;
+  final Set<String> temporaryCategorySlugs;
 
   // ── Pro filter button tap handler ───────────────────────────────────────
 
@@ -268,6 +272,8 @@ class _MarketplaceView extends StatelessWidget {
             // ── Filter / Tabs Row with filter button on far right ────────
             _ModuleFilterRow(
               onProFilterTap: () => _onProFilterTap(context),
+              temporaryTabLabel: temporaryTabLabel,
+              temporaryCategorySlugs: temporaryCategorySlugs,
             ),
             const _ForYouPreferencesSync(),
             // ── Listing feed ─────────────────────────────────────────────
@@ -878,8 +884,10 @@ class _MarketplaceDiscoveryCardState extends State<_MarketplaceDiscoveryCard> {
 }
 
 class _ModuleFilterRow extends StatefulWidget {
-  const _ModuleFilterRow({required this.onProFilterTap});
+  const _ModuleFilterRow({required this.onProFilterTap, this.temporaryTabLabel, this.temporaryCategorySlugs = const {}});
   final VoidCallback onProFilterTap;
+  final String? temporaryTabLabel;
+  final Set<String> temporaryCategorySlugs;
 
   @override
   State<_ModuleFilterRow> createState() => _ModuleFilterRowState();
@@ -890,6 +898,9 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
 
   void _selectForYou(BuildContext context) {
     setState(() => _selectedProviderCapabilityId = null);
+    if (widget.temporaryCategorySlugs.isNotEmpty) {
+      context.read<MarketplaceCubit>().setMatchingNeedsCategories({});
+    }
     context.read<MarketplaceCubit>().setModuleFilter(null);
   }
 
@@ -1068,6 +1079,10 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
                                           onTap: () => _selectForYou(context),
                                         ),
                                         const SizedBox(width: 6),
+                                        if (widget.temporaryTabLabel != null) ...[
+                                          _FilterPill(label: widget.temporaryTabLabel!, selected: selected == MarketplaceModule.needs, accentColor: const Color(0xFFFF8A00), icon: Icons.school_outlined, onTap: () => context.read<MarketplaceCubit>().setMatchingNeedsCategories(widget.temporaryCategorySlugs)),
+                                          const SizedBox(width: 6),
+                                        ],
                                         for (var i = 0;
                                             i < uniqueServices.length;
                                             i++) ...[

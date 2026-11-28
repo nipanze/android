@@ -27,6 +27,7 @@ import '../../features/marketplace/presentation/pages/loan_detail_page.dart';
 import '../../features/marketplace/presentation/pages/marketplace_page.dart';
 import '../../features/marketplace/presentation/pages/needs_detail_page.dart';
 import '../../features/marketplace/presentation/pages/proposed_deal_page.dart';
+import '../../features/needs/domain/models/need_category.dart';
 import '../../features/needs/presentation/pages/needs_create_page.dart';
 import '../../features/needs/presentation/pages/posting_system_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
@@ -155,7 +156,7 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.marketplace,
             name: 'marketplace',
-            pageBuilder: (_, state) {
+            pageBuilder: (context, state) {
               final initialModule =
                   switch (state.uri.queryParameters['module']) {
                 'loan' => MarketplaceModule.loan,
@@ -173,6 +174,13 @@ class AppRouter {
                 MarketplacePage(
                   initialModule: initialModule,
                   interestCategorySlugs: interests,
+                  temporaryTabLabel: state.uri.queryParameters['browse_category'] == null
+                      ? null
+                      : NeedCategory.findBySlug(
+                          state.uri.queryParameters['browse_category']!,
+                        ).localizedName(
+                          Localizations.localeOf(context).languageCode,
+                        ),
                 ),
               );
             },

@@ -230,7 +230,12 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
   }
 
   Future<void> setMatchingNeedsCategories(Set<String> categorySlugs) async {
-    if (isClosed || categorySlugs.isEmpty) return;
+    if (isClosed) return;
+    if (categorySlugs.isEmpty) {
+      _needsCategoryFilter = null;
+      await setModuleFilter(null);
+      return;
+    }
     _providerCategoryFilter = null;
     _providerCategoryFilterIdentityType = null;
     _needsCategoryFilter = Set.unmodifiable(categorySlugs);
@@ -411,6 +416,18 @@ class MarketplaceCubit extends Cubit<MarketplaceState> {
         return 'Based on interests';
       }
       return _iLend ? 'You lend' : null;
+    }
+    if (item.forex != null) {
+      if (_providerCategorySlugs.contains('financial_services') ||
+          _providerCategorySlugs.contains('forex') ||
+          _providerCategorySlugs.contains('currency_exchange')) {
+        return 'You exchange currency';
+      }
+      if (_forYouInterestSlugs.contains('forex') ||
+          _forYouInterestSlugs.contains('financial_services')) {
+        return 'Based on interests';
+      }
+      return null;
     }
     if (item.needs == null) {
       if (_providerCategorySlugs.contains('financial_services')) {

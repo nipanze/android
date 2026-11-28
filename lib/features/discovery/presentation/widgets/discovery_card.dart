@@ -227,6 +227,8 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
         if (module != null) 'module': module,
         if (module == 'needs' && template.needCategorySlug != null)
           'interests': template.needCategorySlug,
+        if (template.needCategorySlug != null)
+          'browse_category': template.needCategorySlug,
       },
     );
     context.go(uri.toString());
