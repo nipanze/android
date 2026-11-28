@@ -59,10 +59,6 @@ class _DiscoveryCardView extends StatefulWidget {
 }
 
 class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
-  final _selectedCategorySlugs = <String>{};
-  final _selectedValues = <String>{};
-  String? _loadedTemplateId;
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DiscoveryCubit, DiscoveryState>(
@@ -77,16 +73,11 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
         }
 
         final template = state.template!;
-        _syncSavedSelections(template);
         final l10n = AppLocalizations.of(context)!;
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final surface = isDark ? AppColors.bg2Dark : AppColors.bg2Light;
         final border = isDark ? AppColors.borderDark : AppColors.borderLight;
         final muted = isDark ? AppColors.text3Dark : AppColors.text3Light;
-        final options = template.options
-            .where((option) => option.value.toLowerCase() != 'skip')
-            .toList();
-
         return _withSpacing(Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -150,6 +141,8 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
                         unawaited(_performCardAction(
                           () => cubit.muteTemplate(template.id),
                         ));
+                      } else if (value == 'saved') {
+                        context.push(AppRoutes.accountPlans);
                       }
                     },
                     itemBuilder: (_) => [
@@ -161,41 +154,23 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
                         value: 'mute',
                         child: Text(l10n.discoveryFewerQuestions),
                       ),
+                      PopupMenuItem(
+                        value: 'saved',
+                        child: Text(l10n.savedInterestsHeading),
+                      ),
                     ],
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final option in options)
-                    _AnswerButton(
-                      option: option,
-                      label: _localizedOption(l10n, option),
-                      selected: _selectedValues.contains(option.value),
-                      onPressed: () => _toggleInterest(template, option),
-                    ),
-                ],
-              ),
               if (!widget.compact) ...[
                 const SizedBox(height: 10),
                 Wrap(
                   alignment: WrapAlignment.spaceBetween,
                   crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 4,
-                  runSpacing: 0,
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
-                    TextButton.icon(
-                      onPressed: () => unawaited(_performCardAction(
-                        () => context
-                            .read<DiscoveryCubit>()
-                            .skipTemplate(template.id),
-                      )),
-                      icon: const Icon(Icons.close_rounded, size: 16),
-                      label: Text(l10n.discoverySkip),
-                    ),
                     TextButton.icon(
                       onPressed: () => _explore(template),
                       icon: const Icon(Icons.search_rounded, size: 16),
@@ -209,14 +184,6 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
                   ],
                 ),
               ],
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: () => context.push(AppRoutes.accountPlans),
-                  icon: const Icon(Icons.tune_rounded, size: 16),
-                  label: Text(l10n.savedInterestsHeading),
-                ),
-              ),
             ],
           ),
         ));
@@ -232,115 +199,14 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
     );
   }
 
-  void _syncSavedSelections(DiscoveryQuestionTemplate template) {
-    if (_loadedTemplateId == template.id) return;
-    _loadedTemplateId = template.id;
-    _selectedCategorySlugs.clear();
-    _selectedValues.clear();
-
-    unawaited(() async {
-      try {
-        final saved =
-            await getIt<DiscoveryRepository>().getSavedInterestCategories();
-        if (!mounted || _loadedTemplateId != template.id) return;
-        setState(() {
-          for (final option in template.options) {
-            final categorySlug = _categorySlugFor(template, option);
-            if (categorySlug != null && saved.contains(categorySlug)) {
-              _selectedCategorySlugs.add(categorySlug);
-              _selectedValues.add(option.value);
-            }
-          }
-        });
-      } catch (error) {
-        if (mounted && _loadedTemplateId == template.id) _showError(error);
-      }
-    }());
-  }
-
-  Future<void> _toggleInterest(
-    DiscoveryQuestionTemplate template,
-    DiscoveryAnswerOption option,
-  ) async {
-    final categorySlug = _categorySlugFor(template, option);
-    if (categorySlug == null) {
-      final discoveryCubit = context.read<DiscoveryCubit>();
-      await _performCardAction(
-        () => switch (option.value) {
-          'later' || 'not_now' => discoveryCubit.skipTemplate(template.id),
-          _ => discoveryCubit.answerTemplate(
-              templateId: template.id,
-              answer: {'value': option.value, 'label': option.label},
-            ),
-        },
-      );
-      return;
-    }
-
-    final wasSelected = _selectedValues.contains(option.value);
-    setState(() {
-      if (wasSelected) {
-        _selectedValues.remove(option.value);
-        _selectedCategorySlugs.remove(categorySlug);
-      } else {
-        if (template.answerType != 'multi_select') {
-          _selectedValues.clear();
-          _selectedCategorySlugs.clear();
-        }
-        _selectedValues.add(option.value);
-        _selectedCategorySlugs.add(categorySlug);
-      }
-    });
-
-    final repository = getIt<DiscoveryRepository>();
-    try {
-      if (wasSelected) {
-        await repository.removeInterestCategories({categorySlug});
-      } else {
-        await repository.saveInterestCategories({categorySlug});
-        await repository.recordInteraction(
-          templateId: template.id,
-          action: 'answer',
-          answer: {
-            'value': option.value,
-            'label': option.label,
-            'category_slug': categorySlug,
-          },
-        );
-      }
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        if (wasSelected) {
-          _selectedValues.add(option.value);
-          _selectedCategorySlugs.add(categorySlug);
-        } else {
-          _selectedValues.remove(option.value);
-          _selectedCategorySlugs.remove(categorySlug);
-        }
-      });
-      _showError(error);
-    }
-  }
-
   Future<void> _explore(DiscoveryQuestionTemplate template) async {
     final discoveryCubit = context.read<DiscoveryCubit>();
-    final selectedOptions = template.options
-        .where((option) => _selectedValues.contains(option.value))
-        .toList();
     try {
-      if (selectedOptions.isNotEmpty) {
-        await getIt<DiscoveryRepository>().saveInterestCategories(
-          _selectedCategorySlugs,
-        );
-      }
       await discoveryCubit.answerTemplate(
         templateId: template.id,
         answer: {
           'intent': 'browse',
-          'values': selectedOptions.map((option) => option.value).toList(),
-          'labels': selectedOptions.map((option) => option.label).toList(),
-          'category_slugs': _selectedCategorySlugs.toList(),
+          'category_slug': template.needCategorySlug,
         },
       );
     } catch (error) {
@@ -349,30 +215,18 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
     }
 
     if (!mounted) return;
-    final interests = _selectedCategorySlugs.toList()..sort();
     final module = switch (template.slug) {
-      'financial_interest_basic'
-          when _selectedValues.length == 1 &&
-              _selectedValues.contains('loans') =>
-        'loan',
-      'financial_interest_basic'
-          when _selectedValues.length == 1 &&
-              _selectedValues.contains('forex') =>
-        'forex',
       'financial_interest_basic' => null,
       _ when template.needCategorySlug == 'financial_services' => 'loan',
       _ when template.needCategorySlug == 'forex_money_services' => 'forex',
       _ => 'needs',
     };
-    final browseInterests = module == 'needs' && interests.isEmpty
-        ? {if (template.needCategorySlug case final slug?) slug}
-        : interests.toSet();
     final uri = Uri(
       path: '/marketplace',
       queryParameters: {
         if (module != null) 'module': module,
-        if (browseInterests.isNotEmpty)
-          'interests': (browseInterests.toList()..sort()).join(','),
+        if (module == 'needs' && template.needCategorySlug != null)
+          'interests': template.needCategorySlug,
       },
     );
     context.go(uri.toString());
@@ -391,7 +245,6 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
         answer: {
           'intent': 'post_request',
           'category_slug': categorySlug,
-          'values': _selectedValues.toList(),
         },
       );
     } catch (error) {
@@ -418,22 +271,6 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
       ..showSnackBar(
         SnackBar(content: Text(userFacingErrorMessage(error))),
       );
-  }
-
-  String? _categorySlugFor(
-    DiscoveryQuestionTemplate template,
-    DiscoveryAnswerOption option,
-  ) {
-    if (option.categorySlug != null && option.categorySlug!.isNotEmpty) {
-      return option.categorySlug;
-    }
-    return switch (option.value) {
-      'equipment' => 'machinery_equipment',
-      'logistics' => 'transport_logistics',
-      'services' => 'professional_services',
-      'procurement' => 'specialized_products',
-      _ => option.savePlan ? template.needCategorySlug : null,
-    };
   }
 
   String _localizedTitle(
@@ -471,59 +308,6 @@ class _DiscoveryCardViewState extends State<_DiscoveryCardView> {
         'financial_interest_basic' => l10n.discoveryFinancialCta,
         _ => template.ctaLabel ?? l10n.discoveryExploreOpportunities,
       };
-
-  String _localizedOption(
-    AppLocalizations l10n,
-    DiscoveryAnswerOption option,
-  ) =>
-      switch (option.value) {
-        'equipment' => l10n.discoveryEquipment,
-        'logistics' => l10n.discoveryLogistics,
-        'services' => l10n.discoveryServices,
-        'procurement' => l10n.discoveryProcurement,
-        'yes' => l10n.discoveryYes,
-        'later' => l10n.discoveryLater,
-        'not_now' => l10n.discoveryNotNow,
-        'no' => l10n.discoveryNo,
-        'loans' => l10n.discoveryLoans,
-        'forex' => l10n.discoveryForex,
-        'both' => l10n.discoveryBoth,
-        _ => option.label,
-      };
-}
-
-class _AnswerButton extends StatelessWidget {
-  const _AnswerButton({
-    required this.option,
-    required this.label,
-    required this.selected,
-    required this.onPressed,
-  });
-
-  final DiscoveryAnswerOption option;
-  final String label;
-  final bool selected;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final foreground = selected ? Colors.white : AppColors.accent;
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: selected ? AppColors.accent : null,
-        foregroundColor: foreground,
-        side: BorderSide(
-          color: selected
-              ? AppColors.accent
-              : AppColors.accent.withValues(alpha: 0.38),
-        ),
-        minimumSize: const Size(0, 36),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      ),
-      child: Text(label),
-    );
-  }
 }
 
 class _PlanDetailsSheet extends StatefulWidget {

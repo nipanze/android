@@ -35,9 +35,9 @@ as an app capability if Nipanze adds that feature.
 
 ## Suggested questions by category
 
-Each card includes a prompt, what it teaches, and its `Browse` destination.
-The discovery card also provides a separate `Post a request` action, which
-opens the full request form with that category selected.
+Each card uses a short, conversational question, one sentence about what
+Nipanze can do, and two clear actions: browse existing requests or post a new
+request with the category preselected.
 
 | Category | Suggested question | What it teaches | `Show me` action |
 | --- | --- | --- | --- |
@@ -55,7 +55,7 @@ opens the full request form with that category selected.
 | Education & Training | Looking for a course, tutor, internship, or professional training? Find opportunities and providers on Nipanze. | Find learning and career opportunities. | Browse education listings; offer `Post a training request`. |
 | Events & Celebrations | Planning a wedding, party, or other event? Find caterers, equipment, venues, and event crews. | Assemble event services in one place. | Browse event providers; offer `Post an event request`. |
 | Photo, Video, Music & Talent | Need a photographer, videographer, musician, or performer? Find creative talent for your project or event. | Hire creative professionals and performers. | Browse creative services; offer `Post a creative brief`. |
-| Beauty, Fashion & Styling | Have you been thinking about a massage, makeup, hair, or styling appointment? Find nearby providers and compare their listed services and prices. | Discover personal care providers and compare published prices. | Browse beauty and wellness services. Do not claim Nipanze tracks the cheapest price unless that capability exists. |
+| Beauty, Fashion & Styling | Thinking about a massage or beauty appointment? Post what you need and compare service offers and prices from providers. | Request a personal care service and compare responses. | Browse beauty requests or post a request. Do not claim Nipanze tracks the cheapest price unless that capability exists. |
 | Domestic & Household | Need help at home, childcare, cooking, or household care? Find providers or post the help you are looking for. | Find household support. | Browse household services; offer `Post a household request`. |
 | Health & Medical | Looking for a clinic, medical provider, or specialist service? Find available providers and check their listed details. | Discover health providers. | Browse health listings. Do not imply diagnosis, treatment recommendations, or guaranteed availability. |
 | Traditional & Cultural Services | Need help with a cultural ceremony or traditional service? Find providers who describe the services they offer. | Discover cultural services and providers. | Browse traditional and cultural services. |
@@ -68,24 +68,17 @@ opens the full request form with that category selected.
 
 ## Implemented answer and navigation behavior
 
-1. Show a category card in the feed with the question and a direct explanation
-   of what Nipanze can do for that situation.
-2. Let the user choose `Yes`, `Maybe later`, or `No`. For a
-   category with multiple needs, let them choose more than one relevant
-   option.
-3. The browse action opens the marketplace with the prompt's category
-   preselected. The separate `Post a request` action opens the full request
-   form with that category selected.
-4. Never imply that offers, providers, the lowest price, or a response are
+1. Show a short question and one sentence explaining how Nipanze can help.
+2. Offer two actions: browse existing requests for the category, or post a
+   request with the category preselected. Put card controls and Saved interests
+   in the menu to keep the card focused.
+3. Never imply that offers, providers, the lowest price, or a response are
    guaranteed.
-5. If the user opts to save an interest, use it to personalize later feed
-   results and let them manage it from Saved interests.
-6. Store each view and response in `user_discovery_interactions`, keyed by
-   user and template. An answered or acted-on prompt is suppressed for that
-   user; `Maybe later`/Skip snoozes it for seven days, Hide snoozes it for
-   thirty days, and Mute suppresses it for a year. A view alone is snoozed for
-   eighteen hours. This lets the feed move through unanswered categories
-   without repeating a prompt the user already answered.
+4. Store each view and action in `user_discovery_interactions`, keyed by user
+   and template. Browse or Post suppresses that prompt for the user. Hide
+   snoozes it for thirty days, Mute for a year, and a view alone for eighteen
+   hours. This lets the feed move through categories without repeating an
+   action the user has already taken.
 
 ## Rollout notes
 
