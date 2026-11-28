@@ -42,11 +42,13 @@ class MarketplacePage extends StatelessWidget {
     super.key,
     this.initialModule,
     this.interestCategorySlugs = const {},
+    this.temporaryCategorySlugs = const {},
     this.temporaryTabLabel,
   });
 
   final MarketplaceModule? initialModule;
   final Set<String> interestCategorySlugs;
+  final Set<String> temporaryCategorySlugs;
   final String? temporaryTabLabel;
 
   @override
@@ -60,10 +62,26 @@ class MarketplacePage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => DiscoveryCubit(getIt<DiscoveryRepository>())
-            ..loadCard(
-              country: userCountry,
-            ),
+          create: (_) {
+            final cubit = DiscoveryCubit(getIt<DiscoveryRepository>());
+            unawaited(() async {
+              try {
+                final results = await Future.wait<Object>([
+                  getIt<DiscoveryRepository>().getSavedInterestCategories(),
+                  getIt<IProviderRepository>().getProviderCapabilities(),
+                ]);
+                final excluded = <String>{...results[0] as Set<String>};
+                excluded.addAll((results[1] as List<ProviderCapability>)
+                    .where((capability) => capability.isActive && !capability.isPaused)
+                    .map((capability) => capability.categorySlug)
+                    .whereType<String>());
+                await cubit.loadCard(country: userCountry, excludedCategorySlugs: excluded);
+              } catch (_) {
+                await cubit.loadCard(country: userCountry);
+              }
+            }());
+            return cubit;
+          },
         ),
         BlocProvider(
           create: (_) {
@@ -113,7 +131,11 @@ class MarketplacePage extends StatelessWidget {
         listener: (context, _) {
           unawaited(context.read<CapabilitiesCubit>().load());
         },
-        child: _MarketplaceView(country: userCountry, temporaryTabLabel: temporaryTabLabel, temporaryCategorySlugs: interestCategorySlugs),
+        child: _MarketplaceView(
+          country: userCountry,
+          temporaryTabLabel: temporaryTabLabel,
+          temporaryCategorySlugs: temporaryCategorySlugs,
+        ),
       ),
     );
   }
@@ -1092,7 +1114,7 @@ class _ModuleFilterRowState extends State<_ModuleFilterRow> {
                                             uniqueServices[i],
                                             identityType:
                                                 identityFor(uniqueServices[i]),
-                                            selected: selected ==
+                                            selected: widget.temporaryTabLabel == null && selected ==
                                                     _moduleForProviderService(
                                                         uniqueServices[i]) &&
                                                 selectedProviderService?.id ==

@@ -18,6 +18,7 @@ class DiscoveryRepository {
 
   Future<DiscoveryQuestionTemplate?> getNextTemplate({
     required String country,
+    Set<String> excludedCategorySlugs = const {},
   }) async {
     final uid = _uid;
     if (uid == null) return null;
@@ -35,6 +36,8 @@ class DiscoveryRepository {
                 Map<String, dynamic>.from(row as Map),
               ))
           .where((template) => template.isEligibleForCountry(country))
+          .where((template) => template.needCategorySlug == null ||
+              !excludedCategorySlugs.contains(template.needCategorySlug))
           .toList();
       if (templates.isEmpty) return null;
 

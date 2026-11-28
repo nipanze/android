@@ -15,9 +15,11 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
 
   final DiscoveryRepository _repository;
   String? _country;
+  Set<String> _excludedCategorySlugs = const {};
 
-  Future<void> loadCard({required String country}) async {
+  Future<void> loadCard({required String country, Set<String> excludedCategorySlugs = const {}}) async {
     _country = country;
+    _excludedCategorySlugs = {...excludedCategorySlugs};
     await _loadNextCard();
   }
 
@@ -26,7 +28,7 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
     if (country == null) return;
     emit(const DiscoveryLoading());
     try {
-      final template = await _repository.getNextTemplate(country: country);
+      final template = await _repository.getNextTemplate(country: country, excludedCategorySlugs: _excludedCategorySlugs);
       emit(DiscoveryCardLoaded(template));
     } catch (e) {
       emit(DiscoveryError(userFacingErrorMessage(e)));

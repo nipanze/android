@@ -169,16 +169,16 @@ class AppRouter {
                   .map((slug) => slug.trim())
                   .where((slug) => slug.isNotEmpty)
                   .toSet();
+              final browseCategory = state.uri.queryParameters['browse_category'];
               return _fade(
                 state,
                 MarketplacePage(
                   initialModule: initialModule,
                   interestCategorySlugs: interests,
-                  temporaryTabLabel: state.uri.queryParameters['browse_category'] == null
+                  temporaryCategorySlugs: browseCategory == null ? const {} : {browseCategory},
+                  temporaryTabLabel: browseCategory == null
                       ? null
-                      : NeedCategory.findBySlug(
-                          state.uri.queryParameters['browse_category']!,
-                        ).localizedName(
+                      : NeedCategory.findBySlug(browseCategory).localizedName(
                           Localizations.localeOf(context).languageCode,
                         ),
                 ),
